@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2018 Intel Corporation.
+ * SPDX-FileCopyrightText: Copyright 2025 NXP
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -9,11 +10,13 @@ LOG_MODULE_REGISTER(net_ethernet, CONFIG_NET_L2_ETHERNET_LOG_LEVEL);
 
 #include <zephyr/net/net_core.h>
 #include <zephyr/net/net_l2.h>
+#include <zephyr/net/net_log.h>
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/net_mgmt.h>
 #include <zephyr/net/ethernet.h>
 #include <zephyr/net/ethernet_mgmt.h>
-#if defined(CONFIG_NET_DSA) && !defined(CONFIG_NET_DSA_DEPRECATED)
+#include <zephyr/net/ethernet_bridge.h>
+#if defined(CONFIG_NET_DSA)
 #include <zephyr/net/dsa_core.h>
 #endif
 #include <zephyr/net/gptp.h>
@@ -30,7 +33,6 @@ LOG_MODULE_REGISTER(net_ethernet, CONFIG_NET_L2_ETHERNET_LOG_LEVEL);
 #include "net_private.h"
 #include "ipv6.h"
 #include "ipv4.h"
-#include "bridge.h"
 
 #define NET_BUF_TIMEOUT K_MSEC(100)
 
@@ -266,6 +268,7 @@ static enum net_verdict ethernet_recv(struct net_if *iface,
 	struct net_linkaddr *lladdr;
 	uint16_t type;
 	bool dst_broadcast, dst_eth_multicast, dst_iface_addr;
+	struct net_if *iface_eth = iface;
 
 	/* This expects that the Ethernet header is in the first net_buf
 	 * fragment. This is a safe expectation here as it would not make
@@ -276,25 +279,23 @@ static enum net_verdict ethernet_recv(struct net_if *iface,
 		goto drop;
 	}
 
-	if (IS_ENABLED(CONFIG_NET_ETHERNET_BRIDGE) &&
-	    net_eth_iface_is_bridged(ctx) && !net_pkt_is_l2_bridged(pkt)) {
-		struct net_if *bridge = net_eth_get_bridge(ctx);
-		struct net_pkt *out_pkt;
+	/* Set the pointers to ll src and dst addresses */
+	(void)net_linkaddr_create(net_pkt_lladdr_src(pkt), hdr->src.addr,
+				  sizeof(struct net_eth_addr), NET_LINK_ETHERNET);
 
-		out_pkt = net_pkt_clone(pkt, K_NO_WAIT);
-		if (out_pkt == NULL) {
+	(void)net_linkaddr_create(net_pkt_lladdr_dst(pkt), hdr->dst.addr,
+				  sizeof(struct net_eth_addr), NET_LINK_ETHERNET);
+
+	if (IS_ENABLED(CONFIG_NET_ETHERNET_BRIDGE) && net_eth_iface_is_bridged(ctx)) {
+		verdict = eth_bridge_input_process(iface, pkt);
+		if (verdict == NET_DROP) {
 			goto drop;
 		}
 
-		net_pkt_set_l2_bridged(out_pkt, true);
-		net_pkt_set_iface(out_pkt, bridge);
-		net_pkt_set_orig_iface(out_pkt, iface);
-
-		NET_DBG("Passing pkt %p (orig %p) to bridge %d from %d",
-			out_pkt, pkt, net_if_get_by_iface(bridge),
-			net_if_get_by_iface(iface));
-
-		(void)net_if_queue_tx(bridge, out_pkt);
+		/* Handled by bridge locally */
+		if (verdict == NET_OK) {
+			iface = net_eth_get_bridge(ctx);
+		}
 	}
 
 	type = net_ntohs(hdr->type);
@@ -343,18 +344,11 @@ static enum net_verdict ethernet_recv(struct net_if *iface,
 		}
 	}
 
-	/* Set the pointers to ll src and dst addresses */
-	(void)net_linkaddr_create(net_pkt_lladdr_src(pkt), hdr->src.addr,
-				  sizeof(struct net_eth_addr), NET_LINK_ETHERNET);
-
-	(void)net_linkaddr_create(net_pkt_lladdr_dst(pkt), hdr->dst.addr,
-				  sizeof(struct net_eth_addr), NET_LINK_ETHERNET);
-
 	lladdr = net_pkt_lladdr_dst(pkt);
 
 	net_pkt_set_ll_proto_type(pkt, type);
 	dst_broadcast = net_eth_is_addr_broadcast((struct net_eth_addr *)lladdr->addr);
-	dst_eth_multicast = net_eth_is_addr_group((struct net_eth_addr *)lladdr->addr);
+	dst_eth_multicast = net_eth_is_addr_multicast((struct net_eth_addr *)lladdr->addr);
 	dst_iface_addr = net_linkaddr_cmp(net_if_get_link_addr(iface), lladdr);
 
 	if (is_vlan_pkt) {
@@ -415,7 +409,7 @@ static enum net_verdict ethernet_recv(struct net_if *iface,
 		} else {
 			NET_DBG("Unknown hdr type 0x%04x iface %d (%p)", type,
 				net_if_get_by_iface(iface), iface);
-			eth_stats_update_unknown_protocol(iface);
+			eth_stats_update_unknown_protocol(iface_eth);
 			return NET_DROP;
 		}
 	}
@@ -425,10 +419,10 @@ static enum net_verdict ethernet_recv(struct net_if *iface,
 	}
 
 out:
-	ethernet_update_rx_stats(iface, body_len + hdr_len, dst_broadcast, dst_eth_multicast);
+	ethernet_update_rx_stats(iface_eth, body_len + hdr_len, dst_broadcast, dst_eth_multicast);
 	return verdict;
 drop:
-	eth_stats_update_errors_rx(iface);
+	eth_stats_update_errors_rx(iface_eth);
 	return NET_DROP;
 }
 
@@ -679,10 +673,10 @@ static void ethernet_update_tx_stats(struct net_if *iface, struct net_pkt *pkt)
 	eth_stats_update_bytes_tx(iface, net_pkt_get_len(pkt));
 	eth_stats_update_pkts_tx(iface);
 
-	if (net_eth_is_addr_multicast(&hdr->dst)) {
-		eth_stats_update_multicast_tx(iface);
-	} else if (net_eth_is_addr_broadcast(&hdr->dst)) {
+	if (net_eth_is_addr_broadcast(&hdr->dst)) {
 		eth_stats_update_broadcast_tx(iface);
+	} else if (net_eth_is_addr_multicast(&hdr->dst)) {
+		eth_stats_update_multicast_tx(iface);
 	}
 }
 
@@ -817,9 +811,8 @@ arp_error:
 
 static inline int ethernet_enable(struct net_if *iface, bool state)
 {
-	int ret = 0;
-	const struct ethernet_api *eth =
-		net_if_get_device(iface)->api;
+	const struct device *dev = net_if_get_device(iface);
+	const struct ethernet_api *eth = dev->api;
 
 	if (!eth) {
 		return -ENOENT;
@@ -829,15 +822,15 @@ static inline int ethernet_enable(struct net_if *iface, bool state)
 		net_arp_clear_cache(iface);
 
 		if (eth->stop) {
-			ret = eth->stop(net_if_get_device(iface));
+			return eth->stop(dev);
 		}
 	} else {
 		if (eth->start) {
-			ret = eth->start(net_if_get_device(iface));
+			return eth->start(dev);
 		}
 	}
 
-	return ret;
+	return 0;
 }
 
 enum net_l2_flags ethernet_flags(struct net_if *iface)
@@ -935,7 +928,7 @@ const struct device *net_eth_get_phy(struct net_if *iface)
 		return NULL;
 	}
 
-	return api->get_phy(net_if_get_device(iface));
+	return api->get_phy(dev);
 }
 
 #if defined(CONFIG_PTP_CLOCK)
@@ -960,7 +953,7 @@ const struct device *net_eth_get_ptp_clock(struct net_if *iface)
 		return NULL;
 	}
 
-	return api->get_ptp_clock(net_if_get_device(iface));
+	return api->get_ptp_clock(dev);
 }
 #endif /* CONFIG_PTP_CLOCK */
 
@@ -1027,6 +1020,7 @@ int net_eth_promisc_mode(struct net_if *iface, bool enable)
 
 int net_eth_txinjection_mode(struct net_if *iface, bool enable)
 {
+#ifdef CONFIG_NET_L2_ETHERNET_MGMT
 	struct ethernet_req_params params;
 
 	if (!(net_eth_get_hw_capabilities(iface) & ETHERNET_TXINJECTION_MODE)) {
@@ -1037,6 +1031,12 @@ int net_eth_txinjection_mode(struct net_if *iface, bool enable)
 
 	return net_mgmt(NET_REQUEST_ETHERNET_SET_TXINJECTION_MODE, iface,
 			&params, sizeof(struct ethernet_req_params));
+#else
+	ARG_UNUSED(iface);
+	ARG_UNUSED(enable);
+
+	return -ENOTSUP;
+#endif
 }
 
 int net_eth_mac_filter(struct net_if *iface, struct net_eth_addr *mac,
@@ -1072,10 +1072,15 @@ void ethernet_init(struct net_if *iface)
 	NET_DBG("Initializing Ethernet L2 %p for iface %d (%p)", ctx,
 		net_if_get_by_iface(iface), iface);
 
-#if defined(CONFIG_NET_DSA) && !defined(CONFIG_NET_DSA_DEPRECATED)
+#if defined(CONFIG_NET_DSA)
 	/* DSA port may need to handle flags */
 	dsa_eth_init(iface);
 #endif
+
+	if (IS_ENABLED(CONFIG_ETH_NET_IF_NO_AUTO_START)) {
+		/* Do not start Ethernet interface automatically */
+		net_if_flag_set(iface, NET_IF_NO_AUTO_START);
+	}
 
 	ctx->ethernet_l2_flags = NET_L2_MULTICAST;
 	ctx->iface = iface;

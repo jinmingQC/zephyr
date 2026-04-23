@@ -20,6 +20,7 @@ LOG_MODULE_REGISTER(net_ieee802154, CONFIG_NET_L2_IEEE802154_LOG_LEVEL);
 #include <zephyr/net/capture.h>
 #include <zephyr/net/ethernet.h>
 #include <zephyr/net/net_core.h>
+#include <zephyr/net/net_log.h>
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/net_l2.h>
 #include <zephyr/net/net_linkaddr.h>
@@ -36,7 +37,7 @@ LOG_MODULE_REGISTER(net_ieee802154, CONFIG_NET_L2_IEEE802154_LOG_LEVEL);
 #endif /* CONFIG_NET_L2_IEEE802154_FRAGMENT */
 #endif /* CONFIG_NET_6LO */
 
-#include "ieee802154_frame.h"
+#include <zephyr/net/ieee802154_frame.h>
 #include "ieee802154_mgmt_priv.h"
 #include "ieee802154_priv.h"
 #include "ieee802154_security.h"
@@ -509,16 +510,25 @@ static int ieee802154_send(struct net_if *iface, struct net_pkt *pkt)
 			   socket_type == NET_SOCK_DGRAM) {
 			struct net_sockaddr_ll *dst_addr =
 				(struct net_sockaddr_ll *)&context->remote;
-			struct net_sockaddr_ll_ptr *src_addr =
-				(struct net_sockaddr_ll_ptr *)&context->local;
 
 			(void)net_linkaddr_set(net_pkt_lladdr_dst(pkt),
 					       dst_addr->sll_addr,
 					       dst_addr->sll_halen);
 
+			/* context->local sockaddr_ll_ptr is not supported for
+			 * NET_AF_PACKET sockets (raw packets from l2).
+			 *
+			 * Although the sll_addr pointer correctly links to the iface
+			 * net_linkaddr, the sll_halen is a copy and doesn't track properly
+			 * the iface linkaddr len. For example, the linkaddr len can change
+			 * depending on the link address format with 802.15.4, between
+			 * extended (8 bytes) or short (2 bytes).
+			 *
+			 * Instead, use the iface link_addr directly.
+			 */
 			(void)net_linkaddr_set(net_pkt_lladdr_src(pkt),
-					       src_addr->sll_addr,
-					       src_addr->sll_halen);
+					       iface->if_dev->link_addr.addr,
+					       iface->if_dev->link_addr.len);
 		} else {
 			return -EINVAL;
 		}

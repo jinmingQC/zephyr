@@ -18,6 +18,7 @@ LOG_MODULE_REGISTER(net_dhcpv4, CONFIG_NET_DHCPV4_LOG_LEVEL);
 #include <stdbool.h>
 #include <zephyr/random/random.h>
 #include <zephyr/net/net_core.h>
+#include <zephyr/net/net_log.h>
 #include <zephyr/net/net_pkt.h>
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/net_mgmt.h>
@@ -895,10 +896,14 @@ static int dhcpv4_parse_option_vendor(struct net_pkt *pkt, struct net_if *iface,
 	struct net_pkt_cursor backup;
 	uint8_t len;
 	uint8_t type;
+	int ret;
 
 	if (length < 3) {
 		NET_ERR("Vendor-specific option parsing, length too short");
-		net_pkt_skip(pkt, length);
+		ret = net_pkt_skip(pkt, length);
+		if (ret < 0) {
+			return ret;
+		}
 		return -EBADMSG;
 	}
 
@@ -921,7 +926,10 @@ static int dhcpv4_parse_option_vendor(struct net_pkt *pkt, struct net_if *iface,
 		length--;
 		if (length < len) {
 			NET_ERR("Vendor-specific option parsing, length too long");
-			net_pkt_skip(pkt, length);
+			ret = net_pkt_skip(pkt, length);
+			if (ret < 0) {
+				return ret;
+			}
 			return -EBADMSG;
 		}
 		net_pkt_cursor_backup(pkt, &backup);
@@ -939,7 +947,10 @@ static int dhcpv4_parse_option_vendor(struct net_pkt *pkt, struct net_if *iface,
 				net_pkt_cursor_restore(pkt, &backup);
 			}
 		}
-		net_pkt_skip(pkt, len);
+		ret = net_pkt_skip(pkt, len);
+		if (ret < 0) {
+			return ret;
+		}
 		length = length - len;
 		if (length <= 0) {
 			NET_DBG("Vendor-specific options_end (no code 255)");
@@ -1555,6 +1566,7 @@ static enum net_verdict net_dhcpv4_input(struct net_conn *conn,
 	enum net_dhcpv4_msg_type msg_type = 0;
 	struct dhcp_msg *msg;
 	struct net_if *iface;
+	int ret;
 
 	if (!conn) {
 		NET_DBG("Invalid connection");
@@ -1621,7 +1633,10 @@ static enum net_verdict net_dhcpv4_input(struct net_conn *conn,
 		goto drop;
 	}
 
-	net_pkt_acknowledge_data(pkt, &dhcp_access);
+	ret = net_pkt_acknowledge_data(pkt, &dhcp_access);
+	if (ret < 0) {
+		goto drop;
+	}
 
 	/* SNAME, FILE are not used at the moment, skip it */
 	if (net_pkt_skip(pkt, SIZE_OF_SNAME + SIZE_OF_FILE)) {
@@ -1653,8 +1668,14 @@ static void dhcpv4_iface_event_handler(struct net_mgmt_event_callback *cb,
 {
 	sys_snode_t *node = NULL;
 
-	if (mgmt_event != NET_EVENT_IF_UP &&
-	    mgmt_event != NET_EVENT_IF_DOWN) {
+	switch (mgmt_event) {
+#ifdef CONFIG_NET_DHCPV4_RESTART_ON_IF_UP
+	case NET_EVENT_IF_UP:
+		break;
+#endif /* CONFIG_NET_DHCPV4_RESTART_ON_IF_UP */
+	case NET_EVENT_IF_DOWN:
+		break;
+	default:
 		return;
 	}
 
@@ -1696,7 +1717,8 @@ static void dhcpv4_iface_event_handler(struct net_mgmt_event_callback *cb,
 							  DNS_SOURCE_DHCPV4);
 			}
 		}
-	} else if (mgmt_event == NET_EVENT_IF_UP) {
+	} else if (IS_ENABLED(CONFIG_NET_DHCPV4_RESTART_ON_IF_UP) &&
+		   (mgmt_event == NET_EVENT_IF_UP)) {
 		NET_DBG("Interface %p coming up", iface);
 
 		/* We should not call dhcpv4_send_request() directly here as
@@ -2003,6 +2025,9 @@ void net_dhcpv4_restart(struct net_if *iface)
 
 int net_dhcpv4_init(void)
 {
+	uint64_t events =
+		IS_ENABLED(CONFIG_NET_DHCPV4_RESTART_ON_IF_UP) ?
+		(NET_EVENT_IF_UP | NET_EVENT_IF_DOWN) : NET_EVENT_IF_DOWN;
 	struct net_sockaddr local_addr;
 	int ret;
 
@@ -2030,7 +2055,7 @@ int net_dhcpv4_init(void)
 	 * if interface is coming back up again.
 	 */
 	net_mgmt_init_event_callback(&mgmt4_if_cb, dhcpv4_iface_event_handler,
-				     NET_EVENT_IF_DOWN | NET_EVENT_IF_UP);
+				     events);
 #if defined(CONFIG_NET_IPV4_ACD)
 	net_mgmt_init_event_callback(&mgmt4_acd_cb, dhcpv4_acd_event_handler,
 				     NET_EVENT_IPV4_ACD_FAILED |
@@ -2070,7 +2095,9 @@ bool net_dhcpv4_accept_unicast(struct net_pkt *pkt)
 	}
 
 	net_pkt_cursor_backup(pkt, &backup);
-	net_pkt_skip(pkt, net_pkt_ip_hdr_len(pkt));
+	if (net_pkt_skip(pkt, net_pkt_ip_hdr_len(pkt)) < 0) {
+		goto out;
+	}
 
 	/* Verify destination UDP port. */
 	udp_hdr = (struct net_udp_hdr *)net_pkt_get_data(pkt, &udp_access);

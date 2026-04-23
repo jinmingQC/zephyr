@@ -15,6 +15,7 @@
 
 #include <zephyr/autoconf.h>
 #include <zephyr/bluetooth/addr.h>
+#include <zephyr/bluetooth/assigned_numbers.h>
 #include <zephyr/bluetooth/audio/audio.h>
 #include <zephyr/bluetooth/audio/bap.h>
 #include <zephyr/bluetooth/audio/cap.h>
@@ -36,7 +37,6 @@
 #include "btp_bap_audio_stream.h"
 #include "bap_endpoint.h"
 #include "btp/btp.h"
-#include "btp_bap_audio_stream.h"
 #include "btp_bap_broadcast.h"
 
 #define LOG_MODULE_NAME bttester_bap_broadcast
@@ -76,8 +76,9 @@ struct btp_bap_broadcast_local_source *
 btp_bap_broadcast_local_source_allocate(uint32_t broadcast_id)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(local_sources); i++) {
-		if (local_sources[i].broadcast_id == broadcast_id) {
-			LOG_ERR("Local source already allocated for broadcast id %d", broadcast_id);
+		if (local_sources[i].allocated && local_sources[i].broadcast_id == broadcast_id) {
+			LOG_ERR("Local source already allocated for broadcast id 0x%06X",
+				broadcast_id);
 
 			return NULL;
 		}
@@ -96,7 +97,7 @@ btp_bap_broadcast_local_source_allocate(uint32_t broadcast_id)
 	return NULL;
 }
 
-static int btp_bap_broadcast_local_source_free(struct btp_bap_broadcast_local_source *source)
+int btp_bap_broadcast_local_source_free(struct btp_bap_broadcast_local_source *source)
 {
 	if (source == NULL) {
 		return -EINVAL;
@@ -111,7 +112,7 @@ struct btp_bap_broadcast_local_source *
 btp_bap_broadcast_local_source_from_src_id_get(uint32_t source_id)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(local_sources); i++) {
-		if (local_sources[i].source_id == source_id) {
+		if (local_sources[i].allocated && local_sources[i].source_id == source_id) {
 			return &local_sources[i];
 		}
 	}
@@ -125,7 +126,7 @@ static struct btp_bap_broadcast_local_source *
 btp_bap_broadcast_local_source_from_brcst_id_get(uint32_t broadcast_id)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(local_sources); i++) {
-		if (local_sources[i].broadcast_id == broadcast_id) {
+		if (local_sources[i].allocated && local_sources[i].broadcast_id == broadcast_id) {
 			return &local_sources[i];
 		}
 	}
@@ -784,7 +785,6 @@ static void btp_send_baa_found_ev(const bt_addr_le_t *address, uint32_t broadcas
 static bool baa_check(struct bt_data *data, void *user_data)
 {
 	const struct bt_le_scan_recv_info *info = user_data;
-	char le_addr[BT_ADDR_LE_STR_LEN];
 	struct bt_uuid_16 adv_uuid;
 	uint32_t broadcast_id;
 
@@ -808,10 +808,8 @@ static bool baa_check(struct bt_data *data, void *user_data)
 
 	broadcast_id = sys_get_le24(data->data + BT_UUID_SIZE_16);
 
-	bt_addr_le_to_str(info->addr, le_addr, sizeof(le_addr));
-
 	LOG_DBG("Found BAA with ID 0x%06X, addr %s, sid 0x%02X, interval 0x%04X", broadcast_id,
-		le_addr, info->sid, info->interval);
+		bt_addr_le_str(info->addr), info->sid, info->interval);
 
 	btp_send_baa_found_ev(info->addr, broadcast_id, info->sid, info->interval);
 
@@ -1524,11 +1522,9 @@ static void bap_broadcast_assistant_discover_cb(struct bt_conn *conn, int err,
 static void bap_broadcast_assistant_scan_cb(const struct bt_le_scan_recv_info *info,
 					    uint32_t broadcast_id)
 {
-	char le_addr[BT_ADDR_LE_STR_LEN];
-
-	bt_addr_le_to_str(info->addr, le_addr, sizeof(le_addr));
 	LOG_DBG("[DEVICE]: %s, broadcast_id 0x%06X, interval (ms) %u (0x%04x)), SID 0x%x, RSSI %i",
-		le_addr, broadcast_id, BT_GAP_PER_ADV_INTERVAL_TO_MS(info->interval),
+		bt_addr_le_str(info->addr), broadcast_id,
+		BT_GAP_PER_ADV_INTERVAL_TO_MS(info->interval),
 		info->interval, info->sid, info->rssi);
 }
 
@@ -1680,12 +1676,6 @@ uint8_t btp_bap_broadcast_assistant_add_src(const void *cmd, uint16_t cmd_len, v
 		struct bt_bap_bass_subgroup *subgroup = &delegator_subgroups[i];
 
 		subgroup->bis_sync = sys_get_le32(ptr);
-		if (subgroup->bis_sync != BT_BAP_BIS_SYNC_NO_PREF) {
-			/* For semantic purposes Zephyr API uses BIS Index bitfield
-			 * where BIT(1) means BIS Index 1
-			 */
-			subgroup->bis_sync <<= 1;
-		}
 
 		ptr += sizeof(subgroup->bis_sync);
 		subgroup->metadata_len = *ptr;
@@ -1751,12 +1741,6 @@ uint8_t btp_bap_broadcast_assistant_modify_src(const void *cmd, uint16_t cmd_len
 		struct bt_bap_bass_subgroup *subgroup = &delegator_subgroups[i];
 
 		subgroup->bis_sync = sys_get_le32(ptr);
-		if (subgroup->bis_sync != BT_BAP_BIS_SYNC_NO_PREF) {
-			/* For semantic purposes Zephyr API uses BIS Index bitfield
-			 * where BIT(1) means BIS Index 1
-			 */
-			subgroup->bis_sync <<= 1;
-		}
 
 		ptr += sizeof(subgroup->bis_sync);
 		subgroup->metadata_len = *ptr;
@@ -1830,6 +1814,98 @@ uint8_t btp_bap_broadcast_assistant_send_past(const void *cmd, uint16_t cmd_len,
 		return BTP_STATUS_FAILED;
 	}
 
+	return BTP_STATUS_SUCCESS;
+}
+
+uint8_t btp_bap_scan_delegator_add_src(const void *cmd, uint16_t cmd_len, void *rsp,
+				       uint16_t *rsp_len)
+{
+	const struct btp_bap_scan_delegator_add_src_cmd *cp = cmd;
+	struct btp_bap_scan_delegator_add_src_rp *rp = rsp;
+	struct bt_bap_scan_delegator_add_src_param param = {0};
+	struct net_buf_simple buf;
+	int err;
+
+	if (cmd_len < sizeof(*cp)) {
+		return BTP_STATUS_FAILED;
+	}
+
+	if (cp->num_subgroups > CONFIG_BT_BAP_BASS_MAX_SUBGROUPS) {
+		return BTP_STATUS_FAILED;
+	}
+
+	if (cp->big_encryption > BT_BAP_BIG_ENC_STATE_BAD_CODE) {
+		return BTP_STATUS_FAILED;
+	}
+
+	bt_addr_le_copy(&param.addr, &cp->broadcaster_address);
+	param.sid = cp->advertiser_sid;
+	param.pa_state = (enum bt_bap_pa_state)cp->pa_sync_state;
+	param.encrypt_state = (enum bt_bap_big_enc_state)cp->big_encryption;
+	param.broadcast_id = sys_get_le24(cp->broadcast_id);
+	param.num_subgroups = cp->num_subgroups;
+
+	net_buf_simple_init_with_data(&buf, (void *)cp->subgroups, cmd_len - sizeof(*cp));
+
+	for (uint8_t i = 0; i < param.num_subgroups; i++) {
+		struct bt_bap_bass_subgroup *subgroup = &param.subgroups[i];
+
+		/* If remaining data is less than the necessary subgroup fields, return failed */
+		if (buf.len < sizeof(subgroup->bis_sync) + sizeof(subgroup->metadata_len)) {
+			return BTP_STATUS_FAILED;
+		}
+
+		subgroup->bis_sync = net_buf_simple_pull_le32(&buf);
+		subgroup->metadata_len = net_buf_simple_pull_u8(&buf);
+
+		if (subgroup->metadata_len > sizeof(subgroup->metadata) ||
+		    subgroup->metadata_len > buf.len) {
+			return BTP_STATUS_FAILED;
+		}
+
+		memcpy(subgroup->metadata, net_buf_simple_pull_mem(&buf, subgroup->metadata_len),
+		       subgroup->metadata_len);
+	}
+
+	if (buf.len != 0U) {
+		return BTP_STATUS_FAILED;
+	}
+
+	err = bt_bap_scan_delegator_add_src(&param);
+	if (err < 0) {
+		return BTP_STATUS_VAL(err);
+	}
+
+	rp->src_id = (uint8_t)err;
+	*rsp_len = sizeof(*rp);
+
+	return BTP_STATUS_SUCCESS;
+}
+
+uint8_t btp_bap_set_sink_broadcast_code(const void *cmd, uint16_t cmd_len, void *rsp,
+					uint16_t *rsp_len)
+{
+	const struct btp_bap_broadcast_sink_set_broadcast_code_cmd *cp = cmd;
+	struct btp_bap_broadcast_remote_source *broadcaster = NULL;
+	uint32_t host_broadcast_id = sys_get_le24(cp->broadcast_id);
+
+	/* Find the broadcaster by address and broadcast_id */
+	broadcaster = remote_broadcaster_find(&cp->address, host_broadcast_id);
+	if (broadcaster == NULL) {
+		LOG_DBG("Broadcast source not found for addr %s, broadcast_id 0x%06X, alloc new",
+			bt_addr_le_str(&cp->address), host_broadcast_id);
+		/* If not found, allocate a new one */
+		broadcaster = remote_broadcaster_alloc();
+		if (broadcaster == NULL) {
+			LOG_DBG("Failed to allocate broadcaster entry");
+			return BTP_STATUS_FAILED;
+		}
+		bt_addr_le_copy(&broadcaster->address, &cp->address);
+	}
+	(void)memcpy(broadcaster->sink_broadcast_code, cp->broadcast_code,
+		     BT_ISO_BROADCAST_CODE_SIZE);
+	broadcaster->broadcast_id = host_broadcast_id;
+	broadcaster->broadcast_code_received = true;
 	return BTP_STATUS_SUCCESS;
 }
 

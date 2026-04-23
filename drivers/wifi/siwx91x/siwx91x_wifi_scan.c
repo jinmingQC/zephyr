@@ -62,9 +62,10 @@ static void siwx91x_report_scan_res(struct siwx91x_dev *sidev, sl_wifi_scan_resu
 	sidev->scan_res_cb(sidev->iface, 0, &tmp);
 }
 
-unsigned int siwx91x_on_scan(sl_wifi_event_t event, sl_wifi_scan_result_t *result,
-			     uint32_t result_size, void *arg)
+unsigned int siwx91x_on_scan(sl_wifi_event_t event, unsigned int status,
+			     void *data, uint32_t data_length, void *arg)
 {
+	sl_wifi_scan_result_t *result = data;
 	struct siwx91x_dev *sidev = arg;
 	int i, scan_count;
 
@@ -148,7 +149,7 @@ int siwx91x_scan(const struct device *dev, struct wifi_scan_params *z_scan_confi
 		.trigger_level = CONFIG_WIFI_SILABS_SIWX91X_ADV_SCAN_THRESHOLD,
 		.trigger_level_change = CONFIG_WIFI_SILABS_SIWX91X_ADV_RSSI_TOLERANCE_THRESHOLD,
 		.enable_multi_probe = CONFIG_WIFI_SILABS_SIWX91X_ADV_MULTIPROBE,
-		.enable_instant_scan = CONFIG_WIFI_SILABS_SIWX91X_ENABLE_INSTANT_SCAN,
+		.enable_instant_scan = 1,
 	};
 	sl_wifi_roam_configuration_t roam_configuration = {
 #ifdef CONFIG_WIFI_SILABS_SIWX91X_ENABLE_ROAMING

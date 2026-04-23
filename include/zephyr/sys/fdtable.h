@@ -257,7 +257,11 @@ struct zvfs_pollfd {
 __syscall int zvfs_poll(struct zvfs_pollfd *fds, int nfds, int poll_timeout);
 
 struct zvfs_fd_set {
+#ifdef ZVFS_OPEN_SIZE
 	uint32_t bitset[DIV_ROUND_UP(ZVFS_OPEN_SIZE, 32)];
+#else
+	uint32_t bitset[1];
+#endif
 };
 
 /** @brief Number of file descriptors which can be added @ref zvfs_fd_set */
@@ -294,8 +298,12 @@ enum {
 	ZFD_IOCTL_MMAP,
 
 	/* Codes above 0x5400 and below 0x5500 are reserved for termios, FIO, etc */
+	/** Get the number of bytes available to read */
 	ZFD_IOCTL_FIONREAD = 0x541B,
+	/** Set non-blocking mode */
 	ZFD_IOCTL_FIONBIO = 0x5421,
+	/** Get the number of bytes queued for TCP TX which have not yet been acknowledged */
+	ZFD_IOCTL_FIONWRITE = 0x5411,
 };
 
 /**

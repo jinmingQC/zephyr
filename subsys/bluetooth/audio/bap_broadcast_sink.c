@@ -21,7 +21,6 @@
 #include <zephyr/bluetooth/audio/audio.h>
 #include <zephyr/bluetooth/audio/bap.h>
 #include <zephyr/bluetooth/audio/pacs.h>
-#include <zephyr/bluetooth/audio/bap.h>
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/bluetooth/uuid.h>
@@ -32,7 +31,6 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/check.h>
 #include <zephyr/sys/slist.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -154,7 +152,6 @@ static void update_recv_state_big_cleared(const struct bt_bap_broadcast_sink *si
 					  uint8_t reason)
 {
 	const struct bt_bap_scan_delegator_recv_state *recv_state;
-	bool sink_is_streaming = false;
 	int err;
 
 	recv_state = bt_bap_scan_delegator_find_state(find_recv_state_by_src_id_cb, (void *)sink);
@@ -176,20 +173,26 @@ static void update_recv_state_big_cleared(const struct bt_bap_broadcast_sink *si
 		mod_src_param.encrypt_state = BT_BAP_BIG_ENC_STATE_NO_ENC;
 	}
 
-	/* Determine if the previous receive state reported that streaming was active
-	 * If it was previously active, then we need to set the BIS_sync state to 0
-	 * (not streaming), and if not then we consider this a BIG Sync failure and
-	 * set BT_BAP_BIS_SYNC_FAILED
+	/* If we are currently not synced (bis_sync == 0U) then we set the BIS sync to
+	 * BT_BAP_BIS_SYNC_FAILED to indicate a sync failure, unless the reason is
+	 * BT_HCI_ERR_TERM_DUE_TO_MIC_FAIL (indicating a bad broadcast code). We treat this as a
+	 * special case due to current open errata https://bluetooth.atlassian.net/browse/ES-28435
+	 * and https://bluetooth.atlassian.net/browse/ES-28482 where the expected behavior is not
+	 * properly defined but the qualification tests expect the BIS sync value to be set to 0 in
+	 * case of a bad broadcast code.
+	 *
+	 * If we are already synced and this is called, then that indicates a sync lost, in which
+	 * case we set the BIS sync to 0.
 	 */
-	for (uint8_t i = 0U; i < recv_state->num_subgroups && !sink_is_streaming; i++) {
-		sink_is_streaming = recv_state->subgroups[i].bis_sync != 0 &&
-				    recv_state->subgroups[i].bis_sync != BT_BAP_BIS_SYNC_FAILED;
-	}
-
-	if (!sink_is_streaming) {
-		/* BASS spec 3.1.1.5: Set Sync Failed when the server fails to sync to the BIG */
-		for (uint8_t i = 0U; i < recv_state->num_subgroups; i++) {
-			mod_src_param.subgroups[i].bis_sync = BT_BAP_BIS_SYNC_FAILED;
+	for (uint8_t i = 0U; i < recv_state->num_subgroups; i++) {
+		if (recv_state->subgroups[i].bis_sync == 0U) {
+			if (reason == BT_HCI_ERR_TERM_DUE_TO_MIC_FAIL) {
+				mod_src_param.subgroups[i].bis_sync = 0U;
+			} else {
+				mod_src_param.subgroups[i].bis_sync = BT_BAP_BIS_SYNC_FAILED;
+			}
+		} else {
+			mod_src_param.subgroups[i].bis_sync = 0U;
 		}
 	}
 
@@ -915,7 +918,7 @@ int bt_bap_broadcast_sink_register_cb(struct bt_bap_broadcast_sink_cb *cb)
 {
 	static bool iso_big_cb_registered;
 
-	CHECKIF(cb == NULL) {
+	if (cb == NULL) {
 		LOG_DBG("cb is NULL");
 
 		return -EINVAL;
@@ -983,7 +986,8 @@ static struct bt_bap_ep *broadcast_sink_new_ep(uint8_t index)
 
 static int bt_bap_broadcast_sink_setup_stream(struct bt_bap_broadcast_sink *sink,
 					      struct bt_bap_stream *stream,
-					      struct bt_audio_codec_cfg *codec_cfg)
+					      const struct bt_audio_codec_cfg *codec_cfg,
+					      uint8_t id)
 {
 	struct bt_bap_iso *iso;
 	struct bt_bap_ep *ep;
@@ -1008,12 +1012,14 @@ static int bt_bap_broadcast_sink_setup_stream(struct bt_bap_broadcast_sink *sink
 	bt_bap_iso_init(iso, &broadcast_sink_iso_ops);
 	bt_bap_iso_bind_ep(iso, ep);
 	stream->iso = &iso->chan;
+	ep->id = id;
 
 	bt_bap_qos_cfg_to_iso_qos(iso->chan.qos->rx, &sink->qos_cfg);
+	(void)memcpy(&ep->codec_cfg, codec_cfg, sizeof(*codec_cfg));
 
 	bt_bap_iso_unref(iso);
 
-	bt_bap_stream_attach(NULL, stream, ep, codec_cfg);
+	bt_bap_stream_attach(NULL, stream, ep);
 	stream->qos = &sink->qos_cfg;
 	stream->group = sink;
 
@@ -1059,19 +1065,19 @@ int bt_bap_broadcast_sink_create(struct bt_le_per_adv_sync *pa_sync, uint32_t br
 	const struct bt_bap_scan_delegator_recv_state *recv_state;
 	struct bt_bap_broadcast_sink *sink;
 
-	CHECKIF(pa_sync == NULL) {
+	if (pa_sync == NULL) {
 		LOG_DBG("pa_sync is NULL");
 
 		return -EINVAL;
 	}
 
-	CHECKIF(broadcast_id > BT_AUDIO_BROADCAST_ID_MAX) {
+	if (broadcast_id > BT_AUDIO_BROADCAST_ID_MAX) {
 		LOG_DBG("Invalid broadcast_id: 0x%X", broadcast_id);
 
 		return -EINVAL;
 	}
 
-	CHECKIF(out_sink == NULL) {
+	if (out_sink == NULL) {
 		LOG_DBG("sink was NULL");
 
 		return -EINVAL;
@@ -1273,17 +1279,17 @@ int bt_bap_broadcast_sink_sync(struct bt_bap_broadcast_sink *sink, uint32_t inde
 	int err;
 	int ret;
 
-	CHECKIF(sink == NULL) {
+	if (sink == NULL) {
 		LOG_DBG("sink is NULL");
 		return -EINVAL;
 	}
 
-	CHECKIF(indexes_bitfield == 0U || indexes_bitfield > BIT_MASK(BT_ISO_BIS_INDEX_MAX)) {
+	if (indexes_bitfield == 0U || indexes_bitfield > BIT_MASK(BT_ISO_BIS_INDEX_MAX)) {
 		LOG_DBG("Invalid indexes_bitfield: 0x%08X", indexes_bitfield);
 		return -EINVAL;
 	}
 
-	CHECKIF(streams == NULL) {
+	if (streams == NULL) {
 		LOG_DBG("streams is NULL");
 		return -EINVAL;
 	}
@@ -1340,7 +1346,7 @@ int bt_bap_broadcast_sink_sync(struct bt_bap_broadcast_sink *sink, uint32_t inde
 	stream_count = data.stream_count;
 
 	for (size_t i = 0; i < stream_count; i++) {
-		CHECKIF(streams[i] == NULL) {
+		if (streams[i] == NULL) {
 			LOG_DBG("streams[%zu] is NULL", i);
 			return -EINVAL;
 		}
@@ -1349,12 +1355,12 @@ int bt_bap_broadcast_sink_sync(struct bt_bap_broadcast_sink *sink, uint32_t inde
 	sink->stream_count = 0U;
 	for (size_t i = 0; i < stream_count; i++) {
 		struct bt_bap_stream *stream;
-		struct bt_audio_codec_cfg *codec_cfg;
+		const struct bt_audio_codec_cfg *codec_cfg;
 
 		stream = streams[i];
 		codec_cfg = &data.codec_cfgs[i];
 
-		err = bt_bap_broadcast_sink_setup_stream(sink, stream, codec_cfg);
+		err = bt_bap_broadcast_sink_setup_stream(sink, stream, codec_cfg, i);
 		if (err != 0) {
 			LOG_DBG("Failed to setup streams[%zu]: %d", i, err);
 			broadcast_sink_cleanup_streams(sink);
@@ -1402,7 +1408,7 @@ int bt_bap_broadcast_sink_stop(struct bt_bap_broadcast_sink *sink)
 {
 	int err;
 
-	CHECKIF(sink == NULL) {
+	if (sink == NULL) {
 		LOG_DBG("sink is NULL");
 		return -EINVAL;
 	}
@@ -1429,7 +1435,7 @@ int bt_bap_broadcast_sink_stop(struct bt_bap_broadcast_sink *sink)
 int bt_bap_broadcast_sink_delete(struct bt_bap_broadcast_sink *sink)
 {
 
-	CHECKIF(sink == NULL) {
+	if (sink == NULL) {
 		LOG_DBG("sink is NULL");
 		return -EINVAL;
 	}

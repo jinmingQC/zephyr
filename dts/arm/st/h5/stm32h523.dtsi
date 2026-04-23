@@ -10,12 +10,30 @@
 	soc {
 		compatible = "st,stm32h523", "st,stm32h5", "simple-bus";
 
-		gpiof: gpio@42021400 {
-			compatible = "st,stm32-gpio";
-			gpio-controller;
-			#gpio-cells = <2>;
-			reg = <0x42021400 0x400>;
-			clocks = <&rcc STM32_CLOCK(AHB2, 7)>;
+		pinctrl: pin-controller@42020000 {
+			gpioe: gpio@42021000 {
+				compatible = "st,stm32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x42021000 0x400>;
+				clocks = <&rcc STM32_CLOCK(AHB2, 4)>;
+			};
+
+			gpiof: gpio@42021400 {
+				compatible = "st,stm32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x42021400 0x400>;
+				clocks = <&rcc STM32_CLOCK(AHB2, 5)>;
+			};
+
+			gpiog: gpio@42021800 {
+				compatible = "st,stm32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x42021800 0x400>;
+				clocks = <&rcc STM32_CLOCK(AHB2, 6)>;
+			};
 		};
 
 		fmc: memory-controller@47000400 {
@@ -35,6 +53,15 @@
 			clocks = <&rcc STM32_CLOCK(APB1_2, 9)>,
 				 <&rcc STM32_SRC_HSE FDCAN_SEL(0)>;
 			bosch,mram-cfg = <0x350 28 8 3 3 0 3 3>;
+			status = "disabled";
+		};
+
+		vrefbuf: vrefbuf@44007400 {
+			compatible = "st,stm32-vrefbuf";
+			reg = <0x44007400 0x400>;
+			clocks = <&rcc STM32_CLOCK(APB3, 20)>;
+			resets = <&rctl STM32_RESET(APB3, 20)>;
+			ref-voltages = <2500000>, <2048000>, <1800000>;
 			status = "disabled";
 		};
 	};

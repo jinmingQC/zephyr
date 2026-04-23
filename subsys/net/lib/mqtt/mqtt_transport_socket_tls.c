@@ -15,6 +15,7 @@ LOG_MODULE_REGISTER(net_mqtt_sock_tls, CONFIG_MQTT_LOG_LEVEL);
 #include <errno.h>
 #include <zephyr/net/socket.h>
 #include <zephyr/net/mqtt.h>
+#include <zephyr/net/net_log.h>
 
 #include "mqtt_os.h"
 
@@ -32,6 +33,18 @@ int mqtt_client_tls_connect(struct mqtt_client *client)
 
 	NET_DBG("Created socket %d", client->transport.tls.sock);
 
+	if (IS_ENABLED(CONFIG_NET_SOCKETS_OFFLOAD_DISPATCHER) && tls_config->set_native_tls) {
+		int tls_native = 1;
+
+		ret = zsock_setsockopt(client->transport.tls.sock, ZSOCK_SOL_TLS,
+				       ZSOCK_TLS_NATIVE, &tls_native,
+				       sizeof(tls_native));
+		if (ret < 0) {
+			NET_ERR("Failed to set native TLS (%d)", -errno);
+			goto error;
+		}
+	}
+
 	if (client->transport.if_name != NULL) {
 		struct net_ifreq ifname = { 0 };
 
@@ -42,7 +55,7 @@ int mqtt_client_tls_connect(struct mqtt_client *client)
 				       ZSOCK_SO_BINDTODEVICE, &ifname,
 				       sizeof(struct net_ifreq));
 		if (ret < 0) {
-			NET_ERR("Failed to bind ot interface %s error (%d)",
+			NET_ERR("Failed to bind to interface %s (%d)",
 				ifname.ifr_name, -errno);
 			goto error;
 		}

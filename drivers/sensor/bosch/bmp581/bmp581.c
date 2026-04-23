@@ -54,7 +54,7 @@ static int set_power_mode(enum bmp5_powermode powermode, const struct device *de
 
 	ret = get_power_mode(&current_powermode, dev);
 	if (ret != BMP5_OK) {
-		LOG_ERR("Couldnt set the power mode because something went wrong when getting the "
+		LOG_ERR("Couldn't set the power mode because something went wrong when getting the "
 			"current power mode.");
 		return ret;
 	}
@@ -464,7 +464,7 @@ static int set_iir_config(const struct sensor_value *iir, const struct device *d
 	struct bmp581_config *conf = (struct bmp581_config *)dev->config;
 	int ret = BMP5_OK;
 
-	CHECKIF(iir == NULL || dev == NULL) {
+	CHECKIF(iir == NULL) {
 		return -EINVAL;
 	}
 

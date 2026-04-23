@@ -8,7 +8,7 @@
 /dts-v1/;
 #include <silabs/xg24/mgm240sd22vna.dtsi>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
-#include <dt-bindings/adc/silabs-adc.h>
+#include <zephyr/dt-bindings/adc/silabs-adc.h>
 #include <zephyr/dt-bindings/pwm/pwm.h>
 #include "arduino_nano_matter-pinctrl.dtsi"
 #include "arduino_nano_matter_connector.dtsi"
@@ -179,9 +179,10 @@
 	pinctrl-names = "default";
 };
 
-&i2c0 {
+zephyr_i2c: &i2c0 {
 	pinctrl-0 = <&i2c0_default>;
 	pinctrl-names = "default";
+	status = "okay";
 };
 
 &gpio {
@@ -327,13 +328,13 @@
 
 		/* Reserve 736 kB for the application in slot 0 */
 		slot0_partition: partition@c000 {
-			reg = <0x0000c000 0x000B8000>;
+			reg = <0x0000c000 0x000b8000>;
 			label = "image-0";
 		};
 
 		/* Reserve 736 kB for the application in slot 1 */
-		slot1_partition: partition@C4000 {
-			reg = <0x000C4000 0x000B8000>;
+		slot1_partition: partition@c4000 {
+			reg = <0x000c4000 0x000b8000>;
 			label = "image-1";
 		};
 

@@ -26,6 +26,7 @@ LOG_MODULE_REGISTER(net_core, CONFIG_NET_CORE_LOG_LEVEL);
 #include <zephyr/net/conn_mgr_connectivity.h>
 #include <zephyr/net/ipv4_autoconf.h>
 #include <zephyr/net/net_if.h>
+#include <zephyr/net/net_log.h>
 #include <zephyr/net/net_mgmt.h>
 #include <zephyr/net/net_pkt.h>
 #include <zephyr/net/net_core.h>
@@ -33,7 +34,7 @@ LOG_MODULE_REGISTER(net_core, CONFIG_NET_CORE_LOG_LEVEL);
 #include <zephyr/net/gptp.h>
 #include <zephyr/net/websocket.h>
 #include <zephyr/net/ethernet.h>
-#if defined(CONFIG_NET_DSA) && !defined(CONFIG_NET_DSA_DEPRECATED)
+#if defined(CONFIG_NET_DSA)
 #include <zephyr/net/dsa_core.h>
 #endif
 #include <zephyr/net/capture.h>
@@ -365,6 +366,8 @@ static inline bool process_multicast(struct net_pkt *pkt)
 }
 #endif
 
+static void net_queue_rx(struct net_if *iface, struct net_pkt *pkt);
+
 int net_try_send_data(struct net_pkt *pkt, k_timeout_t timeout)
 {
 	struct net_if *iface;
@@ -381,6 +384,11 @@ int net_try_send_data(struct net_pkt *pkt, k_timeout_t timeout)
 
 	if (!net_pkt_iface(pkt)) {
 		ret = -EINVAL;
+		goto err;
+	}
+
+	if (!net_if_is_up(net_pkt_iface(pkt))) {
+		ret = -ENETDOWN;
 		goto err;
 	}
 
@@ -408,7 +416,7 @@ int net_try_send_data(struct net_pkt *pkt, k_timeout_t timeout)
 		NET_DBG("Loopback pkt %p back to us", pkt);
 		net_pkt_set_loopback(pkt, true);
 		net_pkt_set_l2_processed(pkt, true);
-		processing_data(pkt);
+		net_queue_rx(net_pkt_iface(pkt), pkt);
 		ret = 0;
 		goto err;
 	}
@@ -484,7 +492,6 @@ static void net_rx(struct net_if *iface, struct net_pkt *pkt)
 	NET_DBG("Received pkt %p len %zu", pkt, pkt_len);
 
 	net_stats_update_bytes_recv(iface, pkt_len);
-	conn_mgr_if_used(iface);
 
 	if (IS_ENABLED(CONFIG_NET_LOOPBACK)) {
 #ifdef CONFIG_NET_L2_DUMMY
@@ -542,7 +549,7 @@ drop:
 int net_recv_data(struct net_if *iface, struct net_pkt *pkt)
 {
 	int ret;
-#if defined(CONFIG_NET_DSA) && !defined(CONFIG_NET_DSA_DEPRECATED)
+#if defined(CONFIG_NET_DSA)
 	struct ethernet_context *eth_ctx = net_if_l2_data(iface);
 
 	/* DSA driver handles first to untag and to redirect to user interface. */
@@ -642,12 +649,12 @@ int net_recv_data(struct net_if *iface, struct net_pkt *pkt)
 
 static void init_rx_queues(void)
 {
+	net_tc_rx_init();
+
 	/* Starting TX side. The ordering is important here and the TX
 	 * can only be started when RX side is ready to receive packets.
 	 */
 	net_if_init();
-
-	net_tc_rx_init();
 
 	/* This will take the interface up and start everything. */
 	net_if_post_init();
@@ -681,6 +688,8 @@ static inline int services_init(void)
 	websocket_init();
 
 	net_coap_init();
+
+	net_quic_init();
 
 	net_shell_init();
 

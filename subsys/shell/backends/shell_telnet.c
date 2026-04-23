@@ -411,20 +411,20 @@ static void telnet_restart_server(void)
 static void telnet_accept(struct zsock_pollfd *pollfd)
 {
 	int sock, ret = 0;
-	struct net_sockaddr addr;
-	net_socklen_t addrlen = sizeof(struct net_sockaddr);
+	struct net_sockaddr_storage addr;
+	net_socklen_t addrlen = sizeof(addr);
 
-	sock = zsock_accept(pollfd->fd, &addr, &addrlen);
+	sock = zsock_accept(pollfd->fd, net_sad(&addr), &addrlen);
 	if (sock < 0) {
 		ret = -errno;
-		NET_ERR("Telnet accept error (%d)", ret);
+		LOG_ERR("Telnet accept error (%d)", ret);
 		return;
 	}
 
 	if (sh_telnet->fds[SOCK_ID_CLIENT].fd > 0) {
 		/* Too many connections. */
 		ret = 0;
-		NET_ERR("Telnet client already connected.");
+		LOG_ERR("Telnet client already connected.");
 		goto error;
 	}
 
@@ -443,7 +443,7 @@ static void telnet_accept(struct zsock_pollfd *pollfd)
 	}
 
 	LOG_DBG("Telnet client connected (family NET_AF_INET%s)",
-		addr.sa_family == NET_AF_INET ? "" : "6");
+		addr.ss_family == NET_AF_INET ? "" : "6");
 
 	/* Disable echo - if command handling is enabled we reply that we
 	 * support echo.
@@ -465,6 +465,7 @@ error:
 static void telnet_server_cb(struct net_socket_service_event *evt)
 {
 	int sock_error;
+	int ret;
 	net_socklen_t optlen = sizeof(int);
 
 	if (sh_telnet == NULL) {
@@ -475,7 +476,14 @@ static void telnet_server_cb(struct net_socket_service_event *evt)
 	    (evt->event.revents & ZSOCK_POLLNVAL)) {
 		(void)zsock_getsockopt(evt->event.fd, ZSOCK_SOL_SOCKET,
 				       ZSOCK_SO_ERROR, &sock_error, &optlen);
-		NET_ERR("Telnet socket %d error (%d)", evt->event.fd, sock_error);
+
+		ret = -sock_error;
+
+		if (ret == -ENETDOWN) {
+			LOG_INF("Network is down");
+		} else {
+			LOG_ERR("Telnet socket %d error (%d)", evt->event.fd, ret);
+		}
 
 		if (evt->event.fd == sh_telnet->fds[SOCK_ID_CLIENT].fd) {
 			telnet_end_client_connection();
@@ -500,7 +508,7 @@ static void telnet_server_cb(struct net_socket_service_event *evt)
 		return;
 	}
 
-	NET_ERR("Unexpected FD received for telnet, restarting service.");
+	LOG_ERR("Unexpected FD received for telnet, restarting service.");
 
 error:
 	telnet_restart_server();

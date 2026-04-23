@@ -28,7 +28,6 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 #include <zephyr/sys/byteorder.h>
 #include <string.h>
 #include <zephyr/random/random.h>
-#include <zephyr/debug/stack.h>
 
 #include <zephyr/drivers/gpio.h>
 
@@ -1115,7 +1114,7 @@ static int mcr20a_tx(const struct device *dev,
 	int retval;
 
 	if (mode != IEEE802154_TX_MODE_DIRECT) {
-		NET_ERR("TX mode %d not supported", mode);
+		LOG_ERR("TX mode %d not supported", mode);
 		return -ENOTSUP;
 	}
 

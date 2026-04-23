@@ -5,12 +5,20 @@
 /*
  * Copyright (c) 2015-2016 Intel Corporation
  * Copyright (C) 2024 Xiaomi Corporation
+ * Copyright 2025-2026 NXP
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef ZEPHYR_INCLUDE_BLUETOOTH_AVRCP_H_
 #define ZEPHYR_INCLUDE_BLUETOOTH_AVRCP_H_
+
+/**
+ * @brief Audio Video Remote Control Profile (AVRCP)
+ * @defgroup bt_avrcp Audio Video Remote Control Profile (AVRCP)
+ * @ingroup bluetooth
+ * @{
+ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -279,9 +287,15 @@ typedef enum __packed {
 	BT_AVRCP_STATUS_SUCCESS = BT_AVRCP_STATUS_OPERATION_COMPLETED,
 } bt_avrcp_status_t;
 
-/** @brief AVRCP CT structure */
+/**
+ * @struct bt_avrcp_ct
+ * @brief AVRCP CT structure
+ */
 struct bt_avrcp_ct;
-/** @brief AVRCP TG structure */
+/**
+ * @struct bt_avrcp_tg
+ * @brief AVRCP TG structure
+ */
 struct bt_avrcp_tg;
 
 struct bt_avrcp_unit_info_rsp {
@@ -297,9 +311,9 @@ struct bt_avrcp_subunit_info_rsp {
 };
 
 #define BT_AVRCP_PASSTHROUGH_GET_STATE(payload)                                                    \
-	((bt_avrcp_opid_t)(FIELD_GET(BIT(7), ((payload)->opid_state))))
+	((bt_avrcp_button_state_t)(FIELD_GET(BIT(7), ((payload)->opid_state))))
 #define BT_AVRCP_PASSTHROUGH_GET_OPID(payload)                                                     \
-	((bt_avrcp_button_state_t)(FIELD_GET(GENMASK(6, 0), ((payload)->opid_state))))
+	((bt_avrcp_opid_t)(FIELD_GET(GENMASK(6, 0), ((payload)->opid_state))))
 #define BT_AVRCP_PASSTHROUGH_SET_STATE_OPID(payload, state, opid)                                  \
 	(payload)->opid_state = FIELD_PREP(BIT(7), state) | FIELD_PREP(GENMASK(6, 0), opid)
 
@@ -2421,5 +2435,9 @@ int bt_avrcp_tg_browsing_general_reject(struct bt_avrcp_tg *tg, uint8_t tid, uin
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 #endif /* ZEPHYR_INCLUDE_BLUETOOTH_AVRCP_H_ */

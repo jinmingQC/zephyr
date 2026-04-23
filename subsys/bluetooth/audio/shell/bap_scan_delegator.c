@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include <zephyr/autoconf.h>
+#include <zephyr/bluetooth/assigned_numbers.h>
 #include <zephyr/bluetooth/audio/audio.h>
 #include <zephyr/bluetooth/audio/bap.h>
 #include <zephyr/bluetooth/addr.h>
@@ -260,10 +261,7 @@ static int pa_sync_no_past(struct scan_delegator_sync_state *state, uint16_t pa_
 	if (err != 0) {
 		bt_shell_info("Could not sync per adv: %d", err);
 	} else {
-		char addr_str[BT_ADDR_LE_STR_LEN];
-
-		bt_addr_le_to_str(&recv_state->addr, addr_str, sizeof(addr_str));
-		bt_shell_info("PA sync pending for addr %s", addr_str);
+		bt_shell_info("PA sync pending for addr %s", bt_addr_le_str(&recv_state->addr));
 		state->pa_syncing = true;
 		k_work_init_delayable(&state->pa_timer, pa_timer_handler);
 		(void)k_work_reschedule(&state->pa_timer,

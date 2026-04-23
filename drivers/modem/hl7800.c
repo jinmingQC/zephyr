@@ -377,7 +377,7 @@ static const char OK_STRING[] = "OK";
 
 struct hl7800_socket {
 	struct net_context *context;
-	sa_family_t family;
+	net_sa_family_t family;
 	enum net_sock_type type;
 	enum net_ip_protocol ip_proto;
 	struct net_sockaddr src;
@@ -418,9 +418,9 @@ struct hl7800_config {
 struct hl7800_iface_ctx {
 	struct net_if *iface;
 	uint8_t mac_addr[6];
-	struct in_addr ipv4Addr, subnet, gateway, dns_v4;
+	struct net_in_addr ipv4Addr, subnet, gateway, dns_v4;
 #ifdef CONFIG_NET_IPV6
-	struct in6_addr ipv6Addr, dns_v6;
+	struct net_in6_addr ipv6Addr, dns_v6;
 	char dns_v6_string[HL7800_IPV6_ADDR_LEN];
 #endif
 	bool restarting;
@@ -1454,7 +1454,7 @@ static int send_data(struct hl7800_socket *sock, struct net_pkt *pkt)
 	send_len = net_buf_frags_len(frag);
 	/* start sending data */
 	k_sem_reset(&sock->sock_send_sem);
-	if (sock->type == SOCK_STREAM) {
+	if (sock->type == NET_SOCK_STREAM) {
 		snprintk(buf, sizeof(buf), "AT+KTCPSND=%d,%zu", sock->socket_id,
 			 send_len);
 	} else {
@@ -1504,7 +1504,7 @@ static int send_data(struct hl7800_socket *sock, struct net_pkt *pkt)
 		ret = -ETIMEDOUT;
 	}
 done:
-	if (sock->type == SOCK_STREAM) {
+	if (sock->type == NET_SOCK_STREAM) {
 		if (sock->error == 0) {
 			sock->state = SOCK_CONNECTED;
 		}
@@ -2008,7 +2008,7 @@ char *mdm_hl7800_get_imsi(void)
  * a01.a02.a03.a04.a05.a06.a07.a08.a09.a10.a11.a12.a13.a14.a15.a16 to
  * an IPv6 address.
  */
-static int hl7800_net_addr6_pton(const char *src, struct in6_addr *dst)
+static int hl7800_net_addr6_pton(const char *src, struct net_in6_addr *dst)
 {
 	int num_sections = 8;
 	int i, len;
@@ -2062,8 +2062,8 @@ static bool on_cmd_atcmdinfo_ipaddr(struct net_buf **buf, uint16_t len)
 	size_t out_len;
 	char value[MDM_IP_INFO_RESP_SIZE];
 	char *search_start, *addr_start, *sm_start;
-	struct in_addr new_ipv4_addr;
-	struct in6_addr new_ipv6_addr;
+	struct net_in_addr new_ipv4_addr;
+	struct net_in6_addr new_ipv6_addr;
 	bool is_ipv4;
 	int addr_len;
 	char temp_addr_str[HL7800_IPV6_ADDR_LEN];
@@ -3425,6 +3425,8 @@ static void iface_status_work_cb(struct k_work *work)
 	if ((iface_ctx.iface && !net_if_is_up(iface_ctx.iface)) ||
 	    (iface_ctx.low_power_mode == HL7800_LPM_PSM && state == HL7800_OUT_OF_COVERAGE)) {
 		hl7800_stop_rssi_work();
+		/* Avoid deadlock: closing sockets can re-enter hl7800. */
+		hl7800_unlock();
 		notify_all_tcp_sockets_closed();
 	} else if (iface_ctx.iface && net_if_is_up(iface_ctx.iface)) {
 		hl7800_start_rssi_work();
@@ -3981,6 +3983,11 @@ static bool on_cmd_sock_notif(struct net_buf **buf, uint16_t len)
 		trigger_sem = false;
 		err = true;
 		sock->error = -ENOTCONN;
+		break;
+	case HL7800_TCP_CONN:
+		/* Connection failed/refused on this socket; do NOT drop network. */
+		err = true;
+		sock->error = -ECONNREFUSED;
 		break;
 	default:
 		iface_ctx.network_dropped = true;
@@ -5847,11 +5854,6 @@ static int configure_TCP_socket(struct hl7800_socket *sock)
 	char cmd_cfg[sizeof("AT+KTCPCFG=#,#,\"" IPV6_ADDR_FORMAT "\",#####,,,,#,,#")];
 	int dst_port = -1;
 	int af;
-	bool restore_on_boot = false;
-
-#ifdef CONFIG_MODEM_HL7800_LOW_POWER_MODE
-	restore_on_boot = true;
-#endif
 
 	if (sock->dst.sa_family == NET_AF_INET6) {
 		af = MDM_HL7800_SOCKET_AF_IPV6;
@@ -5865,8 +5867,8 @@ static int configure_TCP_socket(struct hl7800_socket *sock)
 
 	sock->socket_id = MDM_CREATE_SOCKET_ID;
 
-	snprintk(cmd_cfg, sizeof(cmd_cfg), "AT+KTCPCFG=%d,%d,\"%s\",%u,,,,%d,,%d", 1, 0,
-		 hl7800_sprint_ip_addr(&sock->dst), dst_port, af, restore_on_boot);
+	snprintk(cmd_cfg, sizeof(cmd_cfg), "AT+KTCPCFG=%d,%d,\"%s\",%u,,,,%d,,0", 1, 0,
+		 hl7800_sprint_ip_addr(&sock->dst), dst_port, af);
 	ret = send_at_cmd(sock, cmd_cfg, MDM_CMD_SEND_TIMEOUT, 0, false);
 	if (ret < 0) {
 		LOG_ERR("AT+KTCPCFG ret:%d", ret);
@@ -5883,11 +5885,6 @@ static int configure_UDP_socket(struct hl7800_socket *sock)
 	int ret = 0;
 	char cmd[sizeof("AT+KUDPCFG=1,0,,,,,0,#")];
 	int af;
-	bool restore_on_boot = false;
-
-#ifdef CONFIG_MODEM_HL7800_LOW_POWER_MODE
-	restore_on_boot = true;
-#endif
 
 	sock->socket_id = MDM_CREATE_SOCKET_ID;
 
@@ -5899,7 +5896,7 @@ static int configure_UDP_socket(struct hl7800_socket *sock)
 		return -EINVAL;
 	}
 
-	snprintk(cmd, sizeof(cmd), "AT+KUDPCFG=1,0,,,,,%d,%d", af, restore_on_boot);
+	snprintk(cmd, sizeof(cmd), "AT+KUDPCFG=1,0,,,,,%d,0", af);
 	ret = send_at_cmd(sock, cmd, MDM_CMD_SEND_TIMEOUT, 0, false);
 	if (ret < 0) {
 		LOG_ERR("AT+KUDPCFG ret:%d", ret);
@@ -5958,7 +5955,7 @@ done:
 	return ret;
 }
 
-static int offload_get(sa_family_t family, enum net_sock_type type,
+static int offload_get(net_sa_family_t family, enum net_sock_type type,
 		       enum net_ip_protocol ip_proto,
 		       struct net_context **context)
 {
@@ -6010,7 +6007,7 @@ done:
 }
 
 static int offload_bind(struct net_context *context,
-			const struct net_sockaddr *addr, socklen_t addr_len)
+			const struct net_sockaddr *addr, net_socklen_t addr_len)
 {
 	struct hl7800_socket *sock = NULL;
 
@@ -6049,7 +6046,7 @@ static int offload_listen(struct net_context *context, int backlog)
 }
 
 static int offload_connect(struct net_context *context,
-			   const struct net_sockaddr *addr, socklen_t addr_len,
+			   const struct net_sockaddr *addr, net_socklen_t addr_len,
 			   net_context_connect_cb_t cb, int32_t timeout,
 			   void *user_data)
 {
@@ -6136,7 +6133,7 @@ static int offload_accept(struct net_context *context, net_tcp_accept_cb_t cb,
 }
 
 static int offload_sendto(struct net_pkt *pkt, const struct net_sockaddr *dst_addr,
-			  socklen_t addr_len, net_context_send_cb_t cb,
+			  net_socklen_t addr_len, net_context_send_cb_t cb,
 			  int32_t timeout, void *user_data)
 {
 	struct net_context *context = net_pkt_context(pkt);
@@ -6192,7 +6189,7 @@ static int offload_send(struct net_pkt *pkt, net_context_send_cb_t cb,
 			int32_t timeout, void *user_data)
 {
 	struct net_context *context = net_pkt_context(pkt);
-	socklen_t addr_len;
+	net_socklen_t addr_len;
 
 	addr_len = 0;
 
@@ -6614,8 +6611,9 @@ static void offload_iface_init(struct net_if *iface)
 	const struct device *dev = net_if_get_device(iface);
 	struct hl7800_iface_ctx *ctx = dev->data;
 
-	iface->if_dev->offload = &offload_funcs;
 	ctx->iface = iface;
+
+	net_if_offload_set(iface, &offload_funcs);
 
 	if (!IS_ENABLED(CONFIG_MODEM_HL7800_BOOT_DELAY)) {
 		hl7800_build_mac(&iface_ctx);

@@ -32,7 +32,6 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/check.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -53,6 +52,7 @@
 #include "common/bt_str.h"
 #include "conn_internal.h"
 #include "direction_internal.h"
+#include "gatt_gap_svc_validate.h"
 #include "hci_core.h"
 #include "id.h"
 #include "iso_internal.h"
@@ -96,12 +96,11 @@ static void conn_tx_destroy(struct bt_conn *conn, struct bt_conn_tx *tx)
 static void tx_complete_work(struct k_work *work);
 #endif /* CONFIG_BT_CONN_TX */
 
-static void notify_recycled_conn_slot(void);
-
 void bt_tx_irq_raise(void);
 
 /* Group Connected BT_CONN only in this */
 #if defined(CONFIG_BT_CONN)
+static void notify_recycled_conn_slot(void);
 /* Peripheral timeout to initialize Connection Parameter Update procedure */
 #define CONN_UPDATE_TIMEOUT  K_MSEC(CONFIG_BT_CONN_PARAM_UPDATE_TIMEOUT)
 
@@ -788,9 +787,6 @@ error_return:
 	return err;
 }
 
-static struct k_poll_signal conn_change =
-		K_POLL_SIGNAL_INITIALIZER(conn_change);
-
 static void conn_destroy(struct bt_conn *conn, void *data)
 {
 	if (conn->state == BT_CONN_CONNECTED ||
@@ -957,7 +953,7 @@ static struct bt_conn *get_conn_ready(void)
 			continue;
 		}
 
-		CHECKIF(dont_have_methods(conn)) {
+		if (dont_have_methods(conn)) {
 			/* When a connection is missing mandatory methods, try next connection. */
 			LOG_DBG("conn %p (type %d) is missing mandatory methods", conn, conn->type);
 			prev = &conn->_conn_ready;
@@ -1185,7 +1181,6 @@ void bt_conn_set_state(struct bt_conn *conn, bt_conn_state_t state)
 			}
 			break;
 		}
-		k_poll_signal_raise(&conn_change, 0);
 
 		if (bt_conn_is_iso(conn)) {
 			bt_iso_connected(conn);
@@ -1466,6 +1461,7 @@ struct bt_conn *bt_conn_ref(struct bt_conn *conn)
 	return conn;
 }
 
+#if defined(CONFIG_BT_CONN)
 static K_SEM_DEFINE(pending_recycled_events, 0, K_SEM_MAX_LIMIT);
 
 static void recycled_work_handler(struct k_work *work)
@@ -1477,6 +1473,7 @@ static void recycled_work_handler(struct k_work *work)
 }
 
 static K_WORK_DEFINE(recycled_work, recycled_work_handler);
+#endif /* CONFIG_BT_CONN */
 
 void bt_conn_unref(struct bt_conn *conn)
 {
@@ -1515,12 +1512,16 @@ void bt_conn_unref(struct bt_conn *conn)
 		   (__ASSERT(!conn_tx_is_pending,
 			     "tx_complete_work is pending when conn is deallocated");))
 
+#if defined(CONFIG_BT_CONN)
 	/* Notify listeners that a slot has been freed and can be taken.
 	 * No guarantees are made on requests to claim connection object
 	 * as only the first claim will be served.
 	 */
-	k_sem_give(&pending_recycled_events);
-	k_work_submit(&recycled_work);
+	if (IS_ARRAY_ELEMENT(acl_conns, conn)) {
+		k_sem_give(&pending_recycled_events);
+		k_work_submit(&recycled_work);
+	}
+#endif /* CONFIG_BT_CONN */
 }
 
 uint8_t bt_conn_index(const struct bt_conn *conn)
@@ -1630,9 +1631,9 @@ static void tx_complete_work(struct k_work *work)
 }
 #endif /* CONFIG_BT_CONN_TX */
 
+#if defined(CONFIG_BT_CONN)
 static void notify_recycled_conn_slot(void)
 {
-#if defined(CONFIG_BT_CONN)
 	BT_CONN_CB_DYNAMIC_FOREACH(callback) {
 		if (callback->recycled) {
 			callback->recycled();
@@ -1644,8 +1645,8 @@ static void notify_recycled_conn_slot(void)
 			cb->recycled();
 		}
 	}
-#endif
 }
+#endif
 
 #if !defined(CONFIG_BT_CONN)
 int bt_conn_disconnect(struct bt_conn *conn, uint8_t reason)
@@ -2148,29 +2149,6 @@ static int send_conn_le_param_update(struct bt_conn *conn,
 	return bt_l2cap_update_conn_param(conn, param);
 }
 
-#if defined(CONFIG_BT_ISO_UNICAST)
-static struct bt_conn *conn_lookup_iso(struct bt_conn *conn)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(iso_conns); i++) {
-		struct bt_conn *iso = bt_conn_ref(&iso_conns[i]);
-
-		if (iso == NULL) {
-			continue;
-		}
-
-		if (iso->iso.acl == conn) {
-			return iso;
-		}
-
-		bt_conn_unref(iso);
-	}
-
-	return NULL;
-}
-#endif /* CONFIG_BT_ISO */
-
 #if defined(CONFIG_BT_CLASSIC)
 static struct bt_conn *conn_lookup_sco(struct bt_conn *conn)
 {
@@ -2204,7 +2182,7 @@ static void deferred_work(struct k_work *work)
 
 	if (conn->state == BT_CONN_DISCONNECTED) {
 #if defined(CONFIG_BT_ISO_UNICAST)
-		struct bt_conn *iso;
+		bool acl_coupled_with_cis;
 
 		if (bt_conn_is_iso(conn)) {
 			/* bt_iso_disconnected is responsible for unref'ing the
@@ -2215,23 +2193,36 @@ static void deferred_work(struct k_work *work)
 			return;
 		}
 
-		/* Mark all ISO channels associated
-		 * with ACL conn as not connected, and
-		 * remove ACL reference
+		/* Mark all CIS still associated with the ACL conn as disconnecting.
+		 * If any CIS are associated with the ACL, we postpone the disconnect work until
+		 * after the CIS has been disconnected from a HCI Disconnect event.
 		 */
-		iso = conn_lookup_iso(conn);
-		while (iso != NULL) {
-			struct bt_iso_chan *chan = iso->iso.chan;
+		acl_coupled_with_cis = false;
+		ARRAY_FOR_EACH_PTR(iso_conns, iso_conn) {
+			struct bt_conn *iso = bt_conn_ref(iso_conn);
 
-			if (chan != NULL) {
-				bt_iso_chan_set_state(chan,
-						      BT_ISO_STATE_DISCONNECTING);
+			if (iso == NULL) {
+				continue;
 			}
 
-			bt_iso_cleanup_acl(iso);
+			if (iso->iso.acl == conn) {
+				struct bt_iso_chan *chan = iso->iso.chan;
+
+				if (chan != NULL) {
+					bt_iso_chan_set_state(chan, BT_ISO_STATE_DISCONNECTING);
+				}
+
+				acl_coupled_with_cis = true;
+			}
 
 			bt_conn_unref(iso);
-			iso = conn_lookup_iso(conn);
+		}
+
+		if (acl_coupled_with_cis) {
+			LOG_DBG("acl %p is pending on CIS disconnects, wait for CIS disconnects",
+				conn);
+
+			return;
 		}
 #endif
 #if defined(CONFIG_BT_CLASSIC)
@@ -2572,9 +2563,6 @@ void bt_conn_security_changed(struct bt_conn *conn, uint8_t hci_err,
 {
 	reset_pairing(conn);
 	bt_l2cap_security_changed(conn, hci_err);
-	if (IS_ENABLED(CONFIG_BT_ISO_CENTRAL)) {
-		bt_iso_security_changed(conn, hci_err);
-	}
 
 	BT_CONN_CB_DYNAMIC_FOREACH(callback) {
 		if (callback->security_changed) {
@@ -2691,7 +2679,7 @@ int bt_conn_cb_register(struct bt_conn_cb *cb)
 
 int bt_conn_cb_unregister(struct bt_conn_cb *cb)
 {
-	CHECKIF(cb == NULL) {
+	if (cb == NULL) {
 		return -EINVAL;
 	}
 
@@ -2837,6 +2825,43 @@ const bt_addr_le_t *bt_conn_get_dst(const struct bt_conn *conn)
 	}
 
 	return &conn->le.dst;
+}
+
+struct bt_conn_tmp_str bt_conn_dst_tmp_str(const struct bt_conn *conn)
+{
+	struct bt_conn_tmp_str val;
+
+	switch (conn->type) {
+#if defined(CONFIG_BT_CLASSIC)
+	case BT_CONN_TYPE_BR:
+		(void)bt_addr_to_str(&conn->br.dst, val.str, sizeof(val.str));
+		break;
+	case BT_CONN_TYPE_SCO:
+		if (conn->sco.acl != NULL) {
+			(void)bt_addr_to_str(&conn->sco.acl->br.dst, val.str, sizeof(val.str));
+		} else {
+			val.str[0] = '\0';
+		}
+		break;
+#endif /* CONFIG_BT_CLASSIC */
+	case BT_CONN_TYPE_LE:
+		(void)bt_addr_le_to_str(&conn->le.dst, val.str, sizeof(val.str));
+		break;
+#if defined(CONFIG_BT_ISO)
+	case BT_CONN_TYPE_ISO:
+		if (conn->iso.acl != NULL) {
+			(void)bt_addr_le_to_str(&conn->iso.acl->le.dst, val.str, sizeof(val.str));
+		} else {
+			val.str[0] = '\0';
+		}
+		break;
+#endif /* CONFIG_BT_ISO */
+	default:
+		val.str[0] = '\0';
+		break;
+	}
+
+	return val;
 }
 
 static enum bt_conn_state conn_internal_to_public_state(bt_conn_state_t state)
@@ -3447,8 +3472,8 @@ static bool le_conn_rate_common_params_valid(const struct bt_conn_le_conn_rate_p
 		return false;
 	}
 
-	if (!IN_RANGE(param->supervision_timeout_10ms, BT_HCI_LE_SUPERVISON_TIMEOUT_MIN,
-		     BT_HCI_LE_SUPERVISON_TIMEOUT_MAX)) {
+	if (!IN_RANGE(param->supervision_timeout_10ms, BT_HCI_LE_SUPERVISION_TIMEOUT_MIN,
+		     BT_HCI_LE_SUPERVISION_TIMEOUT_MAX)) {
 		return false;
 	}
 
@@ -3938,6 +3963,10 @@ int bt_conn_le_create_auto(const struct bt_conn_le_create_param *create_param,
 	bt_conn_set_param_le(conn, param);
 	create_param_setup(create_param);
 
+	if (IS_ENABLED(CONFIG_BT_SMP) && atomic_test_bit(bt_dev.flags, BT_DEV_ID_PENDING)) {
+		bt_id_pending_keys_update();
+	}
+
 	atomic_set_bit(conn->flags, BT_CONN_AUTO_CONNECT);
 	bt_conn_set_state(conn, BT_CONN_INITIATING_FILTER_LIST);
 
@@ -4055,11 +4084,11 @@ int bt_conn_le_create(const bt_addr_le_t *peer, const struct bt_conn_le_create_p
 	struct bt_conn *conn;
 	int err;
 
-	CHECKIF(ret_conn == NULL) {
+	if (ret_conn == NULL) {
 		return -EINVAL;
 	}
 
-	CHECKIF(*ret_conn != NULL) {
+	if (*ret_conn != NULL) {
 		/* This rule helps application developers prevent leaks of connection references. If
 		 * a bt_conn variable is not null, it presumably holds a reference and must not be
 		 * overwritten. To avoid this warning, initialize the variables to null, and set
@@ -4089,6 +4118,10 @@ int bt_conn_le_create(const bt_addr_le_t *peer, const struct bt_conn_le_create_p
 	}
 
 	create_param_setup(create_param);
+
+	if (IS_ENABLED(CONFIG_BT_SMP) && atomic_test_bit(bt_dev.flags, BT_DEV_ID_PENDING)) {
+		bt_id_pending_keys_update();
+	}
 
 #if defined(CONFIG_BT_SMP)
 	if (bt_dev.le.rl_entries > bt_dev.le.rl_size) {
@@ -4137,11 +4170,11 @@ int bt_conn_le_create_synced(const struct bt_le_ext_adv *adv,
 	struct bt_conn *conn;
 	int err;
 
-	CHECKIF(ret_conn == NULL) {
+	if (ret_conn == NULL) {
 		return -EINVAL;
 	}
 
-	CHECKIF(*ret_conn != NULL) {
+	if (*ret_conn != NULL) {
 		/* This rule helps application developers prevent leaks of connection references. If
 		 * a bt_conn variable is not null, it presumably holds a reference and must not be
 		 * overwritten. To avoid this warning, initialize the variables to null, and set
@@ -4275,7 +4308,7 @@ int bt_conn_auth_cb_overlay(struct bt_conn *conn, const struct bt_conn_auth_cb *
 
 int bt_conn_auth_info_cb_register(struct bt_conn_auth_info_cb *cb)
 {
-	CHECKIF(cb == NULL) {
+	if (cb == NULL) {
 		return -EINVAL;
 	}
 
@@ -4290,7 +4323,7 @@ int bt_conn_auth_info_cb_register(struct bt_conn_auth_info_cb *cb)
 
 int bt_conn_auth_info_cb_unregister(struct bt_conn_auth_info_cb *cb)
 {
-	CHECKIF(cb == NULL) {
+	if (cb == NULL) {
 		return -EINVAL;
 	}
 
@@ -4427,6 +4460,14 @@ int bt_conn_init(void)
 	}
 
 	bt_att_init();
+
+	if (IS_ENABLED(CONFIG_BT_GATT_GAP_SVC_VALIDATE)) {
+		err = gatt_gap_svc_validate();
+		if (err != 0) {
+			LOG_DBG("GATT GAP service validation failed (err %d)", err);
+			return err;
+		}
+	}
 
 	err = bt_smp_init();
 	if (err) {

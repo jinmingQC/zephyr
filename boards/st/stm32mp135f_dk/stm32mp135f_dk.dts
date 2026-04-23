@@ -60,11 +60,6 @@
 		};
 	};
 
-	lvgl_pointer {
-		compatible = "zephyr,lvgl-pointer-input";
-		input = <&gt911>;
-	};
-
 	aliases {
 		led0 = &blue_led_1;
 		led1 = &red_led_2;
@@ -151,6 +146,13 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart4_tx_pd6 &uart4_rx_pd8>;
 	current-speed = <115200>;
+	status = "okay";
+};
+
+&spi5 {
+	pinctrl-0 = <&spi5_nss_pf6 &spi5_sck_ph7
+		     &spi5_miso_pa8 &spi5_mosi_ph3>;
+	pinctrl-names = "default";
 	status = "okay";
 };
 
@@ -252,7 +254,7 @@ csi_interface: &dcmipp {
 
 	width = <480>;
 	height = <272>;
-	pixel-format = <PANEL_PIXEL_FORMAT_RGB_565>;
+	pixel-format = <PANEL_PIXEL_FORMAT_RGB_888>;
 
 	display-timings {
 		compatible = "zephyr,panel-timing";
@@ -268,9 +270,9 @@ csi_interface: &dcmipp {
 		vfront-porch = <2>;
 	};
 
-	def-back-color-red = <0xFF>;
-	def-back-color-green = <0xFF>;
-	def-back-color-blue = <0xFF>;
+	def-back-color-red = <0xff>;
+	def-back-color-green = <0xff>;
+	def-back-color-blue = <0xff>;
 };
 
 /*
@@ -278,7 +280,8 @@ csi_interface: &dcmipp {
  * enabled by a shield when camera pipeline is enabled
  */
 &mco1 {
-	clocks = <&rcc STM32_SRC_HSE MCO1_SEL(MCO1_SEL_HSE)>;
+	clocks = <&rcc MCO1CFGR_REG BIT(12)>, <&rcc STM32_SRC_HSE MCO1_SEL(MCO1_SEL_HSE)>;
+	clock-names = "clken", "clksel";
 	prescaler = <MCO1_PRE(MCO_PRE_DIV_1)>;
 	pinctrl-0 = <&rcc_mco_1_pd7>;
 	pinctrl-names = "default";

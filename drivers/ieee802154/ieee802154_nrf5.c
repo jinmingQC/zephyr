@@ -34,7 +34,6 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 
 #include <zephyr/device.h>
 #include <zephyr/init.h>
-#include <zephyr/debug/stack.h>
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/net_pkt.h>
 
@@ -72,7 +71,7 @@ static const struct device *nrf5_dev;
 #define NSEC_PER_TEN_SYMBOLS (10 * IEEE802154_PHY_OQPSK_780_TO_2450MHZ_SYMBOL_PERIOD_NS)
 
 #if defined(CONFIG_IEEE802154_NRF5_UICR_EUI64_ENABLE)
-#if defined(CONFIG_SOC_NRF5340_CPUAPP) || defined(CONFIG_SOC_SERIES_NRF54LX)
+#if defined(CONFIG_SOC_NRF5340_CPUAPP) || defined(CONFIG_SOC_SERIES_NRF54L)
 #if defined(CONFIG_TRUSTED_EXECUTION_NONSECURE)
 #error "NRF_UICR->OTP is not supported to read from non-secure"
 #else
@@ -80,7 +79,7 @@ static const struct device *nrf5_dev;
 #endif /* CONFIG_TRUSTED_EXECUTION_NONSECURE */
 #else
 #define EUI64_ADDR (NRF_UICR->CUSTOMER)
-#endif /* CONFIG_SOC_NRF5340_CPUAPP || CONFIG_SOC_SERIES_NRF54LX*/
+#endif /* CONFIG_SOC_NRF5340_CPUAPP || CONFIG_SOC_SERIES_NRF54L */
 #endif /* CONFIG_IEEE802154_NRF5_UICR_EUI64_ENABLE */
 
 #if defined(CONFIG_IEEE802154_NRF5_UICR_EUI64_ENABLE)
@@ -344,7 +343,7 @@ static int nrf5_set_pan_id(const struct device *dev, uint16_t pan_id)
 	sys_put_le16(pan_id, pan_id_le);
 	nrf_802154_pan_id_set(pan_id_le);
 
-	LOG_DBG("0x%x", pan_id);
+	LOG_DBG("pan_id 0x%x", pan_id);
 
 	return 0;
 }
@@ -358,7 +357,7 @@ static int nrf5_set_short_addr(const struct device *dev, uint16_t short_addr)
 	sys_put_le16(short_addr, short_addr_le);
 	nrf_802154_short_address_set(short_addr_le);
 
-	LOG_DBG("0x%x", short_addr);
+	LOG_DBG("short_addr 0x%x", short_addr);
 
 	return 0;
 }
@@ -381,7 +380,7 @@ static int nrf5_filter(const struct device *dev, bool set,
 		       enum ieee802154_filter_type type,
 		       const struct ieee802154_filter *filter)
 {
-	LOG_DBG("Applying filter %u", type);
+	LOG_DBG("Applying filter %u set=%d", type, set);
 
 	if (!set) {
 		return -ENOTSUP;
@@ -628,7 +627,7 @@ static int nrf5_tx(const struct device *dev,
 		break;
 #endif /* CONFIG_NET_PKT_TXTIME */
 	default:
-		NET_ERR("TX mode %d not supported", mode);
+		LOG_ERR("TX mode %d not supported", mode);
 		return -ENOTSUP;
 	}
 

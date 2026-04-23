@@ -14,11 +14,12 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(net_ieee802154_frame, CONFIG_NET_L2_IEEE802154_LOG_LEVEL);
 
-#include "ieee802154_frame.h"
+#include <zephyr/net/ieee802154_frame.h>
 #include "ieee802154_security.h"
 
 #include <zephyr/net/net_core.h>
 #include <zephyr/net/net_if.h>
+#include <zephyr/net/net_log.h>
 
 #include <ipv6.h>
 #include <nbr.h>
@@ -792,8 +793,37 @@ static inline bool cfi_to_fs_settings(enum ieee802154_cfi cfi, struct ieee802154
 
 		break;
 	case IEEE802154_CFI_DATA_REQUEST:
+		if (params->dst.len == 0) {
+			/* If the Destination Addressing Mode subfield is set to zero (i.e.,
+			 * destination addressing information not present), the PAN ID
+			 * Compression subfield of the Frame Control field shall be set to zero
+			 * and the source PAN identifier shall contain the value of macPANId.
+			 *
+			 * This is the case only if the data request command is being
+			 * sent in response to the receipt of a beacon frame indicating that
+			 * data are pending for that device.
+			 */
+			fs->fc.dst_addr_mode = IEEE802154_ADDR_MODE_NONE;
+		} else {
+			/* Both short and extended dest addresses are supported.
+			 * It's up to the caller to configure it correctly.
+			 */
+			if (params->dst.len == IEEE802154_SHORT_ADDR_LENGTH) {
+				fs->fc.dst_addr_mode = IEEE802154_ADDR_MODE_SHORT;
+			} else {
+				fs->fc.dst_addr_mode = IEEE802154_ADDR_MODE_EXTENDED;
+			}
+			fs->fc.pan_id_comp = 1U;
+		}
+
+		if (params->short_addr == IEEE802154_NO_SHORT_ADDRESS_ASSIGNED) {
+			fs->fc.src_addr_mode = IEEE802154_ADDR_MODE_EXTENDED;
+		} else {
+			fs->fc.dst_addr_mode = IEEE802154_ADDR_MODE_SHORT;
+		}
+
+		/* the Acknowledgment Request subfield is always set */
 		fs->fc.ar = 1U;
-		/* TODO: src/dst addr mode: see section 7.5.5 */
 
 		break;
 	case IEEE802154_CFI_ORPHAN_NOTIFICATION:

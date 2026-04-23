@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <zephyr/autoconf.h>
+#include <zephyr/bluetooth/assigned_numbers.h>
 #include <zephyr/bluetooth/audio/audio.h>
 #include <zephyr/bluetooth/audio/lc3.h>
 #include <zephyr/bluetooth/audio/pacs.h>
@@ -470,9 +472,19 @@ static const struct btp_handler bap_handlers[] = {
 		.func = btp_bap_broadcast_assistant_set_broadcast_code,
 	},
 	{
+		.opcode = BTP_BAP_BROADCAST_SINK_SET_BROADCAST_CODE,
+		.expect_len = sizeof(struct btp_bap_broadcast_sink_set_broadcast_code_cmd),
+		.func = btp_bap_set_sink_broadcast_code,
+	},
+	{
 		.opcode = BTP_BAP_SEND_PAST,
 		.expect_len = sizeof(struct btp_bap_send_past_cmd),
 		.func = btp_bap_broadcast_assistant_send_past,
+	},
+	{
+		.opcode = BTP_BAP_SCAN_DELEGATOR_ADD_SRC,
+		.expect_len = BTP_HANDLER_LENGTH_VARIABLE,
+		.func = btp_bap_scan_delegator_add_src,
 	},
 #endif /* CONFIG_BT_BAP_BROADCAST_SOURCE || CONFIG_BT_BAP_BROADCAST_SINK */
 };

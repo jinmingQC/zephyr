@@ -20,12 +20,16 @@ config COMPARATOR_INIT_PRIORITY
 
 # zephyr-keep-sorted-start
 rsource "Kconfig.fake_comp"
+rsource "Kconfig.infineon_lpcomp"
 rsource "Kconfig.it51xxx_vcmp"
 rsource "Kconfig.mchp"
 rsource "Kconfig.mcux_acmp"
 rsource "Kconfig.nrf_comp"
 rsource "Kconfig.nrf_lpcomp"
+rsource "Kconfig.nxp_acomp"
 rsource "Kconfig.nxp_cmp"
+rsource "Kconfig.nxp_hscmp"
+rsource "Kconfig.nxp_lpcmp"
 rsource "Kconfig.renesas_ra"
 rsource "Kconfig.renesas_rx"
 rsource "Kconfig.shell"

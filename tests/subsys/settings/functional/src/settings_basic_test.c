@@ -12,7 +12,6 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/ztest.h>
-#include <errno.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(settings_basic_test);
@@ -20,18 +19,44 @@ LOG_MODULE_REGISTER(settings_basic_test);
 #if defined(CONFIG_SETTINGS_FCB) || defined(CONFIG_SETTINGS_NVS) || defined(CONFIG_SETTINGS_ZMS)
 #include <zephyr/storage/flash_map.h>
 #if DT_HAS_CHOSEN(zephyr_settings_partition)
-#define TEST_FLASH_AREA_ID DT_FIXED_PARTITION_ID(DT_CHOSEN(zephyr_settings_partition))
+#define TEST_FLASH_AREA_ID DT_PARTITION_ID(DT_CHOSEN(zephyr_settings_partition))
 #endif
 #elif defined(CONFIG_SETTINGS_FILE)
 #include <zephyr/fs/fs.h>
 #include <zephyr/fs/littlefs.h>
+#elif defined(CONFIG_SETTINGS_TFM_PSA)
+
+#if defined(CONFIG_SETTINGS_TFM_PSA_BACKEND_PS)
+#include <psa/protected_storage.h>
+#include <zephyr/psa/ps_ids.h>
+
+#define SETTINGS_PSA_MAX_ASSET_SIZE PS_MAX_ASSET_SIZE
+#define SETTINGS_PSA_REMOVE psa_ps_remove
+#define SETTINGS_PSA_ID_RANGE_START ZEPHYR_PSA_SETTINGS_TFM_PS_UID_RANGE_BEGIN
+
+#elif defined(CONFIG_SETTINGS_TFM_PSA_BACKEND_ITS)
+#include <psa/internal_trusted_storage.h>
+#include <zephyr/psa/its_ids.h>
+
+#define SETTINGS_PSA_MAX_ASSET_SIZE ITS_MAX_ASSET_SIZE
+#define SETTINGS_PSA_REMOVE psa_its_remove
+#define SETTINGS_PSA_ID_RANGE_START ZEPHYR_PSA_SETTINGS_TFM_ITS_UID_RANGE_BEGIN
+
+#else
+#error "No PSA backend selected"
+#endif  /* CONFIG_SETTINGS_TFM_PSA_BACKEND */
+
+/* TF-M config file containing ITS_MAX_ASSET_SIZE */
+#include <config_base.h>
+
+#include <settings_tfm_psa_priv.h>
 #else
 #error "Settings backend not selected"
 #endif
 
 #ifndef TEST_FLASH_AREA_ID
 #define TEST_FLASH_AREA		storage_partition
-#define TEST_FLASH_AREA_ID	FIXED_PARTITION_ID(TEST_FLASH_AREA)
+#define TEST_FLASH_AREA_ID	PARTITION_ID(TEST_FLASH_AREA)
 #endif
 
 /* The standard test expects a cleared flash area.  Make sure it has
@@ -39,7 +64,17 @@ LOG_MODULE_REGISTER(settings_basic_test);
  */
 ZTEST(settings_functional, test_clear_settings)
 {
-#if !defined(CONFIG_SETTINGS_FILE)
+#if defined(CONFIG_SETTINGS_TFM_PSA)
+	psa_status_t status;
+
+	/* Remove all potentially accessed entries in the UID range */
+	for (int i = 0; i < sizeof(struct setting_entry) * CONFIG_SETTINGS_TFM_PSA_NUM_ENTRIES /
+		SETTINGS_PSA_MAX_ASSET_SIZE + 1; i++) {
+		status = SETTINGS_PSA_REMOVE(SETTINGS_PSA_ID_RANGE_START + i);
+		zassert_true((status == PSA_SUCCESS) || (status == PSA_ERROR_DOES_NOT_EXIST),
+			"psa_its_remove failed");
+	}
+#elif !defined(CONFIG_SETTINGS_FILE)
 	const struct flash_area *fap;
 	int rc;
 

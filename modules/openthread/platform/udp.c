@@ -9,6 +9,7 @@
 #include "openthread/platform/udp.h"
 #include "openthread_border_router.h"
 #include "sockets_internal.h"
+#include <assert.h>
 #include <common/code_utils.hpp>
 #include <errno.h>
 #include <openthread.h>
@@ -20,8 +21,6 @@
 #include <zephyr/net/net_ip.h>
 #include <zephyr/net/socket.h>
 #include <zephyr/net/socket_service.h>
-#include <zephyr/posix/arpa/inet.h>
-#include <zephyr/posix/unistd.h>
 #include <zephyr/sys/util.h>
 
 static struct zsock_pollfd sockfd_udp[CONFIG_OPENTHREAD_ZEPHYR_BORDER_ROUTER_MAX_UDP_SERVICES];
@@ -50,10 +49,6 @@ otError udp_plat_init(otInstance *ot_instance, struct net_if *ail_iface, struct 
 	ail_iface_ptr = ail_iface;
 	ot_iface_index = (uint32_t)net_if_get_by_iface(ot_iface);
 	ail_iface_index = (uint32_t)net_if_get_by_iface(ail_iface);
-
-	for (uint8_t i = 0; i < CONFIG_OPENTHREAD_ZEPHYR_BORDER_ROUTER_MAX_UDP_SERVICES; i++) {
-		sockfd_udp[i].fd = -1;
-	}
 
 	return OT_ERROR_NONE;
 }
@@ -84,13 +79,14 @@ otError otPlatUdpSocket(otUdpSocket *aUdpSocket)
 	sock = zsock_socket(NET_AF_INET6, NET_SOCK_DGRAM, NET_IPPROTO_UDP);
 	VerifyOrExit(sock >= 0, error = OT_ERROR_FAILED);
 
-#if defined(CONFIG_NET_IPV4) && defined(CONFIG_NET_IPV4_MAPPING_TO_IPV6)
-	int off = 0;
+	if (IS_ENABLED(CONFIG_OPENTHREAD_ZEPHYR_BORDER_ROUTER_IPV4) &&
+	    IS_ENABLED(CONFIG_NET_IPV4_MAPPING_TO_IPV6)) {
+		int off = 0;
 
-	VerifyOrExit(zsock_setsockopt(sock, NET_IPPROTO_IPV6, ZSOCK_IPV6_V6ONLY,
-				      &off, sizeof(off)) == 0,
-		     error = OT_ERROR_FAILED);
-#endif
+		VerifyOrExit(zsock_setsockopt(sock, NET_IPPROTO_IPV6, ZSOCK_IPV6_V6ONLY,
+					      &off, sizeof(off)) == 0,
+			     error = OT_ERROR_FAILED);
+	}
 
 	aUdpSocket->mHandle = INT_TO_POINTER(sock);
 
@@ -202,8 +198,8 @@ otError otPlatUdpBindToNetif(otUdpSocket *aUdpSocket, otNetifIdentifier aNetifId
 					     CONFIG_NET_INTERFACE_NAME_LEN) > 0,
 			     error = OT_ERROR_FAILED);
 		memcpy(if_req.ifr_name, name, MIN(sizeof(name) - 1, sizeof(if_req.ifr_name) - 1));
-		VerifyOrExit(zsock_setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, &if_req,
-					      sizeof(if_req)) == 0,
+		VerifyOrExit(zsock_setsockopt(sock, ZSOCK_SOL_SOCKET, ZSOCK_SO_BINDTODEVICE,
+					      &if_req, sizeof(if_req)) == 0,
 			     error = OT_ERROR_FAILED);
 		break;
 	default:
@@ -230,10 +226,12 @@ otError otPlatUdpConnect(otUdpSocket *aUdpSocket)
 		memcpy(&addr.sin6_addr, &aUdpSocket->mPeerName.mAddress, sizeof(otIp6Address));
 		addr.sin6_port = net_htons(aUdpSocket->mPeerName.mPort);
 
-		VerifyOrExit(zsock_connect(sock, (struct net_sockaddr *)&addr, sizeof(addr)) == 0,
-			     error = OT_ERROR_FAILED);
+	} else {
+		addr.sin6_family = NET_AF_UNSPEC;
 	}
 
+	VerifyOrExit(zsock_connect(sock, (struct net_sockaddr *)&addr, sizeof(addr)) == 0,
+		     error = OT_ERROR_FAILED);
 exit:
 	return error;
 }
@@ -275,10 +273,12 @@ otError otPlatUdpSend(otUdpSocket *aUdpSocket,
 	peer.sin6_port = net_htons(aMessageInfo->mPeerPort);
 	memcpy(&peer.sin6_addr, &aMessageInfo->mPeerAddr, sizeof(otIp6Address));
 
-	if (((aMessageInfo->mPeerAddr.mFields.m8[0] == 0xfe) &&
-	    ((aMessageInfo->mPeerAddr.mFields.m8[1] & 0xc0) == 0x80)) &&
-	    !aMessageInfo->mIsHostInterface) {
-		peer.sin6_scope_id = ail_iface_index;
+	if (otIp6IsLinkLocalUnicast((const otIp6Address *)&aMessageInfo->mPeerAddr)) {
+		if (aMessageInfo->mIsHostInterface) {
+			peer.sin6_scope_id = ail_iface_index;
+		} else {
+			peer.sin6_scope_id = ot_iface_index;
+		}
 	}
 
 	msg_hdr.msg_name = &peer;
@@ -307,7 +307,8 @@ otError otPlatUdpSend(otUdpSocket *aUdpSocket,
 		cmsg_hdr->cmsg_type = ZSOCK_IPV6_PKTINFO;
 		cmsg_hdr->cmsg_len = NET_CMSG_LEN(sizeof(pktinfo));
 
-		pktinfo.ipi6_ifindex = aMessageInfo->mIsHostInterface ? 0 : ail_iface_index;
+		pktinfo.ipi6_ifindex = aMessageInfo->mIsHostInterface ?
+						ail_iface_index : ot_iface_index;
 
 		memcpy(&pktinfo.ipi6_addr, &aMessageInfo->mSockAddr, sizeof(otIp6Address));
 		memcpy(NET_CMSG_DATA(cmsg_hdr), &pktinfo, sizeof(pktinfo));
@@ -350,7 +351,7 @@ otError otPlatUdpJoinMulticastGroup(otUdpSocket *aUdpSocket, otNetifIdentifier a
 				    const otIp6Address *aAddress)
 {
 	otError error = OT_ERROR_NONE;
-	struct ipv6_mreq mreq = {0};
+	struct net_ipv6_mreq mreq = {0};
 	int sock;
 
 	VerifyOrExit(aUdpSocket != NULL && aUdpSocket->mHandle != NULL,

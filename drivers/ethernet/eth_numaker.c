@@ -66,7 +66,6 @@ struct eth_numaker_data {
 	synopGMACdevice *gmacdev;
 	struct net_if *iface;
 	uint8_t mac_addr[NU_HWADDR_SIZE];
-	struct k_mutex tx_frame_buf_mutex;
 	struct k_spinlock rx_frame_buf_lock;
 };
 
@@ -478,7 +477,6 @@ static int numaker_eth_tx(const struct device *dev, struct net_pkt *pkt)
 	uint8_t *buffer;
 
 	/* Get exclusive access */
-	k_mutex_lock(&data->tx_frame_buf_mutex, K_FOREVER);
 	if (total_len > NET_ETH_MAX_FRAME_SIZE) {
 		/* NuMaker SDK reserve 2048 for tx_buf */
 		LOG_ERR("TX packet length [%d] over max [%d]", total_len, NET_ETH_MAX_FRAME_SIZE);
@@ -498,13 +496,10 @@ static int numaker_eth_tx(const struct device *dev, struct net_pkt *pkt)
 	/* Prepare transmit descriptors to give to DMA */
 	m_numaker_gmacdev_trigger_tx(gmacdev, total_len);
 
-	k_mutex_unlock(&data->tx_frame_buf_mutex);
-
 	return 0;
 
 error:
 	LOG_ERR("Writing pkt to TX descriptor failed");
-	k_mutex_unlock(&data->tx_frame_buf_mutex);
 	return -EIO;
 }
 
@@ -537,8 +532,6 @@ static int numaker_eth_set_config(const struct device *dev, enum ethernet_config
 	case ETHERNET_CONFIG_TYPE_MAC_ADDRESS:
 		memcpy(data->mac_addr, config->mac_address.addr, sizeof(data->mac_addr));
 		synopGMAC_set_mac_address(NUMAKER_GMAC_INTF, data->mac_addr);
-		net_if_set_link_addr(data->iface, data->mac_addr, sizeof(data->mac_addr),
-				     NET_LINK_ETHERNET);
 		LOG_DBG("%s MAC set to %02x:%02x:%02x:%02x:%02x:%02x", dev->name, data->mac_addr[0],
 			data->mac_addr[1], data->mac_addr[2], data->mac_addr[3], data->mac_addr[4],
 			data->mac_addr[5]);
@@ -719,8 +712,6 @@ static int eth_numaker_init(const struct device *dev)
 
 	gmacdev = &GMACdev[NUMAKER_GMAC_INTF];
 	data->gmacdev = gmacdev;
-
-	k_mutex_init(&data->tx_frame_buf_mutex);
 
 	eth_phy_addr = cfg->phy_addr;
 

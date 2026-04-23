@@ -5,11 +5,13 @@
  */
 
 #include <errno.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
 #include <zephyr/autoconf.h>
+#include <zephyr/bluetooth/assigned_numbers.h>
 #include <zephyr/bluetooth/audio/audio.h>
 #include <zephyr/bluetooth/audio/bap.h>
 #include <zephyr/bluetooth/audio/bap_lc3_preset.h>
@@ -21,16 +23,22 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
-#include <zephyr/drivers/usb/udc_buf.h>
+#include <zephyr/drivers/usb/usb_buf.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
+#include <zephyr/sys/clock.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/util.h>
+#include <zephyr/sys/util_macro.h>
 #include <zephyr/sys_clock.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/usb/class/usbd_uac2.h>
 #include <zephyr/usb/usbd.h>
+
+#if defined(CONFIG_SOC_NRF5340_CPUAPP)
+#include <nrfx_clock.h>
+#endif /* CONFIG_SOC_NRF5340_CPUAPP */
 
 BUILD_ASSERT(strlen(CONFIG_BROADCAST_CODE) <= BT_ISO_BROADCAST_CODE_SIZE, "Invalid broadcast code");
 BUILD_ASSERT(IN_RANGE(strlen(CONFIG_BROADCAST_NAME), BT_AUDIO_BROADCAST_NAME_LEN_MIN,
@@ -63,12 +71,22 @@ static struct bt_bap_lc3_preset preset_active = BT_BAP_LC3_BROADCAST_PRESET_24_2
 
 #define BROADCAST_SAMPLE_RATE 24000
 
+#elif defined(CONFIG_BAP_BROADCAST_48_2_1)
+
+static struct bt_bap_lc3_preset preset_active = BT_BAP_LC3_BROADCAST_PRESET_48_2_1(
+	BT_AUDIO_LOCATION_FRONT_LEFT | BT_AUDIO_LOCATION_FRONT_RIGHT,
+	BT_AUDIO_CONTEXT_TYPE_UNSPECIFIED);
+
+#define BROADCAST_SAMPLE_RATE 48000
+
 #endif
 
 #if defined(CONFIG_BAP_BROADCAST_16_2_1)
 #define MAX_SAMPLE_RATE 16000
 #elif defined(CONFIG_BAP_BROADCAST_24_2_1)
 #define MAX_SAMPLE_RATE 24000
+#elif defined(CONFIG_BAP_BROADCAST_48_2_1)
+#define MAX_SAMPLE_RATE 48000
 #endif
 #define MAX_FRAME_DURATION_US 10000
 #define MAX_NUM_SAMPLES       ((MAX_FRAME_DURATION_US * MAX_SAMPLE_RATE) / USEC_PER_SEC)
@@ -133,12 +151,16 @@ static void fill_audio_buf_sin(int16_t *buf, int length_us, int frequency_hz, in
 static struct broadcast_source_stream {
 	struct bt_bap_stream stream;
 	uint16_t seq_num;
+	uint8_t bis_number;
 	size_t sent_cnt;
+
 #if defined(CONFIG_LIBLC3)
 	lc3_encoder_t lc3_encoder;
 #if defined(CONFIG_BAP_BROADCAST_16_2_1)
 	lc3_encoder_mem_16k_t lc3_encoder_mem;
 #elif defined(CONFIG_BAP_BROADCAST_24_2_1)
+	lc3_encoder_mem_48k_t lc3_encoder_mem;
+#elif defined(CONFIG_BAP_BROADCAST_48_2_1)
 	lc3_encoder_mem_48k_t lc3_encoder_mem;
 #endif
 #if defined(CONFIG_USE_USB_AUDIO_INPUT)
@@ -231,7 +253,8 @@ static void send_data(struct broadcast_source_stream *source_stream)
 
 	source_stream->sent_cnt++;
 	if ((source_stream->sent_cnt % 1000U) == 0U) {
-		printk("Stream %p: Sent %u total ISO packets\n", stream, source_stream->sent_cnt);
+		printk("Stream %p BIS_Number %u: Sent %u total ISO packets\n", stream,
+		       source_stream->bis_number, source_stream->sent_cnt);
 	}
 }
 
@@ -408,6 +431,8 @@ static void stream_started_cb(struct bt_bap_stream *stream)
 
 	source_stream->seq_num = 0U;
 	source_stream->sent_cnt = 0U;
+	/* Store the BIS number for logging purposes */
+	source_stream->bis_number = info.broadcaster.bis_number;
 }
 
 static void stream_sent_cb(struct bt_bap_stream *stream)
@@ -500,6 +525,15 @@ int main(void)
 	};
 	struct bt_le_ext_adv *adv;
 	int err;
+
+#if defined(CONFIG_SOC_NRF5340_CPUAPP)
+	/* Use this to turn on 128 MHz clock for the nRF5340 cpu_app */
+	err = nrfx_clock_divider_set(NRF_CLOCK_DOMAIN_HFCLK, NRF_CLOCK_HFCLK_DIV_1);
+	if (err != 0) {
+		printk("Failed to set 128 MHz: %d\n", err);
+		return 0;
+	}
+#endif /* CONFIG_SOC_NRF5340_CPUAPP */
 
 	err = bt_enable(NULL);
 	if (err) {

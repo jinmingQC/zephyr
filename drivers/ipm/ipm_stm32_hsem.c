@@ -159,11 +159,6 @@ static int stm32_hsem_mailbox_init(const struct device *dev)
 	/* Config transfer semaphore */
 	switch (CONFIG_IPM_STM32_HSEM_CPU) {
 	case HSEM_CPU1:
-		if (!device_is_ready(clk)) {
-			LOG_ERR("clock control device not ready");
-			return -ENODEV;
-		}
-
 		/* Enable clock */
 		if (clock_control_on(clk, (clock_control_subsys_t)&cfg->pclken) != 0) {
 			LOG_WRN("Failed to enable clock");
@@ -203,15 +198,16 @@ static const struct stm32_hsem_mailbox_config stm32_hsem_mailbox_0_config = {
  * a virtual mailbox device. So there will have only one instance.
  */
 #define IPM_STM32_HSEM_INIT(inst)						\
-	BUILD_ASSERT((inst) == 0,							\
-		     "multiple instances not supported");		\
-	DEVICE_DT_INST_DEFINE(0,							\
-				&stm32_hsem_mailbox_init,				\
-				NULL,			\
-				&stm32_hsem_mailbox_0_data,				\
-				&stm32_hsem_mailbox_0_config,			\
-				POST_KERNEL,							\
-				CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,	\
-				&stm32_hsem_mailbox_ipm_dirver_api);	\
+	BUILD_ASSERT((inst) == 0,						\
+		     "multiple instances not supported");			\
+										\
+	DEVICE_DT_INST_DEFINE(0,						\
+			      &stm32_hsem_mailbox_init,				\
+			      NULL,						\
+			      &stm32_hsem_mailbox_0_data,			\
+			      &stm32_hsem_mailbox_0_config,			\
+			      POST_KERNEL,					\
+			      CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,		\
+			      &stm32_hsem_mailbox_ipm_dirver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(IPM_STM32_HSEM_INIT)

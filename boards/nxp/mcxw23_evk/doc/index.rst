@@ -180,6 +180,24 @@ should see the following message in the terminal:
    *** Booting Zephyr OS build v4.2.0-2105-g9da1d56da9e7 ***
    Hello World! mcxw23_evk/mcxw236
 
+Power Management
+================
+
+When Power Management is enabled :kconfig:option:`CONFIG_PM`, OSTIMER is used as
+OS tick timer.
+
+Limitation: Wakeup pin can't be used as wakeup source in Standby mode.
+
+Bluetooth
+=========
+
+Dynamic BLE TX Power Configuration
+----------------------------------
+
+MCXW23 supports dynamic BLE TX power configuration. However, there is a
+known limitation: when changing the TX power level, advertising must be
+restarted for the new power setting to take effect.
+
 .. include:: ../../common/board-footer.rst.inc
 
 .. _MCXW23 SoC Website:

@@ -262,18 +262,18 @@ struct eth_sam_dev_cfg {
 	const struct pinctrl_dev_config *pcfg;
 	void (*config_func)(void);
 	const struct device *phy_dev;
+#if defined(CONFIG_PTP_CLOCK_SAM_GMAC)
+	const struct device *ptp_clock;
+#endif
 	const uint8_t num_queues;
 	const uint8_t phy_conn_type;
 	const uint8_t ref_clk_source;
-	const bool random_mac_addr;
+	const struct net_eth_mac_config mcfg;
 };
 
 /* Device run time data */
 struct eth_sam_dev_data {
 	struct net_if *iface;
-#if defined(CONFIG_PTP_CLOCK_SAM_GMAC)
-	const struct device *ptp_clock;
-#endif
 	uint8_t mac_addr[6];
 	bool link_up;
 	struct gmac_queue queue_list[GMAC_QUEUE_NUM];

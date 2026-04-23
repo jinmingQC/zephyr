@@ -21,6 +21,7 @@ LOG_MODULE_REGISTER(net_http_client, CONFIG_NET_HTTP_LOG_LEVEL);
 #include <stdlib.h>
 
 #include <zephyr/net/net_ip.h>
+#include <zephyr/net/net_log.h>
 #include <zephyr/net/socket.h>
 #include <zephyr/net/http/client.h>
 #include <zephyr/net/http/status.h>
@@ -310,9 +311,8 @@ static int on_body(struct http_parser *parser, const char *at, size_t length)
 		req->internal.response.body_frag_start = (uint8_t *)at;
 	}
 
-	/* Calculate the length of the body contained in the recv_buf */
-	req->internal.response.body_frag_len = req->internal.response.data_len -
-		(req->internal.response.body_frag_start - req->internal.response.recv_buf);
+	/* Use the parser-decoded length. */
+	req->internal.response.body_frag_len = length;
 
 	return 0;
 }
@@ -330,11 +330,6 @@ static int on_headers_complete(struct http_parser *parser)
 
 	if (parser->status_code == HTTP_101_SWITCHING_PROTOCOLS) {
 		NET_DBG("Switching protocols, skipping body");
-		return 1;
-	}
-
-	if (parser->status_code >= 500 && parser->status_code < 600) {
-		NET_DBG("Status %d, skipping body", parser->status_code);
 		return 1;
 	}
 

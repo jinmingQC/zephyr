@@ -1,7 +1,7 @@
 /* obex.h - IrDA Oject Exchange Protocol handling */
 
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -310,7 +310,7 @@ struct bt_obex_server_ops {
 	 *  received.
 	 *
 	 *  @param server The OBEX server object.
-	 *  @param flags The flags.
+	 *  @param flags The flags @ref bt_obex_setpath_flags.
 	 *  @param buf Optional headers.
 	 */
 	void (*setpath)(struct bt_obex_server *server, uint8_t flags, struct net_buf *buf);
@@ -599,6 +599,9 @@ struct bt_obex {
 	/** @internal OBEX executing client */
 	atomic_ptr_t _active_client;
 
+	/** @internal OBEX last executed client */
+	atomic_ptr_t _last_client;
+
 	/** @internal OBEX executing client */
 	atomic_ptr_t _active_server;
 
@@ -883,6 +886,14 @@ int bt_obex_abort(struct bt_obex_client *client, struct net_buf *buf);
  */
 int bt_obex_abort_rsp(struct bt_obex_server *server, uint8_t rsp_code, struct net_buf *buf);
 
+/** @brief OBEX SetPath operation flags. */
+enum __packed bt_obex_setpath_flags {
+	/** Backup a level before applying name (equivalent to ../ on many systems). */
+	BT_OBEX_SETPATH_FLAG_BACKUP = BIT(0U),
+	/** Don't create folder if it does not exist, return an error instead. */
+	BT_OBEX_SETPATH_FLAG_NO_CREATE = BIT(1U),
+};
+
 /** @brief OBEX setpath request
  *
  *  The setpath request is used to set the "current folder" on the receiving side in order to
@@ -909,7 +920,7 @@ int bt_obex_abort_rsp(struct bt_obex_server *server, uint8_t rsp_code, struct ne
  *  the caller retains the ownership of the buffer.
  *
  *  @param client OBEX client object.
- *  @param flags Flags for setpath request.
+ *  @param flags Flags for setpath request @ref bt_obex_setpath_flags.
  *  @param buf Sequence of headers to be sent out.
  *
  *  @return 0 in case of success or negative value in case of error.
@@ -1177,8 +1188,14 @@ static inline int bt_obex_add_header_body_or_end_body(struct net_buf *buf, uint1
 	uint16_t tx_len;
 	int err;
 
-	if ((buf == NULL) || (body == NULL) || (added_len == NULL) || (mopl < BT_OBEX_MIN_MTU) ||
-	    (len == 0)) {
+	/*
+	 * OBEX Version 1.5, section 2.2.9 Body, End-of-Body
+	 * The `body` could be a NULL, so the `len` of the name could 0.
+	 * In some cases, the object body data is generated on the fly and the end cannot
+	 * be anticipated, so it is legal to send a zero length End-of-Body header.
+	 */
+	if ((buf == NULL) || ((len != 0) && (body == NULL)) || (added_len == NULL) ||
+	    (mopl < BT_OBEX_MIN_MTU)) {
 		return -EINVAL;
 	}
 
@@ -1255,12 +1272,16 @@ int bt_obex_add_header_app_param(struct net_buf *buf, size_t count,
  * String of bytes representing the nonce.
  */
 #define BT_OBEX_CHALLENGE_TAG_NONCE 0x00
+/** OBEX digest-challenge nonce length (16 bytes) */
+#define BT_OBEX_CHALLENGE_TAG_NONCE_LEN 16
 
 /**
  * OBEX digest-challenge tag: Options
  * Optional Challenge Information.
  */
 #define BT_OBEX_CHALLENGE_TAG_OPTIONS 0x01
+/** OBEX digest-challenge options length (1 byte) */
+#define BT_OBEX_CHALLENGE_TAG_OPTIONS_LEN 1
 
 /** Option BIT0: When set, the User Id must be sent in the authenticate response. */
 #define BT_OBEX_CHALLENGE_TAG_OPTION_REQ_USER_ID BIT(0)
@@ -1291,6 +1312,8 @@ int bt_obex_add_header_auth_challenge(struct net_buf *buf, size_t count,
  * String of bytes representing the request digest.
  */
 #define BT_OBEX_RESPONSE_TAG_REQ_DIGEST 0x00
+/** OBEX digest-response request-digest length (16 bytes) */
+#define BT_OBEX_RESPONSE_TAG_REQ_DIGEST_LEN 16
 
 /**
  * OBEX digest-Response tag: User Id
@@ -1303,6 +1326,8 @@ int bt_obex_add_header_auth_challenge(struct net_buf *buf, size_t count,
  * The nonce sent in the digest challenge string.
  */
 #define BT_OBEX_RESPONSE_TAG_NONCE 0x02
+/** OBEX digest-response nonce length (16 bytes) */
+#define BT_OBEX_RESPONSE_TAG_NONCE_LEN 16
 
 /** @brief Add Header: authentication digest-response.
  *
@@ -1744,6 +1769,15 @@ bool bt_obex_string_is_valid(uint8_t id, uint16_t len, const uint8_t *str);
  *  @return true if the header is found or false otherwise.
  */
 bool bt_obex_has_header(struct net_buf *buf, uint8_t id);
+
+/** @brief Check whether the buf has the specified application parameter
+ *
+ *  @param buf Buffer needs to be sent.
+ *  @param id The tag id of the application parameter.
+ *
+ *  @return true if the tag is found or false otherwise.
+ */
+bool bt_obex_has_app_param(struct net_buf *buf, uint8_t id);
 
 #ifdef __cplusplus
 }

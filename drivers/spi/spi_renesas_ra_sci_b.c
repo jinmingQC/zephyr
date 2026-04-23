@@ -156,13 +156,7 @@ static void spi_renesas_ra_sci_b_retransmit(struct spi_renesas_ra_sci_b_data *da
 {
 	fsp_err_t fsp_err;
 
-	if (data->ctx.rx_len == 0) {
-		data->data_len = data->ctx.tx_len;
-	} else if (data->ctx.tx_len == 0) {
-		data->data_len = data->ctx.rx_len;
-	} else {
-		data->data_len = MIN(data->ctx.tx_len, data->ctx.rx_len);
-	}
+	data->data_len = spi_context_max_continuous_chunk(&data->ctx);
 
 	if (data->ctx.rx_buf == NULL) {
 		fsp_err = R_SCI_B_SPI_Write(&data->fsp_ctrl, data->ctx.tx_buf, data->data_len,
@@ -244,7 +238,7 @@ static void renesas_ra_sci_b_transceive_data_polling(struct spi_renesas_ra_sci_b
 	/* Start the polling transfer*/
 	fsp_err = RP_SCI_B_SPI_StartTransferPolling(&data->fsp_ctrl);
 	if (fsp_err != FSP_SUCCESS) {
-		LOG_ERR("Start polling transter error!");
+		LOG_ERR("Start polling transfer error!");
 	}
 
 	do {
@@ -283,7 +277,7 @@ static void renesas_ra_sci_b_transceive_data_polling(struct spi_renesas_ra_sci_b
 
 	fsp_err = RP_SCI_B_SPI_EndTransferPolling(&data->fsp_ctrl);
 	if (fsp_err != FSP_SUCCESS) {
-		LOG_ERR("Stop polling transter error!");
+		LOG_ERR("Stop polling transfer error!");
 	}
 }
 #endif
@@ -293,7 +287,7 @@ static int spi_renesas_ra_sci_b_configure(const struct device *dev, const struct
 	struct spi_renesas_ra_sci_b_data *data = dev->data;
 	fsp_err_t fsp_err;
 
-	/* Check whether the congiguration is changed */
+	/* Check whether the configuration is changed */
 	if (renesas_ra_sci_b_context_configured(dev, config)) {
 		return 0;
 	}
@@ -436,7 +430,7 @@ static int transceive(const struct device *dev, const struct spi_config *config,
 	/*
 	 * The GPIO flags GPIO_ACTIVE_LOW/GPIO_ACTIVE_HIGH should be equivalent
 	 * to SPI_CS_ACTIVE_HIGH/SPI_CS_ACTIVE_LOW options in struct spi_config.
-	 * In runtime, there are some peripherals that neeed the CS level contrast
+	 * In runtime, there are some peripherals that need the CS level contrast
 	 * to the CS defined in the device tree to make some actions sush as
 	 * initialization. Ex: PMOD SD_CARD
 	 */

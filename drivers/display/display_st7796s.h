@@ -19,6 +19,7 @@
 #define ST7796S_CMD_TEON	0x35 /* Tearing effect on */
 #define ST7796S_CMD_MADCTL	0x36 /* Memory data access control */
 #define ST7796S_CMD_COLMOD	0x3A /* Interface pixel format */
+#define ST7796S_CMD_STE         0x44 /* Set tear scanline */
 #define ST7796S_CMD_FRMCTR1	0xB1 /* Frame rate control 1 (normal mode) */
 #define ST7796S_CMD_FRMCTR2	0xB2 /* Frame rate control 2 (idle mode) */
 #define ST7796S_CMD_FRMCTR3	0xB3 /* Frame rate control 3 (partial mode) */
@@ -35,12 +36,6 @@
 #define ST7796S_CMD_CSCON	0xF0 /* Command set control */
 
 #define ST7796S_CONTROL_16BIT 0x5 /* Sets control interface to 16 bit mode */
-
-#define ST7796S_MADCTL_MY  BIT(7) /* Set row address order */
-#define ST7796S_MADCTL_MX  BIT(6) /* Set column address order */
-#define ST7796S_MADCTL_MV  BIT(5) /* Set row/column exchange */
-#define ST7796S_MADCTL_ML  BIT(4) /* Set vertical refresh order */
-#define ST7796S_MADCTL_MH  BIT(2) /* Set horizontal refresh order */
 #define ST7796S_MADCTL_BGR BIT(3) /* Sets BGR color mode */
 
 

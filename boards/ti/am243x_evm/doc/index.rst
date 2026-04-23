@@ -1,3 +1,9 @@
+..
+   SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
+   SPDX-FileCopyrightText: Copyright 2025 Siemens Mobility GmbH
+   SPDX-FileCopyrightText: Copyright 2025 Texas Instruments
+   SPDX-License-Identifier: Apache-2.0
+
 .. zephyr:board:: am243x_evm
 
 Overview
@@ -256,7 +262,7 @@ References
 **********
 
 AM64x/AM243x EVM Technical Reference Manual:
-   https://www.ti.com/lit/ug/spruj63a/spruj63a.pdf
+   https://www.ti.com/lit/pdf/spruim2
 
 MCU+ SDK Github repository:
    https://github.com/TexasInstruments/mcupsdk-core
@@ -269,12 +275,3 @@ MCU+ SDK Github repository:
 
 .. _build OpenOCD from source:
    https://docs.u-boot.org/en/latest/board/ti/k3.html#building-openocd-from-source
-
-License
-*******
-
-This document Copyright (c) Siemens Mobility GmbH
-
-This document Copyright (c) 2025 Texas Instruments
-
-SPDX-License-Identifier: Apache-2.0

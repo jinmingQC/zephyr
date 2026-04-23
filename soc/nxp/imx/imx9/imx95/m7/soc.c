@@ -15,6 +15,33 @@
 #include <zephyr/dt-bindings/power/imx95_power.h>
 #include <soc.h>
 
+int set_flexcan_clock(uint32_t clk_id)
+{
+	int ret = 0;
+	const struct device *clk_dev = DEVICE_DT_GET(DT_NODELABEL(scmi_clk));
+	struct scmi_protocol *proto = clk_dev->data;
+	struct scmi_clock_rate_config clk_cfg = {0};
+	uint64_t can_clk = 80000000; /* 80 MHz */
+
+	/* FLEXCAN clock init */
+	ret = scmi_clock_parent_set(proto, clk_id, IMX95_CLK_SYSPLL1_PFD1_DIV2);
+	if (ret) {
+		return ret;
+	}
+
+	clk_cfg.flags = SCMI_CLK_RATE_SET_FLAGS_ROUNDS_AUTO;
+	clk_cfg.clk_id = clk_id;
+	clk_cfg.rate[0] = can_clk & 0xffffffff;
+	clk_cfg.rate[1] = (can_clk >> 32) & 0xffffffff;
+
+	ret = scmi_clock_rate_set(proto, &clk_cfg);
+
+	return ret;
+}
+
+#define FLEXCAN_CLOCK_SETUP(node_id) \
+	set_flexcan_clock(DT_CLOCKS_CELL_BY_IDX(node_id, 0, name));
+
 void soc_early_init_hook(void)
 {
 #ifdef CONFIG_CACHE_MANAGEMENT
@@ -27,7 +54,7 @@ static int soc_init(void)
 {
 	int ret = 0;
 #if defined(CONFIG_NXP_SCMI_CPU_DOMAIN_HELPERS)
-	struct scmi_cpu_sleep_mode_config cpu_cfg = {0};
+	struct scmi_nxp_cpu_sleep_mode_config cpu_cfg = {0};
 #endif /* CONFIG_NXP_SCMI_CPU_DOMAIN_HELPERS */
 
 #if defined(CONFIG_ETH_NXP_IMX_NETC) && (DT_CHILD_NUM_STATUS_OKAY(DT_NODELABEL(netc)) != 0)
@@ -71,11 +98,13 @@ static int soc_init(void)
 	}
 #endif
 
+DT_FOREACH_STATUS_OKAY(nxp_flexcan, FLEXCAN_CLOCK_SETUP)
+
 #if defined(CONFIG_NXP_SCMI_CPU_DOMAIN_HELPERS)
 	cpu_cfg.cpu_id = CPU_IDX_M7P;
 	cpu_cfg.sleep_mode = CPU_SLEEP_MODE_RUN;
 
-	ret = scmi_cpu_sleep_mode_set(&cpu_cfg);
+	ret = scmi_nxp_cpu_sleep_mode_set(&cpu_cfg);
 	if (ret) {
 		return ret;
 	}
@@ -86,8 +115,8 @@ static int soc_init(void)
 
 void pm_state_before(void)
 {
-	struct scmi_cpu_pd_lpm_config cpu_pd_lpm_cfg;
-	struct scmi_cpu_irq_mask_config cpu_irq_mask_cfg;
+	struct scmi_nxp_cpu_pd_lpm_config cpu_pd_lpm_cfg;
+	struct scmi_nxp_cpu_irq_mask_config cpu_irq_mask_cfg;
 
 	/*
 	 * 1. Set M7 mix as power on state in suspend mode
@@ -110,7 +139,7 @@ void pm_state_before(void)
 	cpu_pd_lpm_cfg.cfgs[1].lpm_setting = SCMI_CPU_LPM_SETTING_ON_ALWAYS;
 	cpu_pd_lpm_cfg.cfgs[1].ret_mask = 0;
 
-	scmi_cpu_pd_lpm_set(&cpu_pd_lpm_cfg);
+	scmi_nxp_cpu_pd_lpm_set(&cpu_pd_lpm_cfg);
 
 	/* Set wakeup mask */
 	uint32_t wake_mask[GPC_CMC_IRQ_WAKEUP_MASK_COUNT] = {
@@ -130,12 +159,12 @@ void pm_state_before(void)
 		cpu_irq_mask_cfg.mask[val] = wake_mask[val];
 	}
 
-	scmi_cpu_set_irq_mask(&cpu_irq_mask_cfg);
+	scmi_nxp_cpu_set_irq_mask(&cpu_irq_mask_cfg);
 }
 
 void pm_state_set(enum pm_state state, uint8_t substate_id)
 {
-	struct scmi_cpu_sleep_mode_config cpu_cfg = {0};
+	struct scmi_nxp_cpu_sleep_mode_config cpu_cfg = {0};
 
 	pm_state_before();
 
@@ -155,21 +184,21 @@ void pm_state_set(enum pm_state state, uint8_t substate_id)
 	case PM_STATE_RUNTIME_IDLE:
 		cpu_cfg.cpu_id = CPU_IDX_M7P;
 		cpu_cfg.sleep_mode = CPU_SLEEP_MODE_WAIT;
-		scmi_cpu_sleep_mode_set(&cpu_cfg);
+		scmi_nxp_cpu_sleep_mode_set(&cpu_cfg);
 		__DSB();
 		__WFI();
 		break;
 	case PM_STATE_SUSPEND_TO_IDLE:
 		cpu_cfg.cpu_id = CPU_IDX_M7P;
 		cpu_cfg.sleep_mode = CPU_SLEEP_MODE_STOP;
-		scmi_cpu_sleep_mode_set(&cpu_cfg);
+		scmi_nxp_cpu_sleep_mode_set(&cpu_cfg);
 		__DSB();
 		__WFI();
 		break;
 	case PM_STATE_STANDBY:
 		cpu_cfg.cpu_id = CPU_IDX_M7P;
 		cpu_cfg.sleep_mode = CPU_SLEEP_MODE_SUSPEND;
-		scmi_cpu_sleep_mode_set(&cpu_cfg);
+		scmi_nxp_cpu_sleep_mode_set(&cpu_cfg);
 		__DSB();
 		__WFI();
 		break;
@@ -183,7 +212,7 @@ void pm_state_exit_post_ops(enum pm_state state, uint8_t substate_id)
 {
 	ARG_UNUSED(state);
 
-	struct scmi_cpu_irq_mask_config cpu_irq_mask_cfg;
+	struct scmi_nxp_cpu_irq_mask_config cpu_irq_mask_cfg;
 
 	/* Restore scmi cpu wake mask */
 	uint32_t wake_mask[GPC_CMC_IRQ_WAKEUP_MASK_COUNT] = {
@@ -198,13 +227,13 @@ void pm_state_exit_post_ops(enum pm_state state, uint8_t substate_id)
 		cpu_irq_mask_cfg.mask[val] = wake_mask[val];
 	}
 
-	scmi_cpu_set_irq_mask(&cpu_irq_mask_cfg);
+	scmi_nxp_cpu_set_irq_mask(&cpu_irq_mask_cfg);
 
-	struct scmi_cpu_sleep_mode_config cpu_cfg = {0};
+	struct scmi_nxp_cpu_sleep_mode_config cpu_cfg = {0};
 	/* restore M7 core state into ACTIVE. */
 	cpu_cfg.cpu_id = CPU_IDX_M7P;
 	cpu_cfg.sleep_mode = CPU_SLEEP_MODE_RUN;
-	scmi_cpu_sleep_mode_set(&cpu_cfg);
+	scmi_nxp_cpu_sleep_mode_set(&cpu_cfg);
 
 	/* Clear PRIMASK */
 	__enable_irq();

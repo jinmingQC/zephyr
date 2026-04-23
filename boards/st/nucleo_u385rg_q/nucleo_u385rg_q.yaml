@@ -10,6 +10,7 @@ supported:
   - arduino_i2c
   - arduino_spi
   - can
+  - crc
   - dac
   - dma
   - gpio
@@ -22,5 +23,6 @@ supported:
   - watchdog
   - pwm
   - counter
+  - rtc
 ram: 256
 flash: 1024

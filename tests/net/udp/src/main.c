@@ -48,7 +48,6 @@ LOG_MODULE_REGISTER(net_test, NET_LOG_LEVEL);
 #define NET_LOG_ENABLED 1
 #endif
 #include "net_private.h"
-#include "ipv4.h"
 
 static bool test_failed;
 static bool fail = true;
@@ -62,9 +61,7 @@ struct net_udp_context {
 
 int net_udp_dev_init(const struct device *dev)
 {
-	struct net_udp_context *net_udp_context = dev->data;
-
-	net_udp_context = net_udp_context;
+	ARG_UNUSED(dev);
 
 	return 0;
 }
@@ -142,17 +139,7 @@ static enum net_verdict test_ok(struct net_conn *conn,
 				union net_proto_header *proto_hdr,
 				void *user_data)
 {
-	struct ud *ud = (struct ud *)user_data;
-
 	k_sem_give(&recv_lock);
-
-	if (!ud) {
-		fail = true;
-
-		DBG("Test %s failed.", ud->test);
-
-		return NET_DROP;
-	}
 
 	fail = false;
 

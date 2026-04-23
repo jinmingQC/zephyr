@@ -30,7 +30,7 @@
 
 #include "nsos.h"
 #include "nsi_errno.h"
-#include "nsos_fcntl.h"
+#include "nsi_fcntl.h"
 #include "nsos_netdb.h"
 #include "nsos_socket.h"
 
@@ -848,6 +848,36 @@ int nsos_adapt_setsockopt(int fd, int nsos_mid_level, int nsos_mid_optname,
 	return -NSI_ERRNO_MID_EOPNOTSUPP;
 }
 
+int nsos_adapt_getpeername(int fd, struct nsos_mid_sockaddr *addr_mid, size_t *addrlen_mid)
+{
+	struct sockaddr_storage addr_storage;
+	struct sockaddr *addr = (struct sockaddr *)&addr_storage;
+	socklen_t addrlen = sizeof(addr_storage);
+	int ret;
+
+	ret = getpeername(fd, addr, &addrlen);
+	if (ret < 0) {
+		return -nsi_errno_to_mid(errno);
+	}
+
+	return sockaddr_to_nsos_mid(addr, addrlen, addr_mid, addrlen_mid);
+}
+
+int nsos_adapt_getsockname(int fd, struct nsos_mid_sockaddr *addr_mid, size_t *addrlen_mid)
+{
+	struct sockaddr_storage addr_storage;
+	struct sockaddr *addr = (struct sockaddr *)&addr_storage;
+	socklen_t addrlen = sizeof(addr_storage);
+	int ret;
+
+	ret = getsockname(fd, addr, &addrlen);
+	if (ret < 0) {
+		return -nsi_errno_to_mid(errno);
+	}
+
+	return sockaddr_to_nsos_mid(addr, addrlen, addr_mid, addrlen_mid);
+}
+
 #define MAP_POLL_EPOLL(_event_from, _event_to)	\
 	if (events_from & (_event_from)) {	\
 		events_from &= ~(_event_from);	\
@@ -1083,14 +1113,14 @@ int nsos_adapt_fcntl_getfl(int fd)
 
 	flags = fcntl(fd, F_GETFL);
 
-	return fl_to_nsos_mid(flags);
+	return nsi_fcntl_to_mid(flags);
 }
 
 int nsos_adapt_fcntl_setfl(int fd, int flags)
 {
 	int ret;
 
-	ret = fcntl(fd, F_SETFL, fl_from_nsos_mid(flags));
+	ret = fcntl(fd, F_SETFL, nsi_fcntl_from_mid(flags));
 	if (ret < 0) {
 		return -nsi_errno_to_mid(errno);
 	}

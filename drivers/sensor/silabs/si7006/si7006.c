@@ -123,7 +123,7 @@ static int si7006_channel_get(const struct device *dev,
 		 * (temp * 22492 - 393006285) / 2^23
 		 *
 		 * There is a very small amount of round-off error in the factor of 22492.  To
-		 * compenstate, a constant of 5246 is used to center the error about 0, thus
+		 * compensate, a constant of 5246 is used to center the error about 0, thus
 		 * reducing the overall MSE.
 		 */
 
@@ -225,4 +225,8 @@ DT_INST_FOREACH_STATUS_OKAY_VARGS(SI7006_DEFINE, DT_DRV_COMPAT, SI7006_READ_OLD_
 
 #undef DT_DRV_COMPAT
 #define DT_DRV_COMPAT sensirion_sht21
+DT_INST_FOREACH_STATUS_OKAY_VARGS(SI7006_DEFINE, DT_DRV_COMPAT, SI7006_MEAS_TEMP_MASTER_MODE);
+
+#undef DT_DRV_COMPAT
+#define DT_DRV_COMPAT meas_htu21d
 DT_INST_FOREACH_STATUS_OKAY_VARGS(SI7006_DEFINE, DT_DRV_COMPAT, SI7006_MEAS_TEMP_MASTER_MODE);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, 2025 NXP
+ * Copyright 2023, 2025-2026 NXP
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -33,7 +33,7 @@ struct mcux_lpit_channel_data {
 
 struct mcux_lpit_config {
 	struct counter_config_info info;
-	LPIT_Type *base;           /* Poniter to LPIT peripheral instance base address*/
+	LPIT_Type *base;           /* Pointer to LPIT peripheral instance base address*/
 	lpit_config_t lpit_config; /* LPIT configuration structure */
 	int num_channels;          /* Number of channels for one LPIT instance*/
 	void (*irq_config_func)(const struct device *dev);
@@ -171,11 +171,30 @@ static int mcux_lpit_init(const struct device *dev)
 	const struct mcux_lpit_config *config = dev->config;
 	lpit_config_t lpit_config;
 	uint32_t clock_rate;
+	int ret;
 
 	if (!device_is_ready(config->clock_dev)) {
 		LOG_ERR("Clock control device not ready");
 		return -ENODEV;
 	}
+
+	ret = clock_control_configure(config->clock_dev, config->clock_subsys, NULL);
+	if (ret != 0) {
+		/* Check if error is due to lack of support */
+		if (ret != -ENOSYS) {
+			/* Real error occurred */
+			LOG_ERR("Failed to configure clock: %d", ret);
+			return ret;
+		}
+	}
+
+#if FSL_SDK_DISABLE_DRIVER_CLOCK_CONTROL
+	ret = clock_control_on(config->clock_dev, config->clock_subsys);
+	if (ret != 0) {
+		LOG_ERR("Failed to enable clock: %d", ret);
+		return ret;
+	}
+#endif /* FSL_SDK_DISABLE_DRIVER_CLOCK_CONTROL */
 
 	LPIT_GetDefaultConfig(&lpit_config);
 	lpit_config.enableRunInDebug = config->lpit_config.enableRunInDebug;
@@ -211,7 +230,7 @@ static DEVICE_API(counter, mcux_lpit_driver_api) = {
 			 &mcux_lpit_##lpit_inst##_config, POST_KERNEL,                             \
 			 CONFIG_COUNTER_INIT_PRIORITY, &mcux_lpit_driver_api);
 
-/* Creates a decleration for each lpit channel */
+/* Creates a declaration for each lpit channel */
 #define MCUX_LPIT_CHANNEL_DECLARATIONS(node)                                                       \
 	static struct mcux_lpit_channel_data mcux_lpit_channel_data_##node;
 
