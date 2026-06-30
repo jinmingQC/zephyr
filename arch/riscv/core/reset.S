@@ -80,6 +80,8 @@ tls_skip\@:
  * the C domain
  */
 SECTION_FUNC(TEXT, __initialize)
+	/* A bootloader handoff is not a hardware reset; own mie from here. */
+	csrw mie, zero
 	csrr a0, mhartid
 	li t0, CONFIG_RV_BOOT_HART
 	beq a0, t0, boot_first_core
