@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config ARCH_HAS_DEBUGPOINT_SMP
+	bool
+	help
+	  The architecture can reconcile per-CPU debug hardware from IPI
+	  context using arch_debugpoint_cpu_sync().
+
+config DEBUGPOINT
+	bool
+	depends on MULTITHREADING
+	depends on !SMP || ARCH_HAS_DEBUGPOINT_SMP
+	depends on !SMP_BOOT_DELAY
+	help
+	  Internal hardware debugpoint framework.
+
+config DEBUGPOINT_MAX_SLOTS
+	int
+	default 8
+	range 1 32
+	depends on DEBUGPOINT

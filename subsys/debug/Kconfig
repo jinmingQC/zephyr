@@ -12,6 +12,8 @@ endmenu
 
 menu "Debugging Options"
 
+source "subsys/debug/debugpoint/Kconfig"
+
 config DEBUG
 	bool "Build kernel with debugging enabled"
 	help
@@ -395,3 +397,5 @@ config CPU_LOAD_LOG_PERIODICALLY
 module = CPU_LOAD
 module-str = cpu_load
 source "subsys/logging/Kconfig.template.log_config"
+
+rsource "watchpoint/Kconfig"
