@@ -14,6 +14,7 @@
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
+#include <zephyr/sys/atomic.h>
 #include <kernel_arch_interface.h>
 #include <ipi.h>
 #include <zephyr/init.h>
@@ -29,9 +30,9 @@
 
 #define INV_MPID	UINT64_MAX
 
-#define SGI_SCHED_IPI	0
-#define SGI_MMCFG_IPI	1
-#define SGI_FPU_IPI	2
+#define SGI_SCHED_IPI 0
+#define SGI_MMCFG_IPI 1
+#define SGI_FPU_IPI   2
 
 struct boot_params {
 	uint64_t mpid;
@@ -161,7 +162,7 @@ FUNC_NORETURN void arch_secondary_cpu_init(void)
 #ifdef CONFIG_FPU_SHARING
 	irq_enable(SGI_FPU_IPI);
 #endif
-#endif
+#endif /* CONFIG_SMP */
 
 	soc_per_core_init_hook();
 
@@ -291,6 +292,7 @@ void arch_spin_relax(void)
 	}
 }
 #endif
+
 
 int arch_smp_init(void)
 {

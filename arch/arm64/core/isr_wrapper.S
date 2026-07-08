@@ -97,11 +97,19 @@ oob:
 
 	/*
 	 * Call the ISR. Unmask and mask again the IRQs to support nested
-	 * exception handlers
+	 * exception handlers.
 	 */
+#ifdef CONFIG_DEBUGPOINT
+	msr	daifclr, #(DAIFCLR_IRQ_BIT | DAIFCLR_DBG_BIT)
+#else
 	msr	daifclr, #(DAIFCLR_IRQ_BIT)
+#endif
 	blr	x3
+#ifdef CONFIG_DEBUGPOINT
+	msr	daifset, #(DAIFSET_IRQ_BIT | DAIFSET_DBG_BIT)
+#else
 	msr	daifset, #(DAIFSET_IRQ_BIT)
+#endif
 
 spurious_continue:
 

@@ -50,6 +50,10 @@ extern void z_arm64_fatal_error(unsigned int reason, struct arch_esf *esf);
 extern void z_arm64_set_ttbr0(uint64_t ttbr0);
 extern void z_arm64_mem_cfg_ipi(void);
 
+#ifdef CONFIG_DEBUGPOINT
+int z_arm64_debugpoint_handle(struct arch_esf *esf, uint64_t esr, uint64_t far);
+#endif
+
 #ifdef CONFIG_FPU_SHARING
 void arch_flush_local_fpu(void);
 void arch_flush_fpu_ipi(unsigned int cpu);

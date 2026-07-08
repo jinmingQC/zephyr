@@ -236,8 +236,14 @@ offload:
 	str	x3, [x2, #_cpu_offset_to_current_stack_limit]
 #endif
 1:
+#ifdef CONFIG_DEBUGPOINT
+	msr	daifclr, #(DAIFCLR_DBG_BIT)
+#endif
 	/* Execute provided routine (argument is in x0 already). */
 	blr	x1
+#ifdef CONFIG_DEBUGPOINT
+	msr	daifset, #(DAIFSET_DBG_BIT)
+#endif
 
 	/* Exit through regular IRQ exit path */
 	b	z_arm64_irq_done

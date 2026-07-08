@@ -484,4 +484,21 @@ config ARM64_RNG
 
 source "arch/arm64/core/Kconfig.pmu"
 
+config ARCH_HAS_WATCHPOINT
+	bool
+	default y
+	depends on CPU_CORTEX_A
+	select ARCH_HAS_DEBUGPOINT_SMP if SMP && SCHED_IPI_SUPPORTED
+
+config ARM64_WATCHPOINT_MAX_SLOTS
+	int "Maximum ARM64 hardware watchpoint slots"
+	default 16
+	range 1 16
+	depends on DEBUGPOINT
+	help
+	  Compile-time upper bound on the DBGWVR/DBGWCR pair table.
+	  The actual count is read at runtime from ID_AA64DFR0_EL1.WRPs
+	  (value = field + 1) and clamped to this limit.
+	  ARMv8-A requires at least 2 watchpoints; typical cores provide 4-8.
+
 endif # CPU_CORTEX_A || CPU_AARCH64_CORTEX_R

@@ -129,9 +129,17 @@ valid_syscall_id:
 	ldr	x9, [x9, x8, lsl #3]
 
 	/* Jump into the syscall */
-	msr	daifclr, #(DAIFSET_IRQ_BIT)
+#ifdef CONFIG_DEBUGPOINT
+	msr	daifclr, #(DAIFCLR_IRQ_BIT | DAIFCLR_DBG_BIT)
+#else
+	msr	daifclr, #(DAIFCLR_IRQ_BIT)
+#endif
 	blr	x9
+#ifdef CONFIG_DEBUGPOINT
+	msr	daifset, #(DAIFSET_IRQ_BIT | DAIFSET_DBG_BIT)
+#else
 	msr	daifset, #(DAIFSET_IRQ_BIT)
+#endif
 
 	/* Save the return value into the ESF */
 	str	x0, [sp, ___esf_t_x0_x1_OFFSET]

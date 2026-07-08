@@ -626,6 +626,12 @@ void z_arm64_fatal_error(unsigned int reason, struct arch_esf *esf)
 			return;
 		}
 
+#ifdef CONFIG_DEBUGPOINT
+		if (z_arm64_debugpoint_handle(esf, esr, far) == 0) {
+			return;
+		}
+#endif
+
 		if (GET_EL(el) != MODE_EL0) {
 #ifdef CONFIG_EXCEPTION_DEBUG
 			bool dump_far = false;
