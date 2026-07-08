@@ -607,6 +607,18 @@ static void debug_monitor(struct arch_esf *esf, bool *recoverable)
 
 	PR_FAULT_INFO("***** Debug monitor exception *****");
 
+#if defined(CONFIG_DEBUGPOINT)
+	/*
+	 * Check for watchpoint hits FIRST: DWT_FUNCTION_MATCHED_Msk
+	 * auto-clears on read, so we must read it before the null-pointer
+	 * detection code below does.
+	 */
+	if (z_arm_debugpoint_handle(esf) == 0) {
+		*recoverable = true;
+		return;
+	}
+#endif
+
 #if defined(CONFIG_NULL_POINTER_EXCEPTION_DETECTION_DWT)
 	if (!z_arm_debug_monitor_event_error_check()) {
 		/* By default, all debug monitor exceptions that are not

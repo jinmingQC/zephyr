@@ -128,6 +128,23 @@ config CPU_CORTEX_M_HAS_DWT
 	  from the DWT specified by the ARMv7-M and above in terms of both feature
 	  set and register mappings.
 
+config ARCH_HAS_WATCHPOINT
+	bool
+	default y
+	depends on CPU_CORTEX_M_HAS_DWT
+	depends on ARMV7_M_ARMV8_M_MAINLINE
+	select CORTEX_M_DWT
+
+config ARM_WATCHPOINT_MAX_SLOTS
+	int "Maximum ARM DWT watchpoint slots"
+	default 4
+	range 1 16
+	depends on DEBUGPOINT && ARCH_HAS_WATCHPOINT
+	help
+	  Compile-time upper bound for the DWT comparator table.
+	  The actual number is read at runtime from DWT->CTRL.NUMCOMP and
+	  clamped to this value.  Typical Cortex-M targets provide 2-4 slots.
+
 config CPU_CORTEX_M_HAS_BASEPRI
 	bool
 	depends on ARMV7_M_ARMV8_M_MAINLINE

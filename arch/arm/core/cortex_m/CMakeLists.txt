@@ -49,6 +49,8 @@ if(CONFIG_NULL_POINTER_EXCEPTION_DETECTION_DWT)
   zephyr_library_sources(debug.c)
 endif()
 
+zephyr_library_sources_ifdef(CONFIG_DEBUGPOINT debugpoint.c)
+
 if(CONFIG_CORTEX_M_DWT)
   if(CONFIG_TIMING_FUNCTIONS)
     zephyr_library_sources(timing.c)

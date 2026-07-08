@@ -103,6 +103,10 @@ static ALWAYS_INLINE int arch_swap(unsigned int key)
 }
 #endif
 
+#ifdef CONFIG_DEBUGPOINT
+int z_arm_debugpoint_handle(struct arch_esf *esf);
+#endif
+
 #endif /* _ASMLANGUAGE */
 
 #ifdef __cplusplus
