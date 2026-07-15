@@ -23,7 +23,7 @@ volatile struct {
 
 volatile uintptr_t __noinit riscv_cpu_wake_flag;
 volatile uintptr_t riscv_cpu_boot_flag;
-volatile void *riscv_cpu_sp;
+void * volatile riscv_cpu_sp;
 
 extern void __start(void);
 
@@ -40,6 +40,12 @@ void arch_cpu_start(int cpu_num, k_thread_stack_t *stack, int sz,
 	riscv_cpu_sp = K_KERNEL_STACK_BUFFER(stack) + sz;
 	riscv_cpu_boot_flag = 0U;
 
+	/*
+	 * Publish the callback and bootstrap stack before the wake flag. This
+	 * mailbox is shared by all secondary harts and RISC-V is weakly ordered.
+	 */
+	__asm__ volatile ("fence rw, rw" ::: "memory");
+
 #ifdef CONFIG_PM_CPU_OPS
 	if (pm_cpu_on(cpu_num, (uintptr_t)&__start)) {
 		printk("Failed to boot secondary CPU %d\n", cpu_num);
@@ -50,6 +56,12 @@ void arch_cpu_start(int cpu_num, k_thread_stack_t *stack, int sz,
 	while (riscv_cpu_boot_flag == 0U) {
 		riscv_cpu_wake_flag = _kernel.cpus[cpu_num].arch.hartid;
 	}
+
+	/*
+	 * Acquire the secondary hart's acknowledgement before this startup
+	 * mailbox is populated for the next CPU.
+	 */
+	__asm__ volatile ("fence rw, rw" ::: "memory");
 }
 
 void arch_secondary_cpu_init(int hartid)

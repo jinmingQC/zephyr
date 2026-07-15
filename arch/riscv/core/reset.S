@@ -80,7 +80,12 @@ tls_skip\@:
  * the C domain
  */
 SECTION_FUNC(TEXT, __initialize)
-	/* A bootloader handoff is not a hardware reset; own mie from here. */
+	/*
+	 * A bootloader handoff is not a hardware reset. Mask interrupts
+	 * globally before enabling individual sources during CPU bring-up;
+	 * secondary harts still use their IRQ stacks as bootstrap stacks.
+	 */
+	csrci mstatus, MSTATUS_IEN
 	csrw mie, zero
 	csrr a0, mhartid
 	li t0, CONFIG_RV_BOOT_HART
@@ -213,6 +218,12 @@ wait_secondary_wake_flag:
 	lr t0, 0(t0)
 	bne a0, t0, wait_secondary_wake_flag
 
+	/*
+	 * Acquire the stack and callback state published by arch_cpu_start()
+	 * before acknowledging this hart's reset handshake.
+	 */
+	fence rw, rw
+
 	/* Set up stack */
 	la t0, riscv_cpu_sp
 	lr sp, 0(t0)
@@ -223,6 +234,12 @@ wait_secondary_wake_flag:
 	riscv_tls_init_early
 	mv a0, s2		/* restore hartid */
 #endif
+
+	/*
+	 * Complete all bootstrap-stack and TLS accesses before allowing the
+	 * primary hart to reuse the shared startup mailbox.
+	 */
+	fence rw, rw
 
 	la t0, riscv_cpu_boot_flag
 	li t1, 1
