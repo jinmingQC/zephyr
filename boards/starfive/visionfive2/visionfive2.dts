@@ -19,6 +19,10 @@
 	};
 };
 
+&S7_0 {
+	status = "disabled";
+};
+
 &uart0 {
 	status = "okay";
 	clock-frequency = <24000000>;
