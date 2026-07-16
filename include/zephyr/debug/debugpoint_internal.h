@@ -46,6 +46,7 @@ struct z_debugpoint_event {
 	size_t access_size;
 	enum z_debugpoint_type type;
 	enum z_debugpoint_timing timing;
+	bool rearm_required;
 	const struct arch_esf *esf;
 };
 

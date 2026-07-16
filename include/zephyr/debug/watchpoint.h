@@ -86,6 +86,14 @@ struct k_watchpoint_event {
 	enum k_watchpoint_timing timing;
 
 	/**
+	 * Whether continued monitoring requires re-arming the watchpoint.
+	 *
+	 * When true, the watchpoint becomes inactive after this callback.
+	 * Re-arm it from thread context.
+	 */
+	bool rearm_required;
+
+	/**
 	 * Call stack captured at the watchpoint hit, or NULL when unavailable.
 	 *
 	 * The first entry is the reported PC when available. Additional entries
@@ -109,9 +117,9 @@ struct k_watchpoint_event {
  * not allowed from this callback.
  *
  * A backend that cannot safely resume a before-access watchpoint
- * automatically deactivates it. Thread context can re-arm it after the
- * callback returns. Memory accesses made by the callback are not guaranteed
- * to be observed by other watchpoints.
+ * automatically deactivates it. In that case, event->rearm_required is true
+ * and thread context can re-arm it after the callback returns. Memory accesses
+ * made by the callback are not guaranteed to be observed by other watchpoints.
  *
  * @param wp Watchpoint that fired.
  * @param event Triggering access information.

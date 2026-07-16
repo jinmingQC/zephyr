@@ -426,13 +426,15 @@ void z_debugpoint_hit(struct z_debugpoint_handle handle,
 	}
 	entry->hit_count++;
 	struct z_debugpoint dp = entry->dp;
+	struct z_debugpoint_event callback_event = *event;
 
+	callback_event.rearm_required = deactivate;
 	k_spin_unlock(&state_lock, key);
 
 	unsigned int cpu = arch_curr_cpu()->id;
 
 	atomic_inc(&callback_depth[cpu]);
-	dp.cb(&dp, event, dp.arg);
+	dp.cb(&dp, &callback_event, dp.arg);
 	if (deactivate && dp.deactivate != NULL) {
 		dp.deactivate(dp.arg);
 	}

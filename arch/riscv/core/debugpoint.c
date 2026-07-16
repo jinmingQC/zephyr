@@ -5,6 +5,7 @@
  */
 
 #include <zephyr/arch/debugpoint.h>
+#include <zephyr/arch/riscv/arch.h>
 #include <zephyr/arch/riscv/csr.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/atomic.h>
@@ -66,8 +67,25 @@
 #define TCONTROL_MTE  BIT(3)
 #define TCONTROL_MPTE BIT(7)
 
-#define RISCV_EBREAK   0x00100073U
-#define RISCV_C_EBREAK 0x9002U
+#define RISCV_EBREAK         0x00100073U
+#define RISCV_C_EBREAK       0x9002U
+#define RISCV_OPCODE_LOAD    0x03U
+#define RISCV_OPCODE_LOAD_FP 0x07U
+#define RISCV_OPCODE_STORE   0x23U
+#define RISCV_OPCODE_STORE_FP 0x27U
+#define RISCV_OPCODE_AMO     0x2fU
+
+#define RISCV_AMO_ADD  0x00U
+#define RISCV_AMO_SWAP 0x01U
+#define RISCV_AMO_LR   0x02U
+#define RISCV_AMO_SC   0x03U
+#define RISCV_AMO_XOR  0x04U
+#define RISCV_AMO_OR   0x08U
+#define RISCV_AMO_AND  0x0cU
+#define RISCV_AMO_MIN  0x10U
+#define RISCV_AMO_MAX  0x14U
+#define RISCV_AMO_MINU 0x18U
+#define RISCV_AMO_MAXU 0x1cU
 
 enum riscv_trigger_type {
 	RISCV_TRIGGER_MCONTROL,
@@ -88,10 +106,24 @@ struct riscv_trigger_slot {
 
 struct riscv_hit {
 	struct z_debugpoint_handle handle;
+	int slot;
 	uint8_t type;
 	uint8_t timing;
 	bool access_addr_valid;
 	bool deactivate;
+};
+
+struct riscv_step_plan {
+	int slot;
+	uintptr_t next_pc;
+	uintptr_t tdata1;
+};
+
+struct riscv_step_state {
+	bool active;
+	int slot;
+	uintptr_t next_pc;
+	uintptr_t interrupt_enable;
 };
 
 static struct riscv_trigger_slot g_slots[CONFIG_RISCV_DEBUG_TRIGGER_MAX_SLOTS];
@@ -102,6 +134,7 @@ static atomic_t g_initialized;
 /* Each CPU accesses only its own mapping row after initialization. */
 static int8_t
 	g_cpu_hw_index[CONFIG_MP_MAX_NUM_CPUS][CONFIG_RISCV_DEBUG_TRIGGER_MAX_SLOTS];
+static struct riscv_step_state g_cpu_step[CONFIG_MP_MAX_NUM_CPUS];
 static struct k_spinlock g_lock;
 
 extern int z_riscv_debugpoint_tinfo_read(uintptr_t *value);
@@ -405,6 +438,119 @@ static int instruction_is_ebreak(uintptr_t pc)
 	}
 
 	return instruction == RISCV_EBREAK ? 1 : 0;
+}
+
+static bool compressed_scalar_access(uint16_t instruction)
+{
+#if defined(CONFIG_RISCV_ISA_EXT_ZCA)
+	uint16_t quadrant = instruction & 0x3U;
+	uint16_t funct3 = (instruction >> 13) & 0x7U;
+
+	if (quadrant != 0U && quadrant != 2U) {
+		return false;
+	}
+	if (funct3 == 0x2U || funct3 == 0x6U) {
+		return true;
+	}
+#if __riscv_xlen >= 64
+	if (funct3 == 0x3U || funct3 == 0x7U) {
+		return true;
+	}
+#elif defined(CONFIG_RISCV_ISA_EXT_ZCF)
+	if (funct3 == 0x3U || funct3 == 0x7U) {
+		return true;
+	}
+#endif
+	return IS_ENABLED(CONFIG_RISCV_ISA_EXT_ZCD) &&
+	       (funct3 == 0x1U || funct3 == 0x5U);
+#else
+	ARG_UNUSED(instruction);
+#endif
+	return false;
+}
+
+static bool amo_access(uint32_t instruction)
+{
+	uint32_t funct3 = (instruction >> 12) & 0x7U;
+	uint32_t funct5 = instruction >> 27;
+
+	if (funct3 != 0x2U &&
+	    !(__riscv_xlen >= 64 && funct3 == 0x3U)) {
+		return false;
+	}
+
+	switch (funct5) {
+	case RISCV_AMO_LR:
+	case RISCV_AMO_SC:
+		return false;
+	case RISCV_AMO_ADD:
+	case RISCV_AMO_SWAP:
+	case RISCV_AMO_XOR:
+	case RISCV_AMO_OR:
+	case RISCV_AMO_AND:
+	case RISCV_AMO_MIN:
+	case RISCV_AMO_MAX:
+	case RISCV_AMO_MINU:
+	case RISCV_AMO_MAXU:
+		return true;
+	default:
+		return false;
+	}
+}
+
+static bool scalar_access(uint32_t instruction)
+{
+	uint32_t opcode = instruction & 0x7fU;
+	uint32_t funct3 = (instruction >> 12) & 0x7U;
+
+	if (opcode == RISCV_OPCODE_STORE) {
+		return funct3 <= 0x2U ||
+		       (__riscv_xlen >= 64 && funct3 == 0x3U);
+	}
+	if (opcode != RISCV_OPCODE_LOAD) {
+		if (opcode == RISCV_OPCODE_LOAD_FP ||
+		    opcode == RISCV_OPCODE_STORE_FP) {
+			return funct3 >= 0x1U && funct3 <= 0x4U;
+		}
+		return opcode == RISCV_OPCODE_AMO && amo_access(instruction);
+	}
+
+#if __riscv_xlen >= 64
+	return funct3 <= 0x6U;
+#else
+	return funct3 <= 0x2U || funct3 == 0x4U || funct3 == 0x5U;
+#endif
+}
+
+static int access_next_pc(uintptr_t pc, uintptr_t *next_pc)
+{
+	uint32_t instruction;
+	int ret = z_riscv_debugpoint_insn_read((const void *)pc, &instruction);
+
+	if (ret != 0) {
+		return ret;
+	}
+
+	uint16_t low = (uint16_t)instruction;
+	size_t length;
+
+	if ((low & 0x3U) != 0x3U) {
+		if (!compressed_scalar_access(low)) {
+			return -ENOTSUP;
+		}
+		length = 2U;
+	} else {
+		if ((low & 0x1fU) == 0x1fU || !scalar_access(instruction)) {
+			return -ENOTSUP;
+		}
+		length = 4U;
+	}
+
+	if (UINTPTR_MAX - pc < length) {
+		return -EOVERFLOW;
+	}
+	*next_pc = pc + length;
+	return 0;
 }
 
 struct riscv_trigger_extent {
@@ -989,36 +1135,203 @@ static int restore_cpu_triggers(unsigned int cpu)
 	return 0;
 }
 
-static bool prepare_hit(struct riscv_trigger_slot *slot, uintptr_t tdata1,
-			unsigned int hit_value, bool access_addr_valid,
-			struct riscv_hit *record)
+static bool record_hit(struct riscv_trigger_slot *slot, int index,
+		       uintptr_t tdata1, unsigned int hit_value,
+		       bool access_addr_valid, struct riscv_hit *record)
 {
-	enum z_debugpoint_timing timing =
-		trigger_timing(slot, tdata1, hit_value);
-	bool deactivate = timing != Z_DEBUGPOINT_TIMING_AFTER;
-
-	if (deactivate) {
-		if (!atomic_cas(&slot->active, 1, 0)) {
-			return false;
-		}
-	} else if (atomic_get(&slot->active) == 0) {
+	if (atomic_get(&slot->active) == 0) {
 		return false;
 	}
 
 	*record = (struct riscv_hit) {
 		.handle = slot->handle,
+		.slot = index,
 		.type = (uint8_t)slot->type,
-		.timing = (uint8_t)timing,
+		.timing = (uint8_t)trigger_timing(slot, tdata1, hit_value),
 		.access_addr_valid = access_addr_valid,
-		.deactivate = deactivate,
 	};
 	return true;
+}
+
+static uintptr_t build_step_tdata1(const struct riscv_trigger_slot *slot)
+{
+	uintptr_t clear = TDATA1_LOAD | TDATA1_STORE |
+			  TDATA1_MATCH_MASK | TDATA1_CHAIN |
+			  TDATA1_ACTION_MASK;
+
+	if (slot->trigger_type == RISCV_TRIGGER_MCONTROL) {
+		clear |= TDATA1_MCONTROL_SIZELO_MASK |
+			 TDATA1_MCONTROL_SIZEHI_MASK |
+			 TDATA1_MCONTROL_TIMING |
+			 TDATA1_MCONTROL_SELECT |
+			 TDATA1_MCONTROL_HIT;
+	} else {
+		clear |= TDATA1_MCONTROL6_SELECT |
+			 TDATA1_MCONTROL6_HIT0 |
+			 TDATA1_MCONTROL6_HIT1 |
+			 TDATA1_MCONTROL6_UNCERTAIN |
+			 TDATA1_MCONTROL6_UNCERTAINEN;
+		clear |= slot->tinfo_version == 0U ?
+			 TDATA1_MCONTROL6_V0_SIZE_MASK |
+			 TDATA1_MCONTROL6_V0_TIMING :
+			 TDATA1_MCONTROL6_V1_SIZE_MASK;
+	}
+
+	return (slot->tdata1 & ~clear) | TDATA1_EXECUTE;
+}
+
+static bool step_context_supported(const struct arch_esf *esf)
+{
+	/* Native triggers may be suppressed on an IRQ-disabled M/S return. */
+	return (esf->mstatus & RV_STATUS_PP) == RV_STATUS_PP_U ||
+	       (esf->mstatus & RV_STATUS_PIE) != 0U ||
+	       IS_ENABLED(CONFIG_RISCV_HAS_TCONTROL);
+}
+
+static bool step_config_matches(const struct riscv_trigger_slot *slot,
+				uintptr_t actual, uintptr_t requested)
+{
+	if (!config_matches(actual, requested, slot->trigger_type,
+			    slot->tinfo_version)) {
+		return false;
+	}
+	if (slot->trigger_type == RISCV_TRIGGER_MCONTROL) {
+		return (actual & TDATA1_MCONTROL_TIMING) == 0U;
+	}
+
+	return slot->tinfo_version != 0U ||
+	       (actual & TDATA1_MCONTROL6_V0_TIMING) == 0U;
+}
+
+static int prepare_step(unsigned int cpu, int index, uintptr_t next_pc,
+			const struct arch_esf *esf,
+			struct riscv_step_plan *plan)
+{
+	struct riscv_trigger_slot *slot = &g_slots[index];
+	uintptr_t requested = build_step_tdata1(slot);
+	int ret = -ENOTSUP;
+
+	if (!step_context_supported(esf) || !select_cpu_slot(cpu, index) ||
+	    !disable_selected_trigger()) {
+		return -ENOTSUP;
+	}
+
+	csr_write_imm(CSR_TDATA2, next_pc);
+	csr_write_imm(CSR_TDATA1, requested);
+	uintptr_t actual = csr_read_imm(CSR_TDATA1);
+
+	if (step_config_matches(slot, actual, requested) &&
+	    csr_read_imm(CSR_TDATA2) == next_pc) {
+		*plan = (struct riscv_step_plan) {
+			.slot = index,
+			.next_pc = next_pc,
+			.tdata1 = clear_trigger_status(actual,
+						       slot->trigger_type,
+						       slot->tinfo_version),
+		};
+		ret = 0;
+	}
+
+	if (!disable_selected_trigger()) {
+		return -ENOTSUP;
+	}
+	csr_write_imm(CSR_TDATA2, slot->tdata2);
+	return ret;
+}
+
+static uintptr_t interrupt_enable_clear(void)
+{
+#ifdef CONFIG_RISCV_S_MODE
+	return csr_swap(sie, 0);
+#else
+	return csr_swap(mie, 0);
+#endif
+}
+
+static void interrupt_enable_restore(uintptr_t value)
+{
+#ifdef CONFIG_RISCV_S_MODE
+	csr_write(sie, value);
+#else
+	csr_write(mie, value);
+#endif
+}
+
+static int start_step(unsigned int cpu, const struct riscv_step_plan *plan)
+{
+	struct riscv_step_state *step = &g_cpu_step[cpu];
+
+	if (!select_cpu_slot(cpu, plan->slot)) {
+		int ret = restore_cpu_triggers(cpu);
+
+		return ret != 0 ? ret : -ENOTSUP;
+	}
+
+	step->slot = plan->slot;
+	step->next_pc = plan->next_pc;
+	step->interrupt_enable = interrupt_enable_clear();
+	step->active = true;
+	csr_write_imm(CSR_TDATA2, plan->next_pc);
+	csr_write_imm(CSR_TDATA1, plan->tdata1);
+	return 0;
+}
+
+static int finish_step(unsigned int cpu)
+{
+	struct riscv_step_state *step = &g_cpu_step[cpu];
+	int ret = 0;
+
+	if (!step->active) {
+		return 0;
+	}
+
+	if (!select_cpu_slot(cpu, step->slot) ||
+	    !disable_selected_trigger()) {
+		ret = -ENOTSUP;
+	} else {
+		csr_write_imm(CSR_TDATA2, g_slots[step->slot].tdata2);
+	}
+
+	step->active = false;
+	int restore_ret = restore_cpu_triggers(cpu);
+
+	interrupt_enable_restore(step->interrupt_enable);
+	return ret != 0 ? ret : restore_ret;
+}
+
+void z_riscv_debugpoint_abort_step(void)
+{
+	if (atomic_get(&g_initialized) == 0) {
+		return;
+	}
+
+	unsigned int cpu = arch_curr_cpu()->id;
+	uintptr_t saved_tselect = csr_read_imm(CSR_TSELECT);
+
+	(void)finish_step(cpu);
+	csr_write_imm(CSR_TSELECT, saved_tselect);
 }
 
 int z_riscv_debugpoint_handle(struct arch_esf *esf)
 {
 	if (atomic_get(&g_initialized) == 0) {
 		return -ENOENT;
+	}
+
+	unsigned int cpu = arch_curr_cpu()->id;
+	uintptr_t saved_tselect = csr_read_imm(CSR_TSELECT);
+	struct riscv_step_state *step = &g_cpu_step[cpu];
+
+	if (step->active) {
+		bool complete = esf->mepc == step->next_pc;
+		int ret = finish_step(cpu);
+
+		csr_write_imm(CSR_TSELECT, saved_tselect);
+		if (complete) {
+			return ret;
+		}
+
+		return ret != 0 ? ret : -ENOENT;
 	}
 
 	uintptr_t access_addr;
@@ -1029,8 +1342,6 @@ int z_riscv_debugpoint_handle(struct arch_esf *esf)
 	__asm__ volatile("csrr %0, mtval" : "=r"(access_addr));
 #endif
 
-	uintptr_t saved_tselect = csr_read_imm(CSR_TSELECT);
-	unsigned int cpu = arch_curr_cpu()->id;
 	uintptr_t trigger_state[CONFIG_RISCV_DEBUG_TRIGGER_MAX_SLOTS] = {0};
 	struct riscv_hit hits[CONFIG_RISCV_DEBUG_TRIGGER_MAX_SLOTS];
 	int hit_count = 0;
@@ -1070,8 +1381,8 @@ int z_riscv_debugpoint_handle(struct arch_esf *esf)
 		bool addr_valid =
 			range_contains(slot->addr, slot->size, access_addr);
 
-		if (prepare_hit(slot, trigger_state[i], value, addr_valid,
-				&hits[hit_count])) {
+		if (record_hit(slot, i, trigger_state[i], value, addr_valid,
+			       &hits[hit_count])) {
 			hit_count++;
 		}
 	}
@@ -1092,8 +1403,8 @@ int z_riscv_debugpoint_handle(struct arch_esf *esf)
 			    !trigger_is_enabled(trigger_state[i])) {
 				continue;
 			}
-			if (prepare_hit(slot, trigger_state[i], 0U, true,
-					&hits[0])) {
+			if (record_hit(slot, i, trigger_state[i], 0U, true,
+				       &hits[0])) {
 				hit_count = 1;
 			}
 			break;
@@ -1121,12 +1432,55 @@ int z_riscv_debugpoint_handle(struct arch_esf *esf)
 		if (candidate_count == 1) {
 			struct riscv_trigger_slot *slot = &g_slots[candidate];
 
-			if (prepare_hit(slot, trigger_state[candidate], 0U,
-					false, &hits[0])) {
+			if (record_hit(slot, candidate, trigger_state[candidate],
+				       0U, false, &hits[0])) {
 				hit_count = 1;
 			}
 		}
 	}
+
+	struct riscv_step_plan plan = {0};
+	uintptr_t next_pc = 0U;
+	bool next_pc_valid = false;
+	bool step_prepared = false;
+
+	for (int i = 0; i < hit_count; i++) {
+		if (hits[i].timing != Z_DEBUGPOINT_TIMING_BEFORE) {
+			continue;
+		}
+		if (!next_pc_valid) {
+			if (access_next_pc(esf->mepc, &next_pc) != 0) {
+				break;
+			}
+			next_pc_valid = true;
+		}
+		if (prepare_step(cpu, hits[i].slot, next_pc, esf, &plan) == 0) {
+			step_prepared = true;
+			break;
+		}
+	}
+
+	int live_hits = 0;
+
+	for (int i = 0; i < hit_count; i++) {
+		struct riscv_trigger_slot *slot = &g_slots[hits[i].slot];
+		bool deactivate =
+			hits[i].timing != Z_DEBUGPOINT_TIMING_AFTER &&
+			!(step_prepared &&
+			  hits[i].timing == Z_DEBUGPOINT_TIMING_BEFORE);
+
+		if (deactivate) {
+			if (!atomic_cas(&slot->active, 1, 0)) {
+				continue;
+			}
+		} else if (atomic_get(&slot->active) == 0) {
+			continue;
+		}
+
+		hits[i].deactivate = deactivate;
+		hits[live_hits++] = hits[i];
+	}
+	hit_count = live_hits;
 
 	if (hit_count == 0) {
 		int ret = restore_cpu_triggers(cpu);
@@ -1154,8 +1508,24 @@ int z_riscv_debugpoint_handle(struct arch_esf *esf)
 		z_debugpoint_hit(hits[i].handle, &event, hits[i].deactivate);
 	}
 
+	bool step_required = false;
+
+	for (int i = 0; i < hit_count; i++) {
+		if (hits[i].timing == Z_DEBUGPOINT_TIMING_BEFORE &&
+		    atomic_get(&g_slots[hits[i].slot].active) != 0) {
+			step_required = true;
+			break;
+		}
+	}
+
 	saved_tselect = csr_read_imm(CSR_TSELECT);
-	int ret = restore_cpu_triggers(cpu);
+	int ret;
+
+	if (step_prepared && step_required) {
+		ret = start_step(cpu, &plan);
+	} else {
+		ret = restore_cpu_triggers(cpu);
+	}
 
 	csr_write_imm(CSR_TSELECT, saved_tselect);
 	return ret;

@@ -41,6 +41,7 @@ static void *g_cb_addr;
 static bool g_cb_addr_valid;
 static uint32_t g_cb_flags;
 static enum k_watchpoint_timing g_cb_timing;
+static bool g_cb_rearm_required;
 static unsigned int g_cb_cpu;
 #if defined(CONFIG_WATCHPOINT_CALLSTACK)
 static uintptr_t g_cb_callstack[CONFIG_WATCHPOINT_CALLSTACK_DEPTH];
@@ -55,6 +56,7 @@ static void reset_callback_state(void)
 	g_cb_addr_valid = false;
 	g_cb_flags = 0U;
 	g_cb_timing = K_WATCHPOINT_TIMING_UNKNOWN;
+	g_cb_rearm_required = false;
 	g_cb_cpu = UINT_MAX;
 #if defined(CONFIG_WATCHPOINT_CALLSTACK)
 	g_cb_callstack_depth = 0U;
@@ -73,6 +75,7 @@ static void callback(const struct k_watchpoint *wp,
 	g_cb_addr_valid = event->access_addr_valid;
 	g_cb_flags = event->flags;
 	g_cb_timing = event->timing;
+	g_cb_rearm_required = event->rearm_required;
 	g_cb_cpu = arch_curr_cpu()->id;
 #if defined(CONFIG_WATCHPOINT_CALLSTACK)
 	g_cb_callstack_depth = MIN(event->callstack_depth,
@@ -136,6 +139,8 @@ ZTEST(watchpoint, test_write_fires)
 	zassert_equal(g_cb_flags, K_WATCHPOINT_WRITE);
 	zassert_not_null(g_cb_pc);
 	zassert_not_equal(g_cb_timing, K_WATCHPOINT_TIMING_UNKNOWN);
+	zassert_equal(g_cb_rearm_required,
+		      !k_watchpoint_is_active(&wp));
 	if (g_cb_addr_valid) {
 		zassert_equal(g_cb_addr, (void *)&g_watched);
 	}
@@ -212,6 +217,12 @@ ZTEST(watchpoint, test_read_fires)
 		zassert_equal(g_cb_addr, (void *)&g_bytes[1]);
 	}
 
+#if defined(CONFIG_RISCV)
+	zassert_true(k_watchpoint_is_active(&wp),
+		     "watchpoint became one-shot");
+	g_sink = g_bytes[1];
+	zassert_equal(atomic_get(&g_cb_count), 2);
+#endif
 	zassert_ok(k_watchpoint_remove(&wp));
 }
 
@@ -636,6 +647,371 @@ ZTEST(watchpoint, test_resource_exhaustion_and_reuse)
 #if defined(CONFIG_RISCV) && defined(CONFIG_DEBUGPOINT)
 extern int z_riscv_debugpoint_handle(struct arch_esf *esf);
 
+static volatile uint64_t g_riscv_scalar_target __aligned(8);
+
+#if defined(CONFIG_RISCV_ISA_EXT_ZAAMO)
+static volatile uint32_t g_riscv_amo32 __aligned(4);
+#if __riscv_xlen >= 64
+static volatile uint64_t g_riscv_amo64 __aligned(8);
+#endif
+#endif
+
+#if defined(CONFIG_FPU) && defined(CONFIG_RISCV_ISA_EXT_F)
+static volatile uint32_t g_riscv_fp_source32 __aligned(4);
+static volatile uint32_t g_riscv_fp_target32 __aligned(4);
+static volatile uint32_t g_riscv_fp_sink32 __aligned(4);
+#if defined(CONFIG_RISCV_ISA_EXT_D)
+static volatile uint64_t g_riscv_fp_source64 __aligned(8);
+static volatile uint64_t g_riscv_fp_target64 __aligned(8);
+static volatile uint64_t g_riscv_fp_sink64 __aligned(8);
+#endif
+#endif
+
+__attribute__((noinline))
+static void z_test_watchpoint_scalar_stores(
+	volatile uint64_t *addr, uintptr_t value)
+{
+#if __riscv_xlen >= 64
+	__asm__ volatile(
+		".option push\n"
+		".option norvc\n"
+		"sb %1, 0(%0)\n"
+		"sh %1, 0(%0)\n"
+		"sw %1, 0(%0)\n"
+		"sd %1, 0(%0)\n"
+		".option pop\n"
+		:
+		: "r"(addr), "r"(value)
+		: "memory");
+#else
+	__asm__ volatile(
+		".option push\n"
+		".option norvc\n"
+		"sb %1, 0(%0)\n"
+		"sh %1, 0(%0)\n"
+		"sw %1, 0(%0)\n"
+		".option pop\n"
+		:
+		: "r"(addr), "r"(value)
+		: "memory");
+#endif
+}
+
+__attribute__((noinline))
+static uintptr_t z_test_watchpoint_scalar_loads(volatile uint64_t *addr)
+{
+	uintptr_t value;
+
+#if __riscv_xlen >= 64
+	__asm__ volatile(
+		".option push\n"
+		".option norvc\n"
+		"lb %0, 0(%1)\n"
+		"lbu %0, 0(%1)\n"
+		"lh %0, 0(%1)\n"
+		"lhu %0, 0(%1)\n"
+		"lw %0, 0(%1)\n"
+		"lwu %0, 0(%1)\n"
+		"ld %0, 0(%1)\n"
+		".option pop\n"
+		: "=&r"(value)
+		: "r"(addr)
+		: "memory");
+#else
+	__asm__ volatile(
+		".option push\n"
+		".option norvc\n"
+		"lb %0, 0(%1)\n"
+		"lbu %0, 0(%1)\n"
+		"lh %0, 0(%1)\n"
+		"lhu %0, 0(%1)\n"
+		"lw %0, 0(%1)\n"
+		".option pop\n"
+		: "=&r"(value)
+		: "r"(addr)
+		: "memory");
+#endif
+	return value;
+}
+
+#if defined(CONFIG_RISCV_ISA_EXT_ZAAMO)
+__attribute__((noinline))
+static uint32_t z_test_watchpoint_amo32_all(
+	volatile uint32_t *addr, uint32_t value)
+{
+	uintptr_t old;
+
+	__asm__ volatile(
+		"amoadd.w.aqrl %0, %2, (%1)\n"
+		"amoswap.w %0, %2, (%1)\n"
+		"amoxor.w %0, %2, (%1)\n"
+		"amoor.w %0, %2, (%1)\n"
+		"amoand.w %0, %2, (%1)\n"
+		"amomin.w %0, %2, (%1)\n"
+		"amomax.w %0, %2, (%1)\n"
+		"amominu.w %0, %2, (%1)\n"
+		"amomaxu.w %0, %2, (%1)\n"
+		: "=&r"(old)
+		: "r"(addr), "r"((uintptr_t)value)
+		: "memory");
+	return (uint32_t)old;
+}
+
+#if defined(CONFIG_SMP)
+__attribute__((noinline))
+static uint32_t z_test_watchpoint_amoadd32(
+	volatile uint32_t *addr, uint32_t value)
+{
+	uintptr_t old;
+
+	__asm__ volatile("amoadd.w.aqrl %0, %2, (%1)"
+			 : "=&r"(old)
+			 : "r"(addr), "r"((uintptr_t)value)
+			 : "memory");
+	return (uint32_t)old;
+}
+#endif
+
+#if __riscv_xlen >= 64
+__attribute__((noinline))
+static uint64_t z_test_watchpoint_amoadd64(
+	volatile uint64_t *addr, uint64_t value)
+{
+	uint64_t old;
+
+	__asm__ volatile("amoadd.d.aqrl %0, %2, (%1)"
+			 : "=&r"(old)
+			 : "r"(addr), "r"(value)
+			 : "memory");
+	return old;
+}
+#endif
+#endif
+
+
+#if defined(CONFIG_FPU) && defined(CONFIG_RISCV_ISA_EXT_F)
+__attribute__((noinline))
+static void z_test_watchpoint_fp_store32(
+	volatile void *target, volatile void *source)
+{
+	__asm__ volatile(
+		".option push\n"
+		".option norvc\n"
+		"flw ft0, 0(%1)\n"
+		"fsw ft0, 0(%0)\n"
+		".option pop\n"
+		:
+		: "r"(target), "r"(source)
+		: "ft0", "memory");
+}
+
+__attribute__((noinline))
+static void z_test_watchpoint_fp_load32(
+	volatile void *source, volatile void *sink)
+{
+	__asm__ volatile(
+		".option push\n"
+		".option norvc\n"
+		"flw ft0, 0(%0)\n"
+		"fsw ft0, 0(%1)\n"
+		".option pop\n"
+		:
+		: "r"(source), "r"(sink)
+		: "ft0", "memory");
+}
+
+#if defined(CONFIG_RISCV_ISA_EXT_D)
+__attribute__((noinline))
+static void z_test_watchpoint_fp_store64(
+	volatile void *target, volatile void *source)
+{
+	__asm__ volatile(
+		".option push\n"
+		".option norvc\n"
+		"fld ft0, 0(%1)\n"
+		"fsd ft0, 0(%0)\n"
+		".option pop\n"
+		:
+		: "r"(target), "r"(source)
+		: "ft0", "memory");
+}
+
+__attribute__((noinline))
+static void z_test_watchpoint_fp_load64(
+	volatile void *source, volatile void *sink)
+{
+	__asm__ volatile(
+		".option push\n"
+		".option norvc\n"
+		"fld ft0, 0(%0)\n"
+		"fsd ft0, 0(%1)\n"
+		".option pop\n"
+		:
+		: "r"(source), "r"(sink)
+		: "ft0", "memory");
+}
+#endif
+#endif
+
+#if defined(CONFIG_FPU) && defined(CONFIG_RISCV_ISA_EXT_ZCF)
+__attribute__((noinline))
+static void z_test_watchpoint_c_fp_store32(
+	volatile void *target, volatile void *source)
+{
+	register uintptr_t base __asm__("a0") = (uintptr_t)target;
+
+	__asm__ volatile(
+		"flw fa0, 0(%1)\n"
+		".option push\n"
+		".option rvc\n"
+		"c.fsw fa0, 0(a0)\n"
+		".option pop\n"
+		:
+		: "r"(base), "r"(source)
+		: "fa0", "memory");
+}
+
+__attribute__((noinline))
+static void z_test_watchpoint_c_fp_load32(
+	volatile void *source, volatile void *sink)
+{
+	register uintptr_t base __asm__("a0") = (uintptr_t)source;
+
+	__asm__ volatile(
+		".option push\n"
+		".option rvc\n"
+		"c.flw fa0, 0(a0)\n"
+		".option pop\n"
+		"fsw fa0, 0(%1)\n"
+		:
+		: "r"(base), "r"(sink)
+		: "fa0", "memory");
+}
+#endif
+
+#if defined(CONFIG_FPU) && defined(CONFIG_RISCV_ISA_EXT_ZCD)
+__attribute__((noinline))
+static void z_test_watchpoint_c_fp_store64(
+	volatile void *target, volatile void *source)
+{
+	register uintptr_t base __asm__("a0") = (uintptr_t)target;
+
+	__asm__ volatile(
+		"fld fa0, 0(%1)\n"
+		".option push\n"
+		".option rvc\n"
+		"c.fsd fa0, 0(a0)\n"
+		".option pop\n"
+		:
+		: "r"(base), "r"(source)
+		: "fa0", "memory");
+}
+
+__attribute__((noinline))
+static void z_test_watchpoint_c_fp_load64(
+	volatile void *source, volatile void *sink)
+{
+	register uintptr_t base __asm__("a0") = (uintptr_t)source;
+
+	__asm__ volatile(
+		".option push\n"
+		".option rvc\n"
+		"c.fld fa0, 0(a0)\n"
+		".option pop\n"
+		"fsd fa0, 0(%1)\n"
+		:
+		: "r"(base), "r"(sink)
+		: "fa0", "memory");
+}
+#endif
+
+__attribute__((noinline))
+static void z_test_watchpoint_store32(volatile uint32_t *addr, uint32_t value)
+{
+	__asm__ volatile(
+		".option push\n"
+		".option norvc\n"
+		"sw %1, 0(%0)\n"
+		".option pop\n"
+		:
+		: "r"(addr), "r"(value)
+		: "memory");
+}
+
+#if defined(CONFIG_RISCV_ISA_EXT_ZCA)
+__attribute__((noinline))
+static void z_test_watchpoint_c_store(volatile uint32_t *addr, uint32_t value)
+{
+	register uintptr_t base __asm__("a0") = (uintptr_t)addr;
+	register uint32_t data __asm__("a1") = value;
+
+	__asm__ volatile(
+		".option push\n"
+		".option rvc\n"
+		"c.sw a1, 0(a0)\n"
+		".option pop\n"
+		:
+		: "r"(base), "r"(data)
+		: "memory");
+}
+
+#if __riscv_xlen < 64
+__attribute__((noinline))
+static uint32_t z_test_watchpoint_c_load(volatile uint32_t *addr)
+{
+	register uintptr_t base __asm__("a0") = (uintptr_t)addr;
+	register uint32_t data __asm__("a1");
+
+	__asm__ volatile(
+		".option push\n"
+		".option rvc\n"
+		"c.lw %0, 0(%1)\n"
+		".option pop\n"
+		: "=r"(data)
+		: "r"(base)
+		: "memory");
+	return data;
+}
+
+#endif
+
+#if __riscv_xlen >= 64
+__attribute__((noinline))
+static void z_test_watchpoint_c_store64(
+	volatile uint64_t *addr, uint64_t value)
+{
+	register uintptr_t base __asm__("a0") = (uintptr_t)addr;
+	register uint64_t data __asm__("a1") = value;
+
+	__asm__ volatile(
+		".option push\n"
+		".option rvc\n"
+		"c.sd a1, 0(a0)\n"
+		".option pop\n"
+		:
+		: "r"(base), "r"(data)
+		: "memory");
+}
+
+__attribute__((noinline))
+static uint64_t z_test_watchpoint_c_load64(volatile uint64_t *addr)
+{
+	register uintptr_t base __asm__("a0") = (uintptr_t)addr;
+	register uint64_t data __asm__("a1");
+
+	__asm__ volatile(
+		".option push\n"
+		".option rvc\n"
+		"c.ld %0, 0(%1)\n"
+		".option pop\n"
+		: "=r"(data)
+		: "r"(base)
+		: "memory");
+	return data;
+}
+#endif
+#endif
+
 static const uint16_t g_ebreak32[] __aligned(2) = {0x0073U, 0x0010U};
 static const uint16_t g_ebreak16 __aligned(2) = 0x9002U;
 
@@ -649,6 +1025,288 @@ ZTEST(watchpoint, test_riscv_unrepresentable_ranges)
 	zassert_equal(k_watchpoint_add(&non_power_of_two), -ENOTSUP);
 	zassert_equal(k_watchpoint_add(&unaligned), -ENOTSUP);
 }
+
+static void verify_riscv_store_persistence(
+	void (*store)(volatile uint32_t *addr, uint32_t value),
+	struct k_watchpoint *wp)
+{
+	reset_callback_state();
+	g_watched = 0U;
+	wp_add_or_skip(wp);
+
+	store(&g_watched, 0x11223344U);
+	zassert_equal(atomic_get(&g_cb_count), 1);
+	zassert_not_equal(g_cb_timing, K_WATCHPOINT_TIMING_UNKNOWN);
+	zassert_true(k_watchpoint_is_active(wp),
+		     "watchpoint became one-shot");
+
+	store(&g_watched, 0x55667788U);
+	zassert_equal(atomic_get(&g_cb_count), 2);
+	zassert_equal(g_watched, 0x55667788U);
+	zassert_ok(k_watchpoint_remove(wp));
+}
+
+ZTEST(watchpoint, test_riscv_persistent_32bit_store)
+{
+	static K_WATCHPOINT_DEFINE(wp, (void *)&g_watched, 1U,
+				   K_WATCHPOINT_WRITE, callback, NULL);
+
+	verify_riscv_store_persistence(z_test_watchpoint_store32, &wp);
+}
+
+#if defined(CONFIG_RISCV_ISA_EXT_ZCA)
+ZTEST(watchpoint, test_riscv_persistent_compressed_store)
+{
+	static K_WATCHPOINT_DEFINE(wp, (void *)&g_watched, 1U,
+				   K_WATCHPOINT_WRITE, callback, NULL);
+
+	verify_riscv_store_persistence(z_test_watchpoint_c_store, &wp);
+}
+#endif
+
+
+ZTEST(watchpoint, test_riscv_back_to_back_scalar_stores)
+{
+	static K_WATCHPOINT_DEFINE(wp, (void *)&g_riscv_scalar_target, 1U,
+				   K_WATCHPOINT_WRITE, callback, NULL);
+	const int stores_per_call = __riscv_xlen >= 64 ? 4 : 3;
+
+	reset_callback_state();
+	g_riscv_scalar_target = 0U;
+	wp_add_or_skip(&wp);
+
+	z_test_watchpoint_scalar_stores(&g_riscv_scalar_target, 0x5aU);
+	zassert_equal(atomic_get(&g_cb_count), stores_per_call);
+	zassert_true(k_watchpoint_is_active(&wp));
+	zassert_false(g_cb_rearm_required);
+
+	z_test_watchpoint_scalar_stores(&g_riscv_scalar_target, 0xa5U);
+	zassert_equal(atomic_get(&g_cb_count), 2 * stores_per_call);
+	zassert_ok(k_watchpoint_remove(&wp));
+}
+
+ZTEST(watchpoint, test_riscv_back_to_back_scalar_loads)
+{
+	static K_WATCHPOINT_DEFINE(wp, (void *)&g_riscv_scalar_target, 1U,
+				   K_WATCHPOINT_READ, callback, NULL);
+	const int loads_per_call = __riscv_xlen >= 64 ? 7 : 5;
+
+	reset_callback_state();
+	g_riscv_scalar_target = UINT64_C(0x1122334455667788);
+	wp_add_or_skip(&wp);
+
+	(void)z_test_watchpoint_scalar_loads(&g_riscv_scalar_target);
+	zassert_equal(atomic_get(&g_cb_count), loads_per_call);
+	zassert_true(k_watchpoint_is_active(&wp));
+	zassert_false(g_cb_rearm_required);
+
+	(void)z_test_watchpoint_scalar_loads(&g_riscv_scalar_target);
+	zassert_equal(atomic_get(&g_cb_count), 2 * loads_per_call);
+	zassert_ok(k_watchpoint_remove(&wp));
+}
+
+#if defined(CONFIG_RISCV_ISA_EXT_ZCA)
+#if __riscv_xlen < 64
+ZTEST(watchpoint, test_riscv_persistent_compressed_load)
+{
+	static K_WATCHPOINT_DEFINE(wp, (void *)&g_watched, 1U,
+				   K_WATCHPOINT_READ, callback, NULL);
+
+	reset_callback_state();
+	g_watched = 0x12345678U;
+	wp_add_or_skip(&wp);
+
+	zassert_equal(z_test_watchpoint_c_load(&g_watched), 0x12345678U);
+	zassert_equal(atomic_get(&g_cb_count), 1);
+	zassert_true(k_watchpoint_is_active(&wp));
+	zassert_equal(z_test_watchpoint_c_load(&g_watched), 0x12345678U);
+	zassert_equal(atomic_get(&g_cb_count), 2);
+	zassert_ok(k_watchpoint_remove(&wp));
+}
+
+#endif
+
+#if __riscv_xlen >= 64
+ZTEST(watchpoint, test_riscv_persistent_compressed_64bit_accesses)
+{
+	static K_WATCHPOINT_DEFINE(write_wp,
+				   (void *)&g_riscv_scalar_target, 1U,
+				   K_WATCHPOINT_WRITE, callback, NULL);
+	static K_WATCHPOINT_DEFINE(read_wp,
+				   (void *)&g_riscv_scalar_target, 1U,
+				   K_WATCHPOINT_READ, callback, NULL);
+
+	reset_callback_state();
+	g_riscv_scalar_target = 0U;
+	wp_add_or_skip(&write_wp);
+	z_test_watchpoint_c_store64(&g_riscv_scalar_target,
+				    UINT64_C(0x1122334455667788));
+	z_test_watchpoint_c_store64(&g_riscv_scalar_target,
+				    UINT64_C(0x8877665544332211));
+	zassert_equal(atomic_get(&g_cb_count), 2);
+	zassert_true(k_watchpoint_is_active(&write_wp));
+	zassert_ok(k_watchpoint_remove(&write_wp));
+
+	reset_callback_state();
+	wp_add_or_skip(&read_wp);
+	zassert_equal(z_test_watchpoint_c_load64(&g_riscv_scalar_target),
+		      UINT64_C(0x8877665544332211));
+	zassert_equal(z_test_watchpoint_c_load64(&g_riscv_scalar_target),
+		      UINT64_C(0x8877665544332211));
+	zassert_equal(atomic_get(&g_cb_count), 2);
+	zassert_true(k_watchpoint_is_active(&read_wp));
+	zassert_ok(k_watchpoint_remove(&read_wp));
+}
+#endif
+#endif
+
+#if defined(CONFIG_RISCV_ISA_EXT_ZAAMO)
+ZTEST(watchpoint, test_riscv_persistent_zaamo_word_operations)
+{
+	static K_WATCHPOINT_DEFINE(wp, (void *)&g_riscv_amo32, 1U,
+				   K_WATCHPOINT_WRITE, callback, NULL);
+
+	reset_callback_state();
+	g_riscv_amo32 = 0x10U;
+	wp_add_or_skip(&wp);
+
+	(void)z_test_watchpoint_amo32_all(&g_riscv_amo32, 0x5aU);
+	zassert_equal(atomic_get(&g_cb_count), 9);
+	zassert_equal(g_riscv_amo32, 0x5aU);
+	zassert_true(k_watchpoint_is_active(&wp));
+	zassert_false(g_cb_rearm_required);
+
+	(void)z_test_watchpoint_amo32_all(&g_riscv_amo32, 0x5aU);
+	zassert_equal(atomic_get(&g_cb_count), 18);
+	zassert_equal(g_riscv_amo32, 0x5aU);
+	zassert_ok(k_watchpoint_remove(&wp));
+}
+
+#if __riscv_xlen >= 64
+ZTEST(watchpoint, test_riscv_persistent_zaamo_doubleword)
+{
+	static K_WATCHPOINT_DEFINE(wp, (void *)&g_riscv_amo64, 1U,
+				   K_WATCHPOINT_WRITE, callback, NULL);
+
+	reset_callback_state();
+	g_riscv_amo64 = 3U;
+	wp_add_or_skip(&wp);
+	(void)z_test_watchpoint_amoadd64(&g_riscv_amo64, 4U);
+	(void)z_test_watchpoint_amoadd64(&g_riscv_amo64, 4U);
+	zassert_equal(atomic_get(&g_cb_count), 2);
+	zassert_equal(g_riscv_amo64, 11U);
+	zassert_true(k_watchpoint_is_active(&wp));
+	zassert_ok(k_watchpoint_remove(&wp));
+}
+#endif
+#endif
+
+
+#if defined(CONFIG_FPU) && defined(CONFIG_RISCV_ISA_EXT_F)
+typedef void (*riscv_fp_access_t)(volatile void *first,
+				  volatile void *second);
+
+static void verify_riscv_fp_persistence(
+	struct k_watchpoint *write_wp, struct k_watchpoint *read_wp,
+	riscv_fp_access_t store, riscv_fp_access_t load,
+	volatile void *target, volatile void *source, volatile void *sink)
+{
+	reset_callback_state();
+	wp_add_or_skip(write_wp);
+	store(target, source);
+	store(target, source);
+	zassert_equal(atomic_get(&g_cb_count), 2);
+	zassert_true(k_watchpoint_is_active(write_wp));
+	zassert_false(g_cb_rearm_required);
+	zassert_ok(k_watchpoint_remove(write_wp));
+
+	reset_callback_state();
+	wp_add_or_skip(read_wp);
+	load(target, sink);
+	load(target, sink);
+	zassert_equal(atomic_get(&g_cb_count), 2);
+	zassert_true(k_watchpoint_is_active(read_wp));
+	zassert_false(g_cb_rearm_required);
+	zassert_ok(k_watchpoint_remove(read_wp));
+}
+ZTEST(watchpoint, test_riscv_persistent_fp32_accesses)
+{
+	static K_WATCHPOINT_DEFINE(write_wp, (void *)&g_riscv_fp_target32,
+				   1U, K_WATCHPOINT_WRITE, callback, NULL);
+	static K_WATCHPOINT_DEFINE(read_wp, (void *)&g_riscv_fp_target32,
+				   1U, K_WATCHPOINT_READ, callback, NULL);
+
+	g_riscv_fp_source32 = 0x3f800000U;
+	g_riscv_fp_target32 = 0U;
+	g_riscv_fp_sink32 = 0U;
+	verify_riscv_fp_persistence(
+		&write_wp, &read_wp, z_test_watchpoint_fp_store32,
+		z_test_watchpoint_fp_load32, &g_riscv_fp_target32,
+		&g_riscv_fp_source32, &g_riscv_fp_sink32);
+	zassert_equal(g_riscv_fp_target32, g_riscv_fp_source32);
+	zassert_equal(g_riscv_fp_sink32, g_riscv_fp_target32);
+}
+
+#if defined(CONFIG_RISCV_ISA_EXT_D)
+ZTEST(watchpoint, test_riscv_persistent_fp64_accesses)
+{
+	static K_WATCHPOINT_DEFINE(write_wp, (void *)&g_riscv_fp_target64,
+				   1U, K_WATCHPOINT_WRITE, callback, NULL);
+	static K_WATCHPOINT_DEFINE(read_wp, (void *)&g_riscv_fp_target64,
+				   1U, K_WATCHPOINT_READ, callback, NULL);
+
+	g_riscv_fp_source64 = UINT64_C(0x3ff0000000000000);
+	g_riscv_fp_target64 = 0U;
+	g_riscv_fp_sink64 = 0U;
+	verify_riscv_fp_persistence(
+		&write_wp, &read_wp, z_test_watchpoint_fp_store64,
+		z_test_watchpoint_fp_load64, &g_riscv_fp_target64,
+		&g_riscv_fp_source64, &g_riscv_fp_sink64);
+	zassert_equal(g_riscv_fp_target64, g_riscv_fp_source64);
+	zassert_equal(g_riscv_fp_sink64, g_riscv_fp_target64);
+}
+#endif
+#endif
+
+#if defined(CONFIG_FPU) && defined(CONFIG_RISCV_ISA_EXT_ZCF)
+ZTEST(watchpoint, test_riscv_persistent_compressed_fp32_accesses)
+{
+	static K_WATCHPOINT_DEFINE(write_wp, (void *)&g_riscv_fp_target32,
+				   1U, K_WATCHPOINT_WRITE, callback, NULL);
+	static K_WATCHPOINT_DEFINE(read_wp, (void *)&g_riscv_fp_target32,
+				   1U, K_WATCHPOINT_READ, callback, NULL);
+
+	g_riscv_fp_source32 = 0x3f800000U;
+	g_riscv_fp_target32 = 0U;
+	g_riscv_fp_sink32 = 0U;
+	verify_riscv_fp_persistence(
+		&write_wp, &read_wp, z_test_watchpoint_c_fp_store32,
+		z_test_watchpoint_c_fp_load32, &g_riscv_fp_target32,
+		&g_riscv_fp_source32, &g_riscv_fp_sink32);
+	zassert_equal(g_riscv_fp_target32, g_riscv_fp_source32);
+	zassert_equal(g_riscv_fp_sink32, g_riscv_fp_target32);
+}
+#endif
+
+#if defined(CONFIG_FPU) && defined(CONFIG_RISCV_ISA_EXT_ZCD)
+ZTEST(watchpoint, test_riscv_persistent_compressed_fp64_accesses)
+{
+	static K_WATCHPOINT_DEFINE(write_wp, (void *)&g_riscv_fp_target64,
+				   1U, K_WATCHPOINT_WRITE, callback, NULL);
+	static K_WATCHPOINT_DEFINE(read_wp, (void *)&g_riscv_fp_target64,
+				   1U, K_WATCHPOINT_READ, callback, NULL);
+
+	g_riscv_fp_source64 = UINT64_C(0x3ff0000000000000);
+	g_riscv_fp_target64 = 0U;
+	g_riscv_fp_sink64 = 0U;
+	verify_riscv_fp_persistence(
+		&write_wp, &read_wp, z_test_watchpoint_c_fp_store64,
+		z_test_watchpoint_c_fp_load64, &g_riscv_fp_target64,
+		&g_riscv_fp_source64, &g_riscv_fp_sink64);
+	zassert_equal(g_riscv_fp_target64, g_riscv_fp_source64);
+	zassert_equal(g_riscv_fp_sink64, g_riscv_fp_target64);
+}
+#endif
 
 ZTEST(watchpoint, test_riscv_overlap_rejected)
 {
@@ -732,6 +1390,14 @@ ZTEST(watchpoint, test_hit_from_isr)
 	zexpect_equal(atomic_get(&g_cb_count), 1);
 	zexpect_equal(g_watched, 0x76543210U);
 	zexpect_not_null(g_cb_pc);
+	zexpect_equal(g_cb_rearm_required,
+		      !k_watchpoint_is_active(&wp));
+#if defined(CONFIG_RISCV)
+	if (g_cb_timing == K_WATCHPOINT_TIMING_BEFORE &&
+	    !IS_ENABLED(CONFIG_RISCV_HAS_TCONTROL)) {
+		zexpect_true(g_cb_rearm_required);
+	}
+#endif
 #if defined(CONFIG_WATCHPOINT_CALLSTACK)
 	zexpect_true(g_cb_callstack_depth > 0U);
 	if (g_cb_callstack_depth > 0U) {
@@ -830,6 +1496,47 @@ static void writer_fn(void *p1, void *p2, void *p3)
 	*(volatile uint32_t *)p1 = 0xABCD1234U;
 }
 
+#if defined(CONFIG_RISCV)
+static void writer_twice_fn(void *p1, void *p2, void *p3)
+{
+	ARG_UNUSED(p2);
+	ARG_UNUSED(p3);
+
+	volatile uint32_t *target = p1;
+
+	*target = 0x12345678U;
+	*target = 0x87654321U;
+}
+#endif
+
+#if defined(CONFIG_RISCV) && defined(CONFIG_RISCV_ISA_EXT_ZAAMO)
+struct smp_amo_writer_request {
+	volatile uint32_t *target;
+	struct k_sem *ready;
+	struct k_sem *start;
+	int iterations;
+	int ret;
+};
+
+static void amo_writer_fn(void *p1, void *p2, void *p3)
+{
+	ARG_UNUSED(p2);
+	ARG_UNUSED(p3);
+
+	struct smp_amo_writer_request *request = p1;
+
+	k_sem_give(request->ready);
+	request->ret = k_sem_take(request->start, K_MSEC(500));
+	if (request->ret != 0) {
+		return;
+	}
+
+	for (int i = 0; i < request->iterations; i++) {
+		(void)z_test_watchpoint_amoadd32(request->target, 1U);
+	}
+}
+#endif
+
 static int run_on_cpu(k_thread_entry_t entry, unsigned int cpu,
 		      void *arg)
 {
@@ -869,6 +1576,101 @@ ZTEST(watchpoint, test_smp_fires_on_remote_cpu)
 	zassert_equal(g_cb_cpu, remote_cpu);
 	zassert_ok(k_watchpoint_remove(&wp));
 }
+
+#if defined(CONFIG_RISCV)
+ZTEST(watchpoint, test_riscv_smp_persistent_on_remote_cpu)
+{
+	if (arch_num_cpus() < 2) {
+		ztest_test_skip();
+	}
+
+	static K_WATCHPOINT_DEFINE(wp, (void *)&g_watched, 1U,
+				   K_WATCHPOINT_WRITE, callback, NULL);
+	unsigned int remote_cpu =
+		(arch_curr_cpu()->id + 1U) % arch_num_cpus();
+
+	reset_callback_state();
+	g_watched = 0U;
+	wp_add_or_skip(&wp);
+	zassert_ok(run_on_cpu(writer_twice_fn, remote_cpu,
+			      (void *)&g_watched));
+
+	zassert_equal(atomic_get(&g_cb_count), 2);
+	zassert_equal(g_cb_cpu, remote_cpu);
+	zassert_equal(g_watched, 0x87654321U);
+	zassert_true(k_watchpoint_is_active(&wp));
+	zassert_ok(k_watchpoint_remove(&wp));
+}
+
+#if defined(CONFIG_RISCV_ISA_EXT_ZAAMO)
+ZTEST(watchpoint, test_riscv_smp_concurrent_amo_hits)
+{
+	if (arch_num_cpus() < 2) {
+		ztest_test_skip();
+	}
+
+	static atomic_t hit_count;
+	static K_WATCHPOINT_DEFINE(wp, (void *)&g_riscv_amo32, 1U,
+				   K_WATCHPOINT_WRITE, count_callback,
+				   &hit_count);
+	struct k_sem ready;
+	struct k_sem start;
+	struct smp_amo_writer_request first = {
+		.target = &g_riscv_amo32,
+		.ready = &ready,
+		.start = &start,
+		.iterations = 4,
+		.ret = -EINPROGRESS,
+	};
+	struct smp_amo_writer_request second = {
+		.target = &g_riscv_amo32,
+		.ready = &ready,
+		.start = &start,
+		.iterations = 4,
+		.ret = -EINPROGRESS,
+	};
+	unsigned int local_cpu = arch_curr_cpu()->id;
+	unsigned int remote_cpu = (local_cpu + 1U) % arch_num_cpus();
+
+	atomic_set(&hit_count, 0);
+	g_riscv_amo32 = 0U;
+	k_sem_init(&ready, 0, 2);
+	k_sem_init(&start, 0, 2);
+	wp_add_or_skip(&wp);
+
+	k_tid_t first_tid = k_thread_create(
+		&g_remover_thread, g_remover_stack, SMP_STACK_SIZE,
+		amo_writer_fn, &first, NULL, NULL, K_PRIO_PREEMPT(7),
+		0, K_FOREVER);
+	k_tid_t second_tid = k_thread_create(
+		&g_adder_thread, g_adder_stack, SMP_STACK_SIZE,
+		amo_writer_fn, &second, NULL, NULL, K_PRIO_PREEMPT(7),
+		0, K_FOREVER);
+
+	k_thread_cpu_pin(first_tid, local_cpu);
+	k_thread_cpu_pin(second_tid, remote_cpu);
+	k_thread_start(first_tid);
+	k_thread_start(second_tid);
+	zassert_ok(k_sem_take(&ready, K_MSEC(500)));
+	zassert_ok(k_sem_take(&ready, K_MSEC(500)));
+	k_sem_give(&start);
+	k_sem_give(&start);
+	zassert_ok(k_thread_join(first_tid, K_MSEC(2000)));
+	zassert_ok(k_thread_join(second_tid, K_MSEC(2000)));
+
+	int hits = atomic_get(&hit_count);
+	uint32_t value = g_riscv_amo32;
+	bool active = k_watchpoint_is_active(&wp);
+
+	zassert_ok(k_watchpoint_remove(&wp));
+	zassert_ok(first.ret);
+	zassert_ok(second.ret);
+	zassert_equal(hits, first.iterations + second.iterations);
+	zassert_equal(value, (uint32_t)(first.iterations + second.iterations));
+	zassert_true(active);
+}
+#endif
+#endif
 
 struct smp_watchpoint_request {
 	struct k_watchpoint *wp;

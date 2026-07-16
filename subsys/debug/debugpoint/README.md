@@ -163,7 +163,9 @@ state from `arch_debugpoint_cpu_sync()`. The last local uninstall marks it
 inactive; subsequent CPU sync calls clear remote copies.
 
 Backends report exceptions through `z_debugpoint_hit()`. The generation-tagged
-handle, rather than a raw comparator number, identifies the logical point.
+handle, rather than a raw comparator number, identifies the logical point. The
+core exposes backend one-shot deactivation to frontends as
+`rearm_required` in the callback event.
 
 ## 5. Lifecycle and concurrency
 
@@ -470,10 +472,32 @@ used by an explicit `ebreak`. The handler uses this order:
 6. Return `-ENOENT` for an ambiguous exception so the normal fault path handles
    it rather than stealing another debugger's event.
 
-For after timing, the access has retired and the trigger is restored for future
-hits. For before or unknown timing, restoring it immediately would retrigger the
-same instruction forever. The backend therefore disables that logical point as
-a one-shot, invokes the callback, and lets thread context re-arm it.
+For after timing, the access has retired and the trigger is restored
+immediately. For a supported before-timed scalar memory instruction, the
+backend uses the same physical slot to step over the access:
+
+1. fetch and decode the faulting instruction with exception-table fixup;
+2. verify an exact-match execute trigger at the sequential next PC;
+3. invoke callbacks while every owned trigger remains disabled;
+4. mask this CPU's interrupt sources and return to the original instruction;
+5. take the execute-trigger exception before the next instruction; and
+6. restore the data triggers and interrupt enables.
+
+Supported instructions are standard integer and scalar floating-point loads
+and stores, classic Zaamo read-modify-write operations, and the `C.LW/SW`,
+`C.LD/SD`, `C.FLW/FSW`, and `C.FLD/FSD` compressed forms. Zaamo `.aq` and
+`.rl` ordering bits do not change the resume sequence. The access executes
+once while other CPUs keep their watchpoints armed.
+
+LR/SC is excluded because an intervening exception may invalidate the
+reservation. Vector memory instructions are excluded because one instruction
+may perform multiple independently restartable accesses. Unknown or custom
+memory instructions are also excluded.
+
+A fault before the next PC aborts the step and restores the saved state.
+Unknown timing, excluded instructions, unavailable execute matching, and
+contexts that cannot guarantee the completion trap remain one-shot. The
+callback reports this as `rearm_required` instead of risking a retrigger loop.
 
 `mtval` is not guaranteed to contain a useful data address for every trigger
 implementation. Consequently `access_addr_valid` and `access_size` must be
@@ -890,6 +914,10 @@ Major scenarios include:
 - concurrent SMP add serialization;
 - RISC-V unsupported range and overlap rejection;
 - explicit RISC-V `ebreak` preservation;
+- back-to-back scalar loads and stores for every base integer width;
+- compressed integer and floating-point access completion;
+- classic Zaamo operations, ordering bits, and RV64 doubleword AMO;
+- simultaneous AMO hits on two harts;
 - RISC-V per-hart remapping around a foreign trigger; and
 - remove waiting for an in-progress callback on another CPU.
 

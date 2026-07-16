@@ -113,6 +113,7 @@ int z_irq_do_offload(void);
 
 #ifdef CONFIG_DEBUGPOINT
 int z_riscv_debugpoint_handle(struct arch_esf *esf);
+void z_riscv_debugpoint_abort_step(void);
 #endif
 
 #ifdef CONFIG_FPU_SHARING

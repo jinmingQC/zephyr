@@ -136,6 +136,7 @@ static void watchpoint_callback(const struct z_debugpoint *dp,
 		.access_size = event->access_size,
 		.flags = watchpoint_flags(event->type),
 		.timing = watchpoint_timing(event->timing),
+		.rearm_required = event->rearm_required,
 		.callstack = callstack,
 		.callstack_depth = callstack_depth,
 	};
