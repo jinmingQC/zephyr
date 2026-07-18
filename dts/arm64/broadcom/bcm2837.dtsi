@@ -1,0 +1,100 @@
+/*
+ * Copyright (c) 2026
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <mem.h>
+#include <freq.h>
+
+#include <arm64/armv8-a.dtsi>
+#include <zephyr/dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0>;
+			clock-frequency = <DT_FREQ_M(1200)>;
+			enable-method = "spin-table";
+			i-cache-line-size = <64>;
+			d-cache-line-size = <64>;
+		};
+
+		cpu1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <1>;
+			clock-frequency = <DT_FREQ_M(1200)>;
+			enable-method = "spin-table";
+			i-cache-line-size = <64>;
+			d-cache-line-size = <64>;
+		};
+
+		cpu2: cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <2>;
+			clock-frequency = <DT_FREQ_M(1200)>;
+			enable-method = "spin-table";
+			i-cache-line-size = <64>;
+			d-cache-line-size = <64>;
+		};
+
+		cpu3: cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <3>;
+			clock-frequency = <DT_FREQ_M(1200)>;
+			enable-method = "spin-table";
+			i-cache-line-size = <64>;
+			d-cache-line-size = <64>;
+		};
+	};
+
+	interrupt-parent = <&local_intc>;
+
+	timer {
+		compatible = "arm,armv8-timer";
+		/* secure, non-secure, virtual, hypervisor local timer sources */
+		interrupts = <0 IRQ_DEFAULT_PRIORITY IRQ_TYPE_LEVEL>,
+			     <1 IRQ_DEFAULT_PRIORITY IRQ_TYPE_LEVEL>,
+			     <3 IRQ_DEFAULT_PRIORITY IRQ_TYPE_LEVEL>,
+			     <2 IRQ_DEFAULT_PRIORITY IRQ_TYPE_LEVEL>;
+	};
+
+	clocks {
+		clk_uart: clk-uart {
+			compatible = "fixed-clock";
+			clock-frequency = <DT_FREQ_M(48)>;
+			#clock-cells = <0>;
+		};
+	};
+
+	soc {
+		local_intc: interrupt-controller@40000000 {
+			compatible = "brcm,bcm2836-l1-intc";
+			reg = <0x40000000 0x100>;
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			status = "okay";
+		};
+
+		/*
+		 * PL011 is routed to GPIO 14/15 by the disable-bt firmware
+		 * overlay used in config.txt.
+		 */
+		uart0: uart@3f201000 {
+			compatible = "arm,pl011";
+			reg = <0x3f201000 0x200>;
+			interrupts = <89 IRQ_DEFAULT_PRIORITY IRQ_TYPE_LEVEL>;
+			interrupt-names = "uart0";
+			clocks = <&clk_uart>;
+			status = "disabled";
+		};
+	};
+};

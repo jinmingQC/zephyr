@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2026
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include <broadcom/bcm2837.dtsi>
+
+/ {
+	model = "Raspberry Pi 3 Model B Rev 1.2";
+	compatible = "raspberrypi,3-model-b", "brcm,bcm2837";
+
+	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,sram = &dram0;
+	};
+
+	/*
+	 * The VideoCore firmware loads the AArch64 image at 0x200000. Keep the
+	 * initial Zephyr region deliberately small; it can be enlarged later.
+	 */
+	dram0: memory@200000 {
+		device_type = "memory";
+		compatible = "mmio-sram";
+		reg = <0x200000 DT_SIZE_M(8)>;
+	};
+};
+
+&uart0 {
+	current-speed = <115200>;
+	status = "okay";
+};

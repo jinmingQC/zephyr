@@ -1,0 +1,18 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+if SOC_BCM2837
+
+config NUM_IRQS
+	default 96
+
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	default $(dt_node_int_prop_int,/cpus/cpu@0,clock-frequency)
+
+config MP_MAX_NUM_CPUS
+	default 4
+
+configdefault CACHE_MANAGEMENT
+	default y
+
+endif

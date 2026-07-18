@@ -1,0 +1,4 @@
+series:
+- name: bcm2837
+  socs:
+  - name: bcm2837

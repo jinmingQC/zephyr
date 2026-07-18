@@ -1,0 +1,10 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_BCM2837
+	select ARM64
+	select CPU_CORTEX_A53
+	select ARM_ARCH_TIMER if SYS_CLOCK_EXISTS
+	select ARM_CUSTOM_INTERRUPT_CONTROLLER
+	help
+	  Broadcom BCM2837 used by Raspberry Pi 3 Model B.

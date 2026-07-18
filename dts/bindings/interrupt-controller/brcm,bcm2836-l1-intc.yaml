@@ -1,0 +1,22 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+compatible: "brcm,bcm2836-l1-intc"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
+
+interrupt-cells:
+  - irq
+  - priority
+  - flags
+
+description: |
+  Broadcom BCM2836 per-core local interrupt controller.
+
+  Flat interrupt namespace used by the Zephyr BCM2837 port. Interrupts 0-3
+  are the local architectural timer sources, 4-7 are local mailboxes 0-3,
+  and 32-95 represent BCM2835 ARMCTRL GPU interrupts 0-63.

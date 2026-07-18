@@ -29,9 +29,15 @@
 
 #define INV_MPID	UINT64_MAX
 
+#ifdef CONFIG_ARM_CUSTOM_INTERRUPT_CONTROLLER
+#define SGI_SCHED_IPI	4
+#define SGI_MMCFG_IPI	5
+#define SGI_FPU_IPI	6
+#else
 #define SGI_SCHED_IPI	0
 #define SGI_MMCFG_IPI	1
 #define SGI_FPU_IPI	2
+#endif
 
 struct boot_params {
 	uint64_t mpid;
@@ -152,7 +158,11 @@ FUNC_NORETURN void arch_secondary_cpu_init(void)
 #endif
 
 #ifdef CONFIG_SMP
+#ifdef CONFIG_ARM_CUSTOM_INTERRUPT_CONTROLLER
+	z_soc_irq_secondary_init();
+#else
 	arm_gic_secondary_init();
+#endif
 
 	irq_enable(SGI_SCHED_IPI);
 #ifdef CONFIG_USERSPACE
@@ -200,14 +210,20 @@ static void send_ipi(unsigned int ipi, uint32_t cpu_bitmap)
 		}
 
 		uint64_t target_mpidr = cpu_map[i];
+#ifndef CONFIG_ARM_CUSTOM_INTERRUPT_CONTROLLER
 		uint8_t aff0;
+#endif
 
 		if (mpidr == target_mpidr || target_mpidr == INV_MPID) {
 			continue;
 		}
 
+#ifdef CONFIG_ARM_CUSTOM_INTERRUPT_CONTROLLER
+		z_soc_irq_send_ipi(ipi, target_mpidr);
+#else
 		aff0 = MPIDR_AFFLVL(target_mpidr, 0);
 		gic_raise_sgi(ipi, target_mpidr, 1 << aff0);
+#endif
 	}
 }
 
@@ -262,14 +278,20 @@ void flush_fpu_ipi_handler(const void *unused)
 void arch_flush_fpu_ipi(unsigned int cpu)
 {
 	const uint64_t mpidr = cpu_map[cpu];
+#ifndef CONFIG_ARM_CUSTOM_INTERRUPT_CONTROLLER
 	uint8_t aff0;
+#endif
 
 	if (mpidr == INV_MPID) {
 		return;
 	}
 
+#ifdef CONFIG_ARM_CUSTOM_INTERRUPT_CONTROLLER
+	z_soc_irq_send_ipi(SGI_FPU_IPI, mpidr);
+#else
 	aff0 = MPIDR_AFFLVL(mpidr, 0);
 	gic_raise_sgi(SGI_FPU_IPI, mpidr, 1 << aff0);
+#endif
 }
 
 /*
@@ -281,8 +303,13 @@ void arch_flush_fpu_ipi(unsigned int cpu)
  */
 void arch_spin_relax(void)
 {
+#ifdef CONFIG_ARM_CUSTOM_INTERRUPT_CONTROLLER
+	if (z_soc_irq_is_pending(SGI_FPU_IPI)) {
+		z_soc_irq_clear_pending(SGI_FPU_IPI);
+#else
 	if (arm_gic_irq_is_pending(SGI_FPU_IPI)) {
 		arm_gic_irq_clear_pending(SGI_FPU_IPI);
+#endif
 		/*
 		 * We may not be in IRQ context here hence cannot use
 		 * arch_flush_local_fpu() directly.
