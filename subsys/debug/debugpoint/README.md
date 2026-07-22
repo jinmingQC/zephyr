@@ -762,9 +762,11 @@ absent RISC-V base trigger CSR is not probe-safe and must be excluded through
 | `CONFIG_RISCV_HAS_DEBUG_TRIGGER` | Assert that base trigger CSRs exist. |
 | `CONFIG_RISCV_HAS_TCONTROL` | Assert that optional `tcontrol` exists. |
 
-`ARCH_HAS_WATCHPOINT` selects whether an architecture can provide the hardware
-backend. On SMP systems the architecture must also support scheduler IPIs so
-that the generic core can update each CPU synchronously.
+`ARCH_HAS_DEBUGPOINT` states that an architecture implements the generic
+backend contract. `ARCH_HAS_WATCHPOINT` selects that base capability and states
+that the backend supports memory watchpoints. On SMP systems the architecture
+must also support scheduler IPIs so that the generic core can update each CPU
+synchronously.
 
 ## 12. Test coverage
 

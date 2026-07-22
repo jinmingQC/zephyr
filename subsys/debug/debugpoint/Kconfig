@@ -2,6 +2,7 @@
 
 config DEBUGPOINT
 	bool
+	depends on ARCH_HAS_DEBUGPOINT
 	depends on MULTITHREADING
 	depends on !SMP || SCHED_IPI_SUPPORTED
 	depends on !SMP_BOOT_DELAY
