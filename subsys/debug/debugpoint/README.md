@@ -164,6 +164,8 @@ The core in `subsys/debug/debugpoint/debugpoint.c` owns:
 
 `CONFIG_DEBUGPOINT_MAX_SLOTS` limits logical objects. It does not promise that
 the hardware has that many comparators. A backend can return `-ENOSPC` earlier.
+On RISC-V it also bounds trigger CSR enumeration and the per-CPU mapping
+tables.
 
 ### 4.3 Architecture contract
 
@@ -753,18 +755,16 @@ absent RISC-V base trigger CSR is not probe-safe and must be excluded through
 
 | Option | Purpose |
 | --- | --- |
-| `CONFIG_WATCHPOINT` | Build the public API. |
-| `CONFIG_WATCHPOINT_HW` | Use the architecture hardware backend. |
+| `CONFIG_WATCHPOINT` | Enable hardware memory watchpoints. |
 | `CONFIG_WATCHPOINT_CALLSTACK` | Capture a bounded stack for each event. |
 | `CONFIG_WATCHPOINT_CALLSTACK_DEPTH` | Maximum captured entries. |
 | `CONFIG_DEBUGPOINT_MAX_SLOTS` | Generic logical-slot limit, from 1 to 32. |
 | `CONFIG_RISCV_HAS_DEBUG_TRIGGER` | Assert that base trigger CSRs exist. |
 | `CONFIG_RISCV_HAS_TCONTROL` | Assert that optional `tcontrol` exists. |
-| `CONFIG_RISCV_DEBUG_TRIGGER_MAX_SLOTS` | RISC-V scan/storage upper bound. |
 
 `ARCH_HAS_WATCHPOINT` selects whether an architecture can provide the hardware
-backend. `ARCH_HAS_DEBUGPOINT_SMP` additionally states that its current-CPU
-sync operation is safe and supported from IPI context.
+backend. On SMP systems the architecture must also support scheduler IPIs so
+that the generic core can update each CPU synchronously.
 
 ## 12. Test coverage
 

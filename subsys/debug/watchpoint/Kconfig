@@ -1,7 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 menuconfig WATCHPOINT
-	bool "Memory watchpoints"
+	bool "Memory watchpoints [EXPERIMENTAL]"
+	depends on MULTITHREADING
+	depends on ARCH_HAS_WATCHPOINT
+	depends on !SMP || SCHED_IPI_SUPPORTED
+	depends on !SMP_BOOT_DELAY
+	select DEBUGPOINT
+	select EXPERIMENTAL
 	help
 	  Enable callbacks for monitored memory reads and writes. Events report
 	  the triggering PC and, when available, the accessed address.
@@ -11,24 +17,8 @@ menuconfig WATCHPOINT
 
 if WATCHPOINT
 
-config WATCHPOINT_HW
-	bool "Hardware watchpoint backend"
-	default y
-	depends on MULTITHREADING
-	depends on ARCH_HAS_WATCHPOINT
-	depends on !SMP || ARCH_HAS_DEBUGPOINT_SMP
-	depends on !SMP_BOOT_DELAY
-	select DEBUGPOINT
-	help
-	  Use architecture debug trigger registers to monitor memory accesses
-	  without instrumenting normal load and store instructions.
-
-	  The number of simultaneously active watchpoints is limited by the
-	  hardware, typically two to four slots.
-
 config WATCHPOINT_CALLSTACK
 	bool "Capture call stack on watchpoint hit"
-	depends on WATCHPOINT_HW
 	depends on ARCH_STACKWALK
 	help
 	  Capture a bounded call stack when a watchpoint fires and expose it

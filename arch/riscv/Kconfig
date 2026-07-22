@@ -632,18 +632,7 @@ config ARCH_HAS_WATCHPOINT
 	bool
 	default y if RISCV_HAS_DEBUG_TRIGGER
 	depends on !RISCV_S_MODE
-	select ARCH_HAS_DEBUGPOINT_SMP if SMP && SCHED_IPI_SUPPORTED
-
-config RISCV_DEBUG_TRIGGER_MAX_SLOTS
-	int "Maximum RISC-V debug trigger slots"
-	default 4
-	range 1 32
-	depends on DEBUGPOINT && RISCV_HAS_DEBUG_TRIGGER
-	help
-	  Compile-time upper bound for the trigger table.
-	  The actual number of usable slots is detected at runtime by probing
-	  the tselect CSR and is limited to this value. Typical hardware
-	  provides 2-4 slots.
+	depends on !SMP || SCHED_IPI_SUPPORTED
 
 config RISCV_HAS_TCONTROL
 	bool "RISC-V platform implements the tcontrol CSR"

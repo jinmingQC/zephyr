@@ -125,7 +125,7 @@ struct riscv_before_step_state {
  * System-wide logical slots. A logical index stays stable while active and
  * does not identify a physical tselect value.
  */
-static struct riscv_trigger_slot g_slots[CONFIG_RISCV_DEBUG_TRIGGER_MAX_SLOTS];
+static struct riscv_trigger_slot g_slots[CONFIG_DEBUGPOINT_MAX_SLOTS];
 /*
  * Logical capacity derived from free, compatible triggers on the initializing hart.
  * The generic core still requires installation on every online hart.
@@ -141,7 +141,7 @@ static bool g_cpu_trigger_scan_complete[CONFIG_MP_MAX_NUM_CPUS];
 static atomic_t g_initialized;
 /* [hart][logical slot] -> physical tselect index, or -1 when unmapped. */
 static int8_t
-	g_cpu_hw_index[CONFIG_MP_MAX_NUM_CPUS][CONFIG_RISCV_DEBUG_TRIGGER_MAX_SLOTS];
+	g_cpu_hw_index[CONFIG_MP_MAX_NUM_CPUS][CONFIG_DEBUGPOINT_MAX_SLOTS];
 /* At most one timing-before step-over can be in flight on each hart. */
 static struct riscv_before_step_state g_cpu_before_step[CONFIG_MP_MAX_NUM_CPUS];
 /*
@@ -1398,8 +1398,8 @@ int z_riscv_debugpoint_handle(struct arch_esf *esf)
 
 	__asm__ volatile("csrr %0, mtval" : "=r"(access_addr));
 
-	uintptr_t trigger_state[CONFIG_RISCV_DEBUG_TRIGGER_MAX_SLOTS] = {0};
-	struct riscv_hit hits[CONFIG_RISCV_DEBUG_TRIGGER_MAX_SLOTS];
+	uintptr_t trigger_state[CONFIG_DEBUGPOINT_MAX_SLOTS] = {0};
+	struct riscv_hit hits[CONFIG_DEBUGPOINT_MAX_SLOTS];
 	int hit_count = 0;
 	bool owned_trap = false;
 

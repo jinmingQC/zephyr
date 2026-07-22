@@ -17,7 +17,6 @@ enum watchpoint_state {
 	WATCHPOINT_STATE_DISARMING,
 };
 
-#if defined(CONFIG_WATCHPOINT_HW)
 static enum z_debugpoint_type watchpoint_type(uint32_t flags)
 {
 	if ((flags & K_WATCHPOINT_RW) == K_WATCHPOINT_RW) {
@@ -147,15 +146,10 @@ static void watchpoint_callback(const struct z_debugpoint_config *config,
 		watchpoint_deactivate(wp);
 	}
 }
-#endif
 
 static bool watchpoint_in_callback(void)
 {
-#if defined(CONFIG_WATCHPOINT_HW)
 	return z_debugpoint_in_callback();
-#else
-	return false;
-#endif
 }
 
 static bool invalid_call_context(void)
@@ -186,7 +180,6 @@ int k_watchpoint_add(struct k_watchpoint *wp)
 		return -EBUSY;
 	}
 
-#if defined(CONFIG_WATCHPOINT_HW)
 	struct z_debugpoint_config config = {
 		.type = watchpoint_type(wp->flags),
 		.addr = wp->addr,
@@ -206,10 +199,6 @@ int k_watchpoint_add(struct k_watchpoint *wp)
 	(void)atomic_cas(&wp->_state, WATCHPOINT_STATE_ARMING,
 			 WATCHPOINT_STATE_DISARMED);
 	return ret;
-#else
-	atomic_set(&wp->_state, WATCHPOINT_STATE_DISARMED);
-	return -ENOTSUP;
-#endif
 }
 
 int k_watchpoint_remove(struct k_watchpoint *wp)
@@ -226,15 +215,11 @@ int k_watchpoint_remove(struct k_watchpoint *wp)
 	for (;;) {
 		state = atomic_get(&wp->_state);
 		if (state == WATCHPOINT_STATE_DISARMED) {
-#if defined(CONFIG_WATCHPOINT_HW)
 			if (atomic_cas(&wp->_state, WATCHPOINT_STATE_DISARMED,
 				       WATCHPOINT_STATE_DISARMING)) {
 				break;
 			}
 			continue;
-#else
-			return 0;
-#endif
 		}
 		if (state != WATCHPOINT_STATE_ARMED) {
 			return -EBUSY;
@@ -244,7 +229,6 @@ int k_watchpoint_remove(struct k_watchpoint *wp)
 		}
 	}
 
-#if defined(CONFIG_WATCHPOINT_HW)
 	int ret = z_debugpoint_remove(wp->_handle);
 
 	if (ret == 0) {
@@ -255,10 +239,6 @@ int k_watchpoint_remove(struct k_watchpoint *wp)
 		(void)atomic_cas(&wp->_state, WATCHPOINT_STATE_DISARMING, state);
 	}
 	return ret;
-#else
-	atomic_set(&wp->_state, state);
-	return -ENOTSUP;
-#endif
 }
 
 bool k_watchpoint_is_active(const struct k_watchpoint *wp)
