@@ -245,6 +245,7 @@ void z_riscv_fault(struct arch_esf *esf)
 		if (mcause == 3UL && z_riscv_debugpoint_handle(esf) == 0) {
 			return;
 		}
+		z_riscv_debugpoint_abort_step();
 	}
 #endif /* CONFIG_DEBUGPOINT */
 
