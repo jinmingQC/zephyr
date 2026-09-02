@@ -99,11 +99,14 @@ set_compiler_property(PROPERTY no_printf_return_value)
 # Flags for coverage generation
 set_compiler_property(PROPERTY coverage)
 
-# Compiler-specific flags for heap KASAN (-fsanitize=kernel-address + tuning params).
-set_compiler_property(PROPERTY heap_kasan)
+# Compiler-specific flags for lightweight KASAN instrumentation.
+set_compiler_property(PROPERTY kasan)
+set_compiler_property(PROPERTY kasan_global)
+set_compiler_property(PROPERTY kasan_no_globals)
+set_compiler_property(PROPERTY kasan_no_reads)
 
-# Flag to disable heap KASAN instrumentation on a specific source file.
-set_compiler_property(PROPERTY no_heap_kasan)
+# Flag to disable KASAN instrumentation on a specific source file.
+set_compiler_property(PROPERTY no_kasan)
 
 # Security canaries flags.
 set_compiler_property(PROPERTY security_canaries)

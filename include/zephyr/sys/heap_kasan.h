@@ -6,7 +6,7 @@
 
 /**
  * @file
- * @brief Lightweight heap write address sanitizer (Heap KASAN) API.
+ * @brief Lightweight heap address sanitizer (Heap KASAN) API.
  */
 
 #ifndef ZEPHYR_INCLUDE_SYS_HEAP_KASAN_H_
@@ -48,7 +48,7 @@ extern "C" {
  * violations without triggering a panic.
  *
  * @param addr  Violating address.
- * @param size  Write size in bytes.
+ * @param size  Access size in bytes.
  */
 void heap_kasan_report(uintptr_t addr, size_t size);
 

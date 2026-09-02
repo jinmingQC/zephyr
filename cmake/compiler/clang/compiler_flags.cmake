@@ -135,16 +135,17 @@ else()
   set_compiler_property(PROPERTY coverage --coverage -fno-inline)
 endif()
 
-# clang flags for heap KASAN instrumentation.
-set_compiler_property(PROPERTY heap_kasan
+# Clang flags for lightweight KASAN instrumentation.
+set_compiler_property(PROPERTY kasan
   -fsanitize=kernel-address
   -mllvm;-asan-instrumentation-with-call-threshold=0
-  -mllvm;-asan-globals=0
-  -mllvm;-asan-stack=0
-  -mllvm;-asan-instrument-reads=0)
+  -mllvm;-asan-stack=0)
+set_compiler_property(PROPERTY kasan_global -mllvm;-asan-globals=1)
+set_compiler_property(PROPERTY kasan_no_globals -mllvm;-asan-globals=0)
+set_compiler_property(PROPERTY kasan_no_reads -mllvm;-asan-instrument-reads=0)
 
-# Flag to disable heap KASAN instrumentation on a specific source file.
-set_compiler_property(PROPERTY no_heap_kasan -fno-sanitize=kernel-address)
+# Flag to disable KASAN instrumentation on a specific source file.
+set_compiler_property(PROPERTY no_kasan -fno-sanitize=kernel-address)
 
 # No property flag, clang doesn't understand fortify at all
 set_compiler_property(PROPERTY security_fortify_compile_time)

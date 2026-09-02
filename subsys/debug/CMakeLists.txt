@@ -11,6 +11,11 @@ zephyr_sources_ifdef(
   )
 
 add_subdirectory_ifdef(
+  CONFIG_KASAN
+  kasan
+  )
+
+add_subdirectory_ifdef(
   CONFIG_THREAD_ANALYZER
   thread_analyzer
   )

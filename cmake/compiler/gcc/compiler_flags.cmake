@@ -177,21 +177,23 @@ set_property(TARGET compiler-cpp PROPERTY no_rtti "-fno-rtti")
 # gcc flags for coverage generation
 set_compiler_property(PROPERTY coverage -fprofile-arcs -ftest-coverage -fno-inline)
 
-# gcc flags for heap KASAN instrumentation.
-set_compiler_property(PROPERTY heap_kasan
+# GCC flags for lightweight KASAN instrumentation.
+set_compiler_property(PROPERTY kasan
   -fsanitize=kernel-address
   --param=asan-instrumentation-with-call-threshold=0
-  --param=asan-globals=0
   --param=asan-stack=0
-  --param=asan-instrument-reads=0
   -fno-tree-loop-distribute-patterns)
 # ARC and OpenRISC require an explicit shadow offset with kernel-address.
 if(CONFIG_ARC OR CONFIG_OPENRISC)
-  set_compiler_property(APPEND PROPERTY heap_kasan -fasan-shadow-offset=0)
+  set_compiler_property(APPEND PROPERTY kasan -fasan-shadow-offset=0)
 endif()
 
-# Flag to disable heap KASAN instrumentation on a specific source file.
-set_compiler_property(PROPERTY no_heap_kasan -fno-sanitize=kernel-address)
+set_compiler_property(PROPERTY kasan_global --param=asan-globals=1)
+set_compiler_property(PROPERTY kasan_no_globals --param=asan-globals=0)
+set_compiler_property(PROPERTY kasan_no_reads --param=asan-instrument-reads=0)
+
+# Flag to disable KASAN instrumentation on a specific source file.
+set_compiler_property(PROPERTY no_kasan -fno-sanitize=kernel-address)
 
 # Security canaries.
 set_compiler_property(PROPERTY security_canaries -fstack-protector)

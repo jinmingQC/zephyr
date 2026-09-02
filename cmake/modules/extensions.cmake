@@ -2021,17 +2021,40 @@ function(zephyr_constants_library)
 endfunction()
 
 ########################################################
-# 1.6. Heap KASAN helpers
+# 1.6. KASAN helpers
 ########################################################
 #
-# Heap KASAN is opt-in: instrument the code that uses sys_heap; must not be
-# applied to heap implementation sources.
+# KASAN is opt-in. Instrument code which accesses protected memory, but never
+# instrument the KASAN runtime or a shadow provider itself.
 
-# Internal: full set of -fsanitize + -D macro-redirect flags for heap KASAN.
-macro(_zephyr_heap_kasan_flags VAR)
+# Internal: full set of -fsanitize + -D macro-redirect flags for KASAN.
+macro(_zephyr_kasan_flags VAR)
   set(${VAR})
-  get_property(_heap_kasan_compiler_flags TARGET compiler PROPERTY heap_kasan)
-  list(APPEND ${VAR} ${_heap_kasan_compiler_flags})
+  get_property(_kasan_compiler_flags TARGET compiler PROPERTY kasan)
+  if(NOT _kasan_compiler_flags)
+    message(FATAL_ERROR "Lightweight KASAN is only supported with GCC and Clang")
+  endif()
+  list(APPEND ${VAR} ${_kasan_compiler_flags})
+
+  if(CONFIG_KASAN_GLOBAL)
+    if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+      message(FATAL_ERROR "CONFIG_KASAN_GLOBAL is only supported with GCC and Clang")
+    endif()
+    get_property(_kasan_global_flags TARGET compiler PROPERTY kasan_global)
+    if(NOT _kasan_global_flags)
+      message(FATAL_ERROR "The selected compiler does not provide Global KASAN flags")
+    endif()
+    list(APPEND ${VAR} ${_kasan_global_flags})
+  else()
+    get_property(_kasan_no_global_flags TARGET compiler PROPERTY kasan_no_globals)
+    list(APPEND ${VAR} ${_kasan_no_global_flags})
+  endif()
+
+  if(NOT CONFIG_KASAN_INSTRUMENT_READS)
+    get_property(_kasan_no_read_flags TARGET compiler PROPERTY kasan_no_reads)
+    list(APPEND ${VAR} ${_kasan_no_read_flags})
+  endif()
+
   # real calls instead of inlined __builtin_memcpy / __builtin_memset etc.
   list(APPEND ${VAR}
     -U_FORTIFY_SOURCE
@@ -2063,9 +2086,9 @@ macro(_zephyr_heap_kasan_flags VAR)
   endif()
 endmacro()
 
-# Internal: apply heap KASAN COMPILE_OPTIONS to each source file in _srcs.
-function(_zephyr_heap_kasan_apply_to_sources _target _srcs)
-  _zephyr_heap_kasan_flags(_flags)
+# Internal: apply KASAN COMPILE_OPTIONS to each source file in _srcs.
+function(_zephyr_kasan_apply_to_sources _target _srcs)
+  _zephyr_kasan_flags(_flags)
   foreach(_src IN LISTS _srcs)
     set_property(SOURCE "${_src}"
       TARGET_DIRECTORY ${_target}
@@ -2074,24 +2097,24 @@ function(_zephyr_heap_kasan_apply_to_sources _target _srcs)
   endforeach()
 endfunction()
 
-# Instrument all sources of <target> with heap KASAN compiler flags.
+# Instrument all sources of <target> with KASAN compiler flags.
 # <target>: CMake target name (e.g. 'app').
 # Must be called after all sources have been added to the target.
-# Usage: zephyr_target_enable_heap_kasan(app)
-function(zephyr_target_enable_heap_kasan target)
-  if(NOT CONFIG_SYS_HEAP_KASAN)
+# Usage: zephyr_target_enable_kasan(app)
+function(zephyr_target_enable_kasan target)
+  if(NOT CONFIG_KASAN)
     return()
   endif()
   get_property(_srcs TARGET ${target} PROPERTY SOURCES)
-  _zephyr_heap_kasan_apply_to_sources(${target} "${_srcs}")
+  _zephyr_kasan_apply_to_sources(${target} "${_srcs}")
 endfunction()
 
-# Instrument sources under <dir> with heap KASAN compiler flags.
+# Instrument sources under <dir> with KASAN compiler flags.
 # <dir>: directory to match, relative to CMAKE_CURRENT_SOURCE_DIR.
 # Must be called after all sources have been added to the target.
-# Usage: zephyr_heap_kasan_enable_directory(src)
-function(zephyr_heap_kasan_enable_directory dir)
-  if(NOT CONFIG_SYS_HEAP_KASAN)
+# Usage: zephyr_kasan_enable_directory(src)
+function(zephyr_kasan_enable_directory dir)
+  if(NOT CONFIG_KASAN)
     return()
   endif()
 
@@ -2114,10 +2137,23 @@ function(zephyr_heap_kasan_enable_directory dir)
   endforeach()
 
   if(NOT _matching)
-    message(WARNING "heap_kasan_enable_directory: no sources matched under '${_abs_dir}'")
+    message(WARNING "kasan_enable_directory: no sources matched under '${_abs_dir}'")
   endif()
 
-  _zephyr_heap_kasan_apply_to_sources(${_target} "${_matching}")
+  _zephyr_kasan_apply_to_sources(${_target} "${_matching}")
+endfunction()
+
+# Backward-compatible Heap KASAN helper names.
+function(zephyr_target_enable_heap_kasan target)
+  if(CONFIG_SYS_HEAP_KASAN)
+    zephyr_target_enable_kasan(${target})
+  endif()
+endfunction()
+
+function(zephyr_heap_kasan_enable_directory dir)
+  if(CONFIG_SYS_HEAP_KASAN)
+    zephyr_kasan_enable_directory(${dir})
+  endif()
 endfunction()
 
 

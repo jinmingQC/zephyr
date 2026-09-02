@@ -1,6 +1,11 @@
 tests:
   libraries.heap_kasan:
     tags: heap asan
+    # host/llvm plus Picolibc resolves native_sim's pre-kernel realloc() to
+    # Zephyr's allocator before the kernel is ready. Keep that combination in
+    # a separate native-libc scenario below.
+    toolchain_exclude:
+      - host/llvm
     # RX does not support -fsanitize=kernel-address.
     filter: not CONFIG_RX
     integration_platforms:
@@ -11,3 +16,11 @@ tests:
       - native_sim
     extra_configs:
       - arch:posix:CONFIG_PICOLIBC=y
+  libraries.heap_kasan.llvm:
+    tags: heap asan
+    toolchain_allow:
+      - host/llvm
+    platform_allow:
+      - native_sim/native/64
+    integration_platforms:
+      - native_sim/native/64

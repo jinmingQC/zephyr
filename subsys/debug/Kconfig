@@ -65,6 +65,8 @@ config ASAN_NOP_DLCLOSE
 	  check and these can not be suppressed, see
 	  https://github.com/google/sanitizers/issues/89 for more info.
 
+rsource "kasan/Kconfig"
+
 config UBSAN
 	bool "Build with undefined behavior sanitizer"
 	help

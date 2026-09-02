@@ -55,6 +55,18 @@ __attribute__((noinline)) void do_write8(volatile uint8_t *p, size_t off, uint64
 	*(volatile u64_unaligned_t *)(p + off) = val;
 }
 
+__attribute__((noinline)) uint8_t do_read(const volatile uint8_t *p, size_t off)
+{
+	return p[off];
+}
+
+__attribute__((noinline)) uint64_t do_read8(const volatile uint8_t *p, size_t off)
+{
+	typedef uint64_t __aligned(1) u64_unaligned_t;
+
+	return *(const volatile u64_unaligned_t *)(p + off);
+}
+
 static const uint8_t g_src_bytes[64];
 
 __attribute__((noinline)) static void do_memset(void *p, int c, size_t n)
@@ -267,6 +279,43 @@ static void run_overflow_no_false_positive(struct heap_ops *ops)
 	ops->free(p);
 }
 
+static void run_read_normal(struct heap_ops *ops)
+{
+	uint8_t *p = ops->alloc(16);
+
+	zassert_not_null(p, "alloc failed");
+	do_write(p, 15, 0xa5);
+	zassert_equal(do_read(p, 15), 0xa5);
+	ops->free(p);
+}
+
+static void run_read_overflow(struct heap_ops *ops)
+{
+	uint8_t *p = ops->alloc(16);
+
+	zassert_not_null(p, "alloc failed");
+	ASSERT_VIOLATION(do_read(p, 16));
+	ops->free(p);
+}
+
+static void run_read_overflow_8byte(struct heap_ops *ops)
+{
+	uint8_t *p = ops->alloc(16);
+
+	zassert_not_null(p, "alloc failed");
+	ASSERT_VIOLATION(do_read8(p, 12));
+	ops->free(p);
+}
+
+static void run_read_use_after_free(struct heap_ops *ops)
+{
+	uint8_t *p = ops->alloc(16);
+
+	zassert_not_null(p, "alloc failed");
+	ops->free(p);
+	ASSERT_VIOLATION(do_read(p, 0));
+}
+
 /* 8-byte overflow: __asan_store8 detects a write past a 16-byte block. */
 static void run_overflow_8byte(struct heap_ops *ops)
 {
@@ -404,6 +453,26 @@ static void run_use_after_free_memcpy(struct heap_ops *ops)
 	zassert_not_null(p, "alloc failed");
 	ops->free(p);
 	ASSERT_VIOLATION(do_memcpy(p, g_src_bytes, 1));
+}
+
+static void run_memcpy_use_after_free_source(struct heap_ops *ops)
+{
+	uint8_t *p = ops->alloc(16);
+	uint8_t dst[1];
+
+	zassert_not_null(p, "alloc failed");
+	ops->free(p);
+	ASSERT_VIOLATION(do_memcpy(dst, p, sizeof(dst)));
+}
+
+static void run_memmove_use_after_free_source(struct heap_ops *ops)
+{
+	uint8_t *p = ops->alloc(16);
+	uint8_t dst[1];
+
+	zassert_not_null(p, "alloc failed");
+	ops->free(p);
+	ASSERT_VIOLATION(do_memmove(dst, p, sizeof(dst)));
 }
 
 /* UAF via interior pointer: free() must poison the entire chunk, not just byte 0. */
@@ -675,10 +744,7 @@ static void run_adjacent_allocs_no_false_positive(struct heap_ops *ops)
 	ops->free(b);
 }
 
-/*
- * memcpy FROM heap TO stack: dst is a stack buffer, src is heap.
- * ASAN checks only the write destination; a stack dst must never fire.
- */
+/* memcpy from a live heap range to an untracked stack buffer must be valid. */
 static void run_memcpy_heap_src_stack_dst_no_false_positive(struct heap_ops *ops)
 {
 	uint8_t *heap_src = ops->alloc(16);
@@ -833,6 +899,17 @@ static void run_strcpy_use_after_free(struct heap_ops *ops)
 	ASSERT_VIOLATION(do_strcpy(p, g_str_exact));
 }
 
+static void run_strcpy_use_after_free_source(struct heap_ops *ops)
+{
+	char *p = ops->alloc(16);
+	char dst[16];
+
+	zassert_not_null(p, "alloc failed");
+	do_memcpy(p, g_str_exact, sizeof(dst));
+	ops->free(p);
+	ASSERT_VIOLATION(do_strcpy(dst, p));
+}
+
 static void run_strncpy_overflow(struct heap_ops *ops)
 {
 	char *p = ops->alloc(16);
@@ -950,16 +1027,14 @@ static void run_zero_size_str_ops_no_false_positive(struct heap_ops *ops)
 	ops->free(p);
 }
 
-static void run_strncat_conservative_check(struct heap_ops *ops)
+static void run_strncat_short_source_no_false_positive(struct heap_ops *ops)
 {
 	char *p = ops->alloc(16);
 
 	zassert_not_null(p, "alloc failed");
 	do_memcpy(p, g_str_half, 9); /* p = "abcdefgh\0" */
-	/* n=8: check(p+8, 9) -> p[8..16] -> p[16] poisoned, even though
-	 * strncat("X", 8) would only write 2 bytes.
-	 */
-	ASSERT_VIOLATION(do_strncat(p, "X", 8));
+	/* The interceptor checks the actual two-byte write, not the upper bound. */
+	do_strncat(p, "X", 8);
 	ops->free(p);
 }
 
@@ -1142,6 +1217,14 @@ static void run_zero_size_ext_ops_no_false_positive(struct heap_ops *ops)
 		{ run_overflow(&fixture->ops); }                                       \
 	ZTEST_F(suite, test_overflow_no_false_positive)                                \
 		{ run_overflow_no_false_positive(&fixture->ops); }                     \
+	ZTEST_F(suite, test_read_normal)                                                \
+		{ run_read_normal(&fixture->ops); }                                      \
+	ZTEST_F(suite, test_read_overflow)                                              \
+		{ run_read_overflow(&fixture->ops); }                                    \
+	ZTEST_F(suite, test_read_overflow_8byte)                                        \
+		{ run_read_overflow_8byte(&fixture->ops); }                              \
+	ZTEST_F(suite, test_read_use_after_free)                                        \
+		{ run_read_use_after_free(&fixture->ops); }                              \
 	ZTEST_F(suite, test_overflow_8byte)                                            \
 		{ run_overflow_8byte(&fixture->ops); }                                 \
 	ZTEST_F(suite, test_overflow_8byte_no_false_positive)                          \
@@ -1166,6 +1249,10 @@ static void run_zero_size_ext_ops_no_false_positive(struct heap_ops *ops)
 		{ run_use_after_free_memset(&fixture->ops); }                          \
 	ZTEST_F(suite, test_use_after_free_memcpy)                                     \
 		{ run_use_after_free_memcpy(&fixture->ops); }                          \
+	ZTEST_F(suite, test_memcpy_use_after_free_source)                              \
+		{ run_memcpy_use_after_free_source(&fixture->ops); }                   \
+	ZTEST_F(suite, test_memmove_use_after_free_source)                             \
+		{ run_memmove_use_after_free_source(&fixture->ops); }                  \
 	ZTEST_F(suite, test_use_after_free_interior_ptr)                               \
 		{ run_use_after_free_interior_ptr(&fixture->ops); }                    \
 	ZTEST_F(suite, test_realloc_shrink_suffix)                                     \
@@ -1232,6 +1319,8 @@ static void run_zero_size_ext_ops_no_false_positive(struct heap_ops *ops)
 		{ run_strcpy_exact(&fixture->ops); }                                   \
 	ZTEST_F(suite, test_strcpy_use_after_free)                                     \
 		{ run_strcpy_use_after_free(&fixture->ops); }                          \
+	ZTEST_F(suite, test_strcpy_use_after_free_source)                              \
+		{ run_strcpy_use_after_free_source(&fixture->ops); }                   \
 	ZTEST_F(suite, test_strncpy_overflow)                                          \
 		{ run_strncpy_overflow(&fixture->ops); }                               \
 	ZTEST_F(suite, test_strncpy_exact)                                             \
@@ -1250,8 +1339,8 @@ static void run_zero_size_ext_ops_no_false_positive(struct heap_ops *ops)
 		{ run_snprintf_exact(&fixture->ops); }                                 \
 	ZTEST_F(suite, test_zero_size_str_ops_no_false_positive)                       \
 		{ run_zero_size_str_ops_no_false_positive(&fixture->ops); }            \
-	ZTEST_F(suite, test_strncat_conservative_check)                                \
-		{ run_strncat_conservative_check(&fixture->ops); }                     \
+	ZTEST_F(suite, test_strncat_short_source_no_false_positive)                    \
+		{ run_strncat_short_source_no_false_positive(&fixture->ops); }         \
 	ZTEST_F(suite, test_str_non_heap_no_false_positive)                            \
 		{ run_str_non_heap_no_false_positive(&fixture->ops); }
 

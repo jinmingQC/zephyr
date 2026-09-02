@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config KASAN
+	bool
+	help
+	  Common lightweight Kernel Address Sanitizer runtime. This is selected
+	  by one or more KASAN shadow providers.
+
+config KASAN_INSTRUMENT_READS
+	bool "Instrument memory reads"
+	depends on KASAN
+	default y
+	help
+	  Instrument reads as well as writes in sources opted in to KASAN.
+	  Disabling this reduces runtime overhead, but prevents detection of
+	  out-of-bounds and use-after-free reads.
+
+config KASAN_GLOBAL
+	bool "Global variable address sanitizer"
+	depends on !ASAN
+	depends on !CMAKE_LINKER_GENERATOR
+	select KASAN
+	select STATIC_INIT_GNU
+	help
+	  Detect invalid accesses to compiler-generated redzones around global
+	  and function-static variables in sources opted in to KASAN.
+
+	  GCC emits a descriptor and an initialization function for each
+	  instrumented translation unit. The KASAN runtime registers those
+	  descriptors during static initialization and indexes them by address.
+	  GCC and Clang emit compatible descriptors in the supported
+	  kernel-address mode. Clang may omit source location metadata.
+	  Descriptors become active after POST_KERNEL initialization, when Zephyr
+	  runs GNU constructors, and before APPLICATION initialization. Accesses
+	  made during earlier init levels are therefore outside the coverage.
+
+	  This option does not instrument sources automatically. Use
+	  zephyr_target_enable_kasan() or zephyr_kasan_enable_directory() from
+	  the application's CMakeLists.txt.
+
+config KASAN_GLOBAL_MAX_OBJECTS
+	int "Maximum number of tracked global objects"
+	depends on KASAN_GLOBAL
+	range 1 4096
+	default 256
+	help
+	  Maximum number of compiler-emitted global descriptors kept in the
+	  address index. Each entry consumes one pointer. Initialization stops
+	  with a fatal error rather than silently leaving objects unprotected if
+	  this limit is exceeded.

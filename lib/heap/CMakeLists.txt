@@ -41,16 +41,16 @@ if(CONFIG_SYS_HEAP_SANITIZER_ASAN)
 endif()
 
 if(CONFIG_SYS_HEAP_KASAN)
-  get_property(_heap_kasan_flags TARGET compiler PROPERTY heap_kasan)
-  if(NOT _heap_kasan_flags)
+  get_property(_kasan_flags TARGET compiler PROPERTY kasan)
+  if(NOT _kasan_flags)
     message(FATAL_ERROR
-      "CONFIG_SYS_HEAP_KASAN has only been supported with GCC and Clang")
+      "CONFIG_SYS_HEAP_KASAN is only supported with GCC and Clang")
   endif()
-  get_property(_no_heap_kasan TARGET compiler PROPERTY no_heap_kasan)
+  get_property(_no_kasan TARGET compiler PROPERTY no_kasan)
   set_property(SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/heap.c
     ${CMAKE_CURRENT_SOURCE_DIR}/heap_kasan.c
     ${CMAKE_CURRENT_SOURCE_DIR}/heap_validate.c
     TARGET_DIRECTORY zephyr
-    APPEND PROPERTY COMPILE_OPTIONS "${_no_heap_kasan}")
+    APPEND PROPERTY COMPILE_OPTIONS "${_no_kasan}")
 endif()

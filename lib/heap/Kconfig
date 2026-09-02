@@ -207,16 +207,18 @@ config SYS_HEAP_SANITIZER_ASAN
 	  Use for debugging and validation only.
 
 config SYS_HEAP_KASAN
-	bool "Lightweight heap write sanitizer"
+	bool "Lightweight heap address sanitizer"
 	depends on !ASAN
 	select SYS_HEAP_SANITIZER_HOOKS
+	select KASAN
 	help
-	  Lightweight write sanitizer for sys_heap.  Uses
+	  Lightweight address sanitizer for sys_heap. Uses
 	  -fsanitize=kernel-address compiler instrumentation combined with
 	  a per-heap shadow bitarray (one bit per granule) to detect buffer
-	  overflows, underflows, and use-after-free on write accesses.
+	  overflows, underflows, and use-after-free accesses. Read checking is
+	  controlled by CONFIG_KASAN_INSTRUMENT_READS.
 
-	  Ships its own lightweight sanitizer runtime (__asan_store*
+	  Uses the lightweight common KASAN runtime (__asan_load*/__asan_store*
 	  callbacks); does not depend on an external ASAN library and
 	  supports debugging on real embedded targets.
 
@@ -287,8 +289,10 @@ config SYS_HEAP_KASAN_EXTENSIONS
 	depends on SYS_HEAP_KASAN
 	default y if PICOLIBC || NEWLIB_LIBC || NATIVE_LIBC || POSIX_API
 	help
-	  Add KASAN write-checking wrappers for POSIX and GNU extension
-	  functions. Requires the C library to declare them.
+	  Add KASAN access-checking wrappers for POSIX and GNU extension
+	  functions, including source read checks when
+	  CONFIG_KASAN_INSTRUMENT_READS is enabled. Requires the C library to
+	  declare them.
 
 config SYS_HEAP_KASAN_MALLOC
 	bool "Track libc malloc heap with KASAN"
