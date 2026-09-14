@@ -28,6 +28,11 @@ set(ext_names
   align
 )
 
+if(LLEXT_TEST_LOCKING)
+  list(APPEND ext_names locking)
+  target_compile_definitions(app PRIVATE LLEXT_TEST_LOCKING)
+endif()
+
 if(CONFIG_ARM)
   if(NOT CONFIG_CPU_CORTEX_M0 AND NOT CONFIG_CPU_CORTEX_M0PLUS AND NOT CONFIG_CPU_CORTEX_M1)
     list(APPEND ext_names movwmovt)
@@ -61,6 +66,15 @@ foreach(ext_name ${ext_names})
     OUTPUT  ${ext_bin}
     SOURCES ${ext_src}
   )
+  if(ext_name STREQUAL "locking")
+    # Disabled inline timing paths must work without dead-code elimination.
+    get_target_property(locking_lib locking_ext lib_target)
+    target_compile_options(${locking_lib} PRIVATE -O0)
+    if(CONFIG_ARM64)
+      # Use inline atomics; extensions do not link compiler runtime helpers.
+      target_compile_options(${locking_lib} PRIVATE -mno-outline-atomics)
+    endif()
+  endif()
   generate_inc_file_for_target(app ${ext_bin} ${ext_inc})
 endforeach()
 

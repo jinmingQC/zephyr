@@ -274,6 +274,15 @@ LLEXT_LOAD_UNLOAD(hello_world,
 	.kernel_only = true
 )
 
+#ifdef LLEXT_TEST_LOCKING
+static LLEXT_CONST uint8_t locking_ext[] LLEXT_SECT ELF_ALIGN = {
+	#include "locking.inc"
+};
+LLEXT_LOAD_UNLOAD(locking,
+	.kernel_only = true
+)
+#endif
+
 /* When compiled with CCAC, init_fini's sections are unfixably out of order */
 #if !defined(CONFIG_LLEXT_TYPE_ELF_SHAREDLIB) && !defined(__CCAC__)
 static LLEXT_CONST uint8_t init_fini_ext[] LLEXT_SECT ELF_ALIGN = {

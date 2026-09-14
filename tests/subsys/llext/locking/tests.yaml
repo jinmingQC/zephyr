@@ -1,0 +1,20 @@
+common:
+  tags:
+    - llext
+    - spinlock
+  platform_allow:
+    - qemu_cortex_a53
+    - qemu_cortex_a53/qemu_cortex_a53/smp
+  integration_platforms:
+    - qemu_cortex_a53
+    - qemu_cortex_a53/qemu_cortex_a53/smp
+  extra_configs:
+    - CONFIG_LLEXT_HEAP_SIZE=128
+tests:
+  llext.locking:
+    extra_configs:
+      - CONFIG_CRITICAL_SECTION_MONITOR=n
+      - CONFIG_SPIN_VALIDATE=n
+  llext.locking.monitor:
+    extra_configs:
+      - CONFIG_CRITICAL_SECTION_MONITOR=y
