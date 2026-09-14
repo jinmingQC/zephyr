@@ -12,6 +12,8 @@ zephyr_sources(
 )
 
 # Conditional subcommands
+zephyr_sources_ifdef(CONFIG_KERNEL_LATENCY_MONITOR latency.c)
+
 zephyr_sources_ifdef(CONFIG_SYS_HEAP_RUNTIME_STATS heap.c)
 
 zephyr_sources_ifdef(CONFIG_REBOOT reboot.c)
