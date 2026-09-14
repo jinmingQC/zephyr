@@ -1825,6 +1825,10 @@ Other notable changes
 
 * Kernel
 
+  * Added the :ref:`kernel_critical_section_monitor` to record per-CPU maximum
+    IRQ-locked and spinlock wait/hold times, available through the
+    ``kernel critical`` shell command.
+
   * :kconfig:option:`CONFIG_SCHED_CPU_MASK` no longer depends on
     :kconfig:option:`CONFIG_SCHED_SIMPLE`.  CPU affinity masks are now
     supported on all three scheduler backends: ``SCHED_SIMPLE`` (O(N) list
