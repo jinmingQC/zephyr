@@ -4,10 +4,10 @@
 common:
   tags:
     - kernel
-    - latency
+    - critical_section_monitor
 
 tests:
-  kernel.latency_monitor.up:
+  kernel.critical_section_monitor.up:
     platform_allow:
       - qemu_x86
       - qemu_cortex_a53
@@ -16,7 +16,7 @@ tests:
       - qemu_x86
       - qemu_cortex_a53
       - qemu_riscv64
-  kernel.latency_monitor.no_spin_validate:
+  kernel.critical_section_monitor.no_spin_validate:
     tags:
       - spinlock
     platform_allow:
@@ -25,7 +25,7 @@ tests:
       - qemu_cortex_a53
     extra_configs:
       - CONFIG_SPIN_VALIDATE=n
-  kernel.latency_monitor.spin_validate:
+  kernel.critical_section_monitor.spin_validate:
     tags:
       - spinlock
     platform_allow:
@@ -33,10 +33,10 @@ tests:
     integration_platforms:
       - qemu_x86
     extra_configs:
-      - CONFIG_KERNEL_LATENCY_MONITOR_MAX_SPINLOCK_DEPTH=1
+      - CONFIG_CRITICAL_SECTION_MONITOR_MAX_SPINLOCKS=1
       - CONFIG_SPIN_VALIDATE=y
       - CONFIG_SPIN_LOCK_TIME_LIMIT=1000000000
-  kernel.latency_monitor.smp:
+  kernel.critical_section_monitor.smp:
     tags:
       - smp
       - spinlock
@@ -50,7 +50,7 @@ tests:
       - CONFIG_SMP=y
       - CONFIG_MP_MAX_NUM_CPUS=2
       - CONFIG_SCHED_CPU_MASK=y
-  kernel.latency_monitor.smp_ticket:
+  kernel.critical_section_monitor.smp_ticket:
     tags:
       - smp
       - spinlock
@@ -65,7 +65,7 @@ tests:
       - CONFIG_MP_MAX_NUM_CPUS=2
       - CONFIG_SCHED_CPU_MASK=y
       - CONFIG_TICKET_SPINLOCKS=y
-  kernel.latency_monitor.smp_deferred:
+  kernel.critical_section_monitor.smp_deferred:
     tags:
       - smp
     platform_allow:
@@ -78,7 +78,7 @@ tests:
       - CONFIG_SMP=y
       - CONFIG_MP_MAX_NUM_CPUS=2
       - CONFIG_SCHED_CPU_MASK=y
-  kernel.latency_monitor.shell.up:
+  kernel.critical_section_monitor.shell.up:
     tags:
       - shell
     platform_allow:
@@ -87,7 +87,7 @@ tests:
       - qemu_cortex_a53
     extra_conf_files:
       - shell.conf
-  kernel.latency_monitor.shell.smp:
+  kernel.critical_section_monitor.shell.smp:
     tags:
       - shell
       - smp

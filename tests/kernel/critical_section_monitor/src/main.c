@@ -14,13 +14,13 @@
 #include <zephyr/sys/atomic.h>
 #include <zephyr/ztest.h>
 
-#include <latency_monitor.h>
+#include <critical_section_monitor.h>
 
 #define MEASURE_US 1000U
 
 static struct k_spinlock measured_lock;
 
-static void check_record(const struct z_latency_monitor_record *record,
+static void check_record(const struct z_critical_section_monitor_record *record,
 			 const struct k_spinlock *spinlock, const struct k_thread *thread,
 			 bool in_isr)
 {
@@ -31,9 +31,9 @@ static void check_record(const struct z_latency_monitor_record *record,
 	zassert_equal(record->in_isr, in_isr, "wrong execution context");
 }
 
-ZTEST(kernel_latency_monitor, test_nested_irq_lock_is_one_interval)
+ZTEST(kernel_critical_section_monitor, test_nested_irq_lock_is_one_interval)
 {
-	struct z_latency_monitor_stats stats;
+	struct z_critical_section_monitor_stats stats;
 	const struct k_thread *thread = k_current_get();
 	unsigned int outer_key;
 	unsigned int inner_key;
@@ -41,59 +41,59 @@ ZTEST(kernel_latency_monitor, test_nested_irq_lock_is_one_interval)
 
 	outer_key = k_irq_lock();
 	cpu = CPU_ID;
-	z_latency_monitor_stats_reset();
+	z_critical_section_monitor_stats_reset();
 
 	k_busy_wait(MEASURE_US / 2U);
 	inner_key = irq_lock();
 	k_busy_wait(MEASURE_US / 2U);
 	irq_unlock(inner_key);
-	zassert_ok(z_latency_monitor_stats_get(cpu, &stats));
-	zassert_equal(stats.max[Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED].cycles, 0U);
+	zassert_ok(z_critical_section_monitor_stats_get(cpu, &stats));
+	zassert_equal(stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED].cycles, 0U);
 	k_busy_wait(MEASURE_US / 2U);
-	z_latency_monitor_irq_end(outer_key);
-	zassert_ok(z_latency_monitor_stats_get(cpu, &stats));
+	z_critical_section_monitor_irq_end(outer_key);
+	zassert_ok(z_critical_section_monitor_stats_get(cpu, &stats));
 	k_irq_unlock(outer_key);
 
-	check_record(&stats.max[Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED], NULL, thread, false);
-	zassert_true(stats.max[Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED].cycles >=
+	check_record(&stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED], NULL, thread, false);
+	zassert_true(stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED].cycles >=
 		     k_us_to_cyc_floor32(MEASURE_US * 3U / 2U));
-	zassert_equal(stats.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_HOLD].cycles, 0U);
-	zassert_equal(stats.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_WAIT].cycles, 0U);
+	zassert_equal(stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_HOLD].cycles, 0U);
+	zassert_equal(stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_WAIT].cycles, 0U);
 	zassert_equal(stats.spinlock_tracking_overflows, 0U);
 }
 
-ZTEST(kernel_latency_monitor, test_public_spin_unlock)
+ZTEST(kernel_critical_section_monitor, test_public_spin_unlock)
 {
-	struct z_latency_monitor_stats stats;
+	struct z_critical_section_monitor_stats stats;
 	unsigned int cpu;
 	k_spinlock_key_t key;
 
 	k_sched_lock();
-	z_latency_monitor_stats_reset();
+	z_critical_section_monitor_stats_reset();
 	key = k_spin_lock(&measured_lock);
 	cpu = CPU_ID;
 	k_busy_wait(MEASURE_US);
 	k_spin_unlock(&measured_lock, key);
-	zassert_ok(z_latency_monitor_stats_get(cpu, &stats));
+	zassert_ok(z_critical_section_monitor_stats_get(cpu, &stats));
 	k_sched_unlock();
 
-	check_record(&stats.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_HOLD], &measured_lock,
+	check_record(&stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_HOLD], &measured_lock,
 		     k_current_get(), false);
-	check_record(&stats.max[Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED], &measured_lock,
+	check_record(&stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED], &measured_lock,
 		     k_current_get(), false);
-	zassert_true(stats.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_HOLD].cycles >=
+	zassert_true(stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_HOLD].cycles >=
 		     k_us_to_cyc_floor32(MEASURE_US));
-	zassert_true(stats.max[Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED].cycles >=
-		     stats.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_HOLD].cycles);
+	zassert_true(stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED].cycles >=
+		     stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_HOLD].cycles);
 	zassert_equal(stats.spinlock_tracking_overflows, 0U);
 #ifndef CONFIG_SMP
-	zassert_equal(stats.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_WAIT].cycles, 0U);
+	zassert_equal(stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_WAIT].cycles, 0U);
 #endif
 }
 
 K_TIMER_DEFINE(idle_wakeup, NULL, NULL);
 
-static struct z_latency_monitor_stats *idle_snapshots[CONFIG_MP_MAX_NUM_CPUS];
+static struct z_critical_section_monitor_stats *idle_snapshots[CONFIG_MP_MAX_NUM_CPUS];
 
 void __real_arch_cpu_atomic_idle(unsigned int key);
 void __wrap_arch_cpu_atomic_idle(unsigned int key);
@@ -106,7 +106,7 @@ static void snapshot_before_idle(void)
 
 	/* Capture before IRQs are enabled: unrelated records cannot replace it. */
 	if (idle_snapshots[cpu] != NULL) {
-		(void)z_latency_monitor_stats_get(cpu, idle_snapshots[cpu]);
+		(void)z_critical_section_monitor_stats_get(cpu, idle_snapshots[cpu]);
 		idle_snapshots[cpu] = NULL;
 	}
 }
@@ -125,7 +125,7 @@ void __wrap_arch_cpu_idle(void)
 
 static void check_idle_handoff(bool atomic_idle)
 {
-	struct z_latency_monitor_stats stats = {0};
+	struct z_critical_section_monitor_stats stats = {0};
 	k_spinlock_key_t key;
 	unsigned int cpu;
 	unsigned int irq_key;
@@ -135,7 +135,7 @@ static void check_idle_handoff(bool atomic_idle)
 	k_timer_start(&idle_wakeup, K_MSEC(10), K_NO_WAIT);
 	key = k_spin_lock(&measured_lock);
 	cpu = CPU_ID;
-	z_latency_monitor_stats_reset();
+	z_critical_section_monitor_stats_reset();
 	k_busy_wait(MEASURE_US);
 	/* Do not carry an SMP global IRQ lock across idle. */
 	k_spin_release(&measured_lock);
@@ -153,31 +153,31 @@ static void check_idle_handoff(bool atomic_idle)
 	k_sched_unlock();
 
 	zassert_true(irqs_enabled, "idle did not restore IRQs");
-	check_record(&stats.max[Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED], &measured_lock,
+	check_record(&stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED], &measured_lock,
 		     k_current_get(), false);
-	zassert_true(stats.max[Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED].cycles >=
+	zassert_true(stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED].cycles >=
 		     k_us_to_cyc_floor32(MEASURE_US));
 }
 
-ZTEST(kernel_latency_monitor, test_atomic_idle_closes_irq_interval)
+ZTEST(kernel_critical_section_monitor, test_atomic_idle_closes_irq_interval)
 {
 	check_idle_handoff(true);
 }
 
-ZTEST(kernel_latency_monitor, test_idle_closes_irq_interval)
+ZTEST(kernel_critical_section_monitor, test_idle_closes_irq_interval)
 {
 	check_idle_handoff(false);
 }
 
-ZTEST(kernel_latency_monitor, test_stats_arguments)
+ZTEST(kernel_critical_section_monitor, test_stats_arguments)
 {
-	struct z_latency_monitor_stats stats;
+	struct z_critical_section_monitor_stats stats;
 
-	zassert_equal(z_latency_monitor_stats_get(arch_num_cpus(), &stats), -EINVAL);
-	zassert_equal(z_latency_monitor_stats_get(0U, NULL), -EINVAL);
+	zassert_equal(z_critical_section_monitor_stats_get(arch_num_cpus(), &stats), -EINVAL);
+	zassert_equal(z_critical_section_monitor_stats_get(0U, NULL), -EINVAL);
 }
 
-static struct z_latency_monitor_stats isr_stats;
+static struct z_critical_section_monitor_stats isr_stats;
 static int isr_stats_result;
 
 static void measure_from_isr(const void *parameter)
@@ -188,14 +188,14 @@ static void measure_from_isr(const void *parameter)
 
 	key = k_spin_lock(lock);
 	cpu = CPU_ID;
-	z_latency_monitor_stats_reset();
+	z_critical_section_monitor_stats_reset();
 	k_busy_wait(MEASURE_US);
 	k_spin_release(lock);
-	isr_stats_result = z_latency_monitor_stats_get(cpu, &isr_stats);
+	isr_stats_result = z_critical_section_monitor_stats_get(cpu, &isr_stats);
 	arch_irq_unlock(key.key);
 }
 
-ZTEST(kernel_latency_monitor, test_isr_metadata)
+ZTEST(kernel_critical_section_monitor, test_isr_metadata)
 {
 	const struct k_thread *thread = k_current_get();
 
@@ -203,8 +203,8 @@ ZTEST(kernel_latency_monitor, test_isr_metadata)
 	irq_offload(measure_from_isr, &measured_lock);
 
 	zassert_ok(isr_stats_result);
-	check_record(&isr_stats.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_HOLD], &measured_lock, thread,
-		     true);
+	check_record(&isr_stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_HOLD], &measured_lock,
+		     thread, true);
 }
 
 #ifndef CONFIG_SMP
@@ -214,7 +214,7 @@ ZTEST(kernel_latency_monitor, test_isr_metadata)
 K_THREAD_STACK_DEFINE(handoff_stack, HANDOFF_STACK_SIZE);
 
 static struct k_thread handoff_thread;
-static struct z_latency_monitor_stats handoff_stats;
+static struct z_critical_section_monitor_stats handoff_stats;
 static int handoff_stats_result;
 
 static void snapshot_after_handoff(void *p1, void *p2, void *p3)
@@ -223,12 +223,12 @@ static void snapshot_after_handoff(void *p1, void *p2, void *p3)
 	ARG_UNUSED(p2);
 	ARG_UNUSED(p3);
 
-	handoff_stats_result = z_latency_monitor_stats_get(CPU_ID, &handoff_stats);
+	handoff_stats_result = z_critical_section_monitor_stats_get(CPU_ID, &handoff_stats);
 }
 
-ZTEST(kernel_latency_monitor, test_scheduler_handoff_attribution)
+ZTEST(kernel_critical_section_monitor, test_scheduler_handoff_attribution)
 {
-	const struct z_latency_monitor_record *record;
+	const struct z_critical_section_monitor_record *record;
 	k_tid_t origin = k_current_get();
 	k_tid_t thread;
 
@@ -238,7 +238,7 @@ ZTEST(kernel_latency_monitor, test_scheduler_handoff_attribution)
 
 	handoff_stats_result = -ENODATA;
 	k_thread_start(thread);
-	z_latency_monitor_stats_reset();
+	z_critical_section_monitor_stats_reset();
 
 	/*
 	 * Yielding transfers _current to handoff_thread before the scheduler
@@ -249,7 +249,7 @@ ZTEST(kernel_latency_monitor, test_scheduler_handoff_attribution)
 	zassert_ok(k_thread_join(thread, K_SECONDS(1)));
 	zassert_ok(handoff_stats_result);
 
-	record = &handoff_stats.max[Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED];
+	record = &handoff_stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED];
 	zassert_not_null(record->spinlock, "scheduler spinlock was not recorded");
 	check_record(record, record->spinlock, origin, false);
 }
@@ -265,7 +265,7 @@ static struct k_thread waiter_thread;
 static struct k_spinlock contention_lock;
 static atomic_t holder_locked;
 static atomic_t waiter_tried;
-static struct z_latency_monitor_stats waiter_stats;
+static struct z_critical_section_monitor_stats waiter_stats;
 static int waiter_trylock_result;
 
 static void waiter_fn(void *p1, void *p2, void *p3)
@@ -283,19 +283,19 @@ static void waiter_fn(void *p1, void *p2, void *p3)
 	}
 
 	irq_key = arch_irq_lock();
-	z_latency_monitor_stats_reset();
+	z_critical_section_monitor_stats_reset();
 	waiter_trylock_result = k_spin_trylock(&contention_lock, &try_key);
 	atomic_set(&waiter_tried, 1);
 	(void)k_spin_lock(&contention_lock);
 	cpu = CPU_ID;
 	k_spin_release(&contention_lock);
-	(void)z_latency_monitor_stats_get(cpu, &waiter_stats);
+	(void)z_critical_section_monitor_stats_get(cpu, &waiter_stats);
 	arch_irq_unlock(irq_key);
 }
 
-ZTEST(kernel_latency_monitor, test_smp_spin_contention)
+ZTEST(kernel_critical_section_monitor, test_smp_spin_contention)
 {
-	struct z_latency_monitor_stats holder_stats;
+	struct z_critical_section_monitor_stats holder_stats;
 	k_tid_t holder = k_current_get();
 	k_spinlock_key_t key;
 	unsigned int cpu;
@@ -313,24 +313,24 @@ ZTEST(kernel_latency_monitor, test_smp_spin_contention)
 	k_thread_start(waiter);
 
 	key = k_spin_lock(&contention_lock);
-	z_latency_monitor_stats_reset();
+	z_critical_section_monitor_stats_reset();
 	atomic_set(&holder_locked, 1);
 	while (atomic_get(&waiter_tried) == 0) {
 		arch_spin_relax();
 	}
 	k_busy_wait(MEASURE_US);
 	k_spin_release(&contention_lock);
-	z_latency_monitor_irq_end(key.key);
-	(void)z_latency_monitor_stats_get(cpu, &holder_stats);
+	z_critical_section_monitor_irq_end(key.key);
+	(void)z_critical_section_monitor_stats_get(cpu, &holder_stats);
 	arch_irq_unlock(key.key);
 	k_sched_unlock();
 	zassert_ok(k_thread_join(waiter, K_SECONDS(5)));
 
 	zassert_equal(waiter_trylock_result, -EBUSY);
-	check_record(&holder_stats.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_HOLD], &contention_lock,
-		     holder, false);
-	check_record(&waiter_stats.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_WAIT], &contention_lock,
-		     &waiter_thread, false);
+	check_record(&holder_stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_HOLD],
+		     &contention_lock, holder, false);
+	check_record(&waiter_stats.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_WAIT],
+		     &contention_lock, &waiter_thread, false);
 	zassert_equal(holder_stats.spinlock_tracking_overflows, 0U);
 	zassert_equal(waiter_stats.spinlock_tracking_overflows, 0U);
 }
@@ -345,4 +345,4 @@ static void *monitor_setup(void)
 	return NULL;
 }
 
-ZTEST_SUITE(kernel_latency_monitor, NULL, monitor_setup, NULL, NULL, NULL);
+ZTEST_SUITE(kernel_critical_section_monitor, NULL, monitor_setup, NULL, NULL, NULL);

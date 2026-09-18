@@ -15,22 +15,25 @@
 #include <zephyr/sys/atomic.h>
 #include <zephyr/ztest.h>
 
-#include <latency_monitor.h>
+#include <critical_section_monitor.h>
 
 static atomic_t busy_cpu_zero;
 
-int __real_z_latency_monitor_stats_get(unsigned int cpu, struct z_latency_monitor_stats *stats);
-int __wrap_z_latency_monitor_stats_get(unsigned int cpu, struct z_latency_monitor_stats *stats);
+int __real_z_critical_section_monitor_stats_get(unsigned int cpu,
+						struct z_critical_section_monitor_stats *stats);
+int __wrap_z_critical_section_monitor_stats_get(unsigned int cpu,
+						struct z_critical_section_monitor_stats *stats);
 
-int __wrap_z_latency_monitor_stats_get(unsigned int cpu, struct z_latency_monitor_stats *stats)
+int __wrap_z_critical_section_monitor_stats_get(unsigned int cpu,
+						struct z_critical_section_monitor_stats *stats)
 {
 	if (cpu == 0U && atomic_get(&busy_cpu_zero) != 0) {
 		return -EAGAIN;
 	}
-	return __real_z_latency_monitor_stats_get(cpu, stats);
+	return __real_z_critical_section_monitor_stats_get(cpu, stats);
 }
 
-ZTEST(kernel_latency_monitor_shell, test_busy_cpu_does_not_stop_output)
+ZTEST(kernel_critical_section_monitor_shell, test_busy_cpu_does_not_stop_output)
 {
 	const struct shell *sh = shell_backend_dummy_get_ptr();
 	const char *output;
@@ -39,7 +42,7 @@ ZTEST(kernel_latency_monitor_shell, test_busy_cpu_does_not_stop_output)
 
 	shell_backend_dummy_clear_output(sh);
 	atomic_set(&busy_cpu_zero, 1);
-	ret = shell_execute_cmd(sh, "kernel latency");
+	ret = shell_execute_cmd(sh, "kernel critical");
 	atomic_clear(&busy_cpu_zero);
 
 	zassert_equal(ret, -EAGAIN);
@@ -53,11 +56,11 @@ ZTEST(kernel_latency_monitor_shell, test_busy_cpu_does_not_stop_output)
 	}
 }
 
-ZTEST(kernel_latency_monitor_shell, test_output_is_read_only)
+ZTEST(kernel_critical_section_monitor_shell, test_output_is_read_only)
 {
 	const struct shell *sh = shell_backend_dummy_get_ptr();
-	struct z_latency_monitor_stats before;
-	struct z_latency_monitor_stats after;
+	struct z_critical_section_monitor_stats before;
+	struct z_critical_section_monitor_stats after;
 	struct k_spinlock lock = {0};
 	k_spinlock_key_t key;
 	unsigned int cpu;
@@ -68,11 +71,11 @@ ZTEST(kernel_latency_monitor_shell, test_output_is_read_only)
 	cpu = CPU_ID;
 	k_busy_wait(1000U);
 	k_spin_unlock(&lock, key);
-	zassert_ok(z_latency_monitor_stats_get(cpu, &before));
-	zassert_true(before.max[Z_LATENCY_MONITOR_EVENT_SPINLOCK_HOLD].cycles > 0U);
+	zassert_ok(z_critical_section_monitor_stats_get(cpu, &before));
+	zassert_true(before.max[Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_HOLD].cycles > 0U);
 
 	shell_backend_dummy_clear_output(sh);
-	zassert_ok(shell_execute_cmd(sh, "kernel latency"));
+	zassert_ok(shell_execute_cmd(sh, "kernel critical"));
 	output = shell_backend_dummy_get_output(sh, &size);
 	zassert_true(size > 0U);
 
@@ -92,8 +95,8 @@ ZTEST(kernel_latency_monitor_shell, test_output_is_read_only)
 	zassert_not_null(strstr(output, " isr="));
 	zassert_not_null(strstr(output, "tracking overflows:"));
 
-	zassert_equal(shell_execute_cmd(sh, "kernel latency reset"), -EINVAL);
-	zassert_ok(z_latency_monitor_stats_get(cpu, &after));
+	zassert_equal(shell_execute_cmd(sh, "kernel critical reset"), -EINVAL);
+	zassert_ok(z_critical_section_monitor_stats_get(cpu, &after));
 
 	/* Shell activity can raise the maxima, but reading must not clear them. */
 	for (size_t i = 0U; i < ARRAY_SIZE(before.max); ++i) {
@@ -111,4 +114,4 @@ static void *shell_setup(void)
 	return NULL;
 }
 
-ZTEST_SUITE(kernel_latency_monitor_shell, NULL, shell_setup, NULL, NULL, NULL);
+ZTEST_SUITE(kernel_critical_section_monitor_shell, NULL, shell_setup, NULL, NULL, NULL);
