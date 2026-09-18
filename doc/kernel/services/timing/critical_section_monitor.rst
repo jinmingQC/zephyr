@@ -1,15 +1,14 @@
 .. Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 .. SPDX-License-Identifier: Apache-2.0
 
-.. _kernel_latency_monitor:
+.. _kernel_critical_section_monitor:
 
-Kernel Latency Monitor
-######################
+Critical Section Monitor
+########################
 
-The Kernel Latency Monitor helps locate long critical sections by recording
-the longest interrupt-locked, spinlock-wait, and spinlock-hold intervals on
-each CPU. It does not print, allocate memory, or take another lock in the
-measured path.
+The Critical Section Monitor records the maximum IRQ-locked, spinlock wait,
+and spinlock hold times per CPU. It does not print, allocate memory, or take
+another lock in the measured path.
 
 Measured intervals
 ******************
@@ -28,18 +27,18 @@ while it is still in progress or measure hardware interrupt response time.
 Configuration
 *************
 
-Enable :kconfig:option:`CONFIG_KERNEL_LATENCY_MONITOR`. It requires a system
+Enable :kconfig:option:`CONFIG_CRITICAL_SECTION_MONITOR`. It requires a system
 timer with a lock-free 32-bit cycle counter. SMP builds also require the
 compiler-builtin atomic backend. To read statistics from the shell, add these
 options to your application configuration:
 
 .. code-block:: cfg
 
-   CONFIG_KERNEL_LATENCY_MONITOR=y
+   CONFIG_CRITICAL_SECTION_MONITOR=y
    CONFIG_SHELL=y
    CONFIG_KERNEL_SHELL=y
 
-:kconfig:option:`CONFIG_KERNEL_LATENCY_MONITOR_MAX_SPINLOCK_DEPTH` sets the
+:kconfig:option:`CONFIG_CRITICAL_SECTION_MONITOR_MAX_SPINLOCKS` sets the
 number of spinlock holds tracked at once per CPU (default: four). If all slots
 are in use, extra holds are skipped and counted as tracking overflows. IRQ
 and spinlock-wait measurements continue.
@@ -55,7 +54,7 @@ Run:
 
 .. code-block:: console
 
-   uart:~$ kernel latency
+   uart:~$ kernel critical
 
 The command shows each CPU's maxima in cycles and nanoseconds, with the caller,
 spinlock, and thread addresses, an ISR-context flag, and the tracking overflow

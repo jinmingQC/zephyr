@@ -4,21 +4,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_KERNEL_INCLUDE_LATENCY_MONITOR_H_
-#define ZEPHYR_KERNEL_INCLUDE_LATENCY_MONITOR_H_
+#ifndef ZEPHYR_KERNEL_INCLUDE_CRITICAL_SECTION_MONITOR_H_
+#define ZEPHYR_KERNEL_INCLUDE_CRITICAL_SECTION_MONITOR_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/kernel/internal/latency_monitor.h>
+#include <zephyr/kernel/internal/critical_section_monitor.h>
 
 struct k_thread;
 
-enum z_latency_monitor_event {
-	Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED,
-	Z_LATENCY_MONITOR_EVENT_SPINLOCK_WAIT,
-	Z_LATENCY_MONITOR_EVENT_SPINLOCK_HOLD,
-	Z_LATENCY_MONITOR_EVENT_COUNT,
+enum z_critical_section_monitor_event {
+	Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED,
+	Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_WAIT,
+	Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_HOLD,
+	Z_CRITICAL_SECTION_MONITOR_EVENT_COUNT,
 };
 
 /*
@@ -26,7 +26,7 @@ enum z_latency_monitor_event {
  * dereference them. The caller may not resolve after compiler/linker
  * optimization. Zero cycles means that no event has been recorded.
  */
-struct z_latency_monitor_record {
+struct z_critical_section_monitor_record {
 	uintptr_t caller;
 	const struct k_spinlock *spinlock;
 	/* Thread at interval start; in an ISR, the interrupted thread. */
@@ -35,8 +35,8 @@ struct z_latency_monitor_record {
 	bool in_isr;
 };
 
-struct z_latency_monitor_stats {
-	struct z_latency_monitor_record max[Z_LATENCY_MONITOR_EVENT_COUNT];
+struct z_critical_section_monitor_stats {
+	struct z_critical_section_monitor_record max[Z_CRITICAL_SECTION_MONITOR_EVENT_COUNT];
 	uint32_t spinlock_tracking_overflows;
 };
 
@@ -47,7 +47,8 @@ struct z_latency_monitor_stats {
  * The destination is valid only on success.
  * Do not call from an NMI or zero-latency interrupt.
  */
-int z_latency_monitor_stats_get(unsigned int cpu, struct z_latency_monitor_stats *stats);
+int z_critical_section_monitor_stats_get(unsigned int cpu,
+					 struct z_critical_section_monitor_stats *stats);
 
 /*
  * Reset only the current CPU's published statistics, preserving active
@@ -55,6 +56,6 @@ int z_latency_monitor_stats_get(unsigned int cpu, struct z_latency_monitor_stats
  * may become the next maximum when it ends.
  * Do not call from an NMI or zero-latency interrupt.
  */
-void z_latency_monitor_stats_reset(void);
+void z_critical_section_monitor_stats_reset(void);
 
-#endif /* ZEPHYR_KERNEL_INCLUDE_LATENCY_MONITOR_H_ */
+#endif /* ZEPHYR_KERNEL_INCLUDE_CRITICAL_SECTION_MONITOR_H_ */

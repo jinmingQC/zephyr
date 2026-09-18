@@ -20,8 +20,8 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/time_units.h>
 
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-#include <zephyr/kernel/internal/latency_monitor.h>
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+#include <zephyr/kernel/internal/critical_section_monitor.h>
 #endif
 
 #ifdef __cplusplus
@@ -204,8 +204,8 @@ static ALWAYS_INLINE k_spinlock_key_t k_spin_lock(struct k_spinlock *l)
 	 */
 	k.key = arch_irq_lock();
 
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-	z_latency_monitor_spin_start(l, k.key);
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+	z_critical_section_monitor_spin_start(l, k.key);
 #endif
 	z_spinlock_validate_pre(l);
 #ifdef CONFIG_SMP
@@ -228,9 +228,9 @@ static ALWAYS_INLINE k_spinlock_key_t k_spin_lock(struct k_spinlock *l)
 #endif /* CONFIG_TICKET_SPINLOCKS */
 #endif /* CONFIG_SMP */
 
-#if defined(CONFIG_KERNEL_LATENCY_MONITOR) && defined(CONFIG_SMP)
-	z_latency_monitor_spin_acquired(l);
-#endif /* CONFIG_KERNEL_LATENCY_MONITOR && CONFIG_SMP */
+#if defined(CONFIG_CRITICAL_SECTION_MONITOR) && defined(CONFIG_SMP)
+	z_critical_section_monitor_spin_acquired(l);
+#endif /* CONFIG_CRITICAL_SECTION_MONITOR && CONFIG_SMP */
 	z_spinlock_validate_post(l);
 	return k;
 }
@@ -253,8 +253,8 @@ static ALWAYS_INLINE int k_spin_trylock(struct k_spinlock *l, k_spinlock_key_t *
 {
 	int key = arch_irq_lock();
 
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-	z_latency_monitor_spin_start(l, key);
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+	z_critical_section_monitor_spin_start(l, key);
 #endif
 	z_spinlock_validate_pre(l);
 #ifdef CONFIG_SMP
@@ -289,9 +289,9 @@ static ALWAYS_INLINE int k_spin_trylock(struct k_spinlock *l, k_spinlock_key_t *
 #endif /* CONFIG_TICKET_SPINLOCKS */
 #endif /* CONFIG_SMP */
 
-#if defined(CONFIG_KERNEL_LATENCY_MONITOR) && defined(CONFIG_SMP)
-	z_latency_monitor_spin_acquired(l);
-#endif /* CONFIG_KERNEL_LATENCY_MONITOR && CONFIG_SMP */
+#if defined(CONFIG_CRITICAL_SECTION_MONITOR) && defined(CONFIG_SMP)
+	z_critical_section_monitor_spin_acquired(l);
+#endif /* CONFIG_CRITICAL_SECTION_MONITOR && CONFIG_SMP */
 	z_spinlock_validate_post(l);
 	k->key = key;
 
@@ -299,8 +299,8 @@ static ALWAYS_INLINE int k_spin_trylock(struct k_spinlock *l, k_spinlock_key_t *
 
 #ifdef CONFIG_SMP
 busy:
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-	z_latency_monitor_spin_abort(l, key);
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+	z_critical_section_monitor_spin_abort(l, key);
 #endif
 	arch_irq_unlock(key);
 	return -EBUSY;
@@ -359,8 +359,8 @@ static ALWAYS_INLINE void k_spin_unlock(struct k_spinlock *l,
 	(void)atomic_clear(&l->locked);
 #endif /* CONFIG_TICKET_SPINLOCKS */
 #endif /* CONFIG_SMP */
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-	z_latency_monitor_spin_unlock(l, key.key);
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+	z_critical_section_monitor_spin_unlock(l, key.key);
 #endif
 	arch_irq_unlock(key.key);
 }
@@ -410,8 +410,8 @@ static ALWAYS_INLINE void k_spin_release(struct k_spinlock *l)
 	(void)atomic_clear(&l->locked);
 #endif /* CONFIG_TICKET_SPINLOCKS */
 #endif /* CONFIG_SMP */
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-	z_latency_monitor_spin_released(l);
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+	z_critical_section_monitor_spin_released(l);
 #endif
 }
 

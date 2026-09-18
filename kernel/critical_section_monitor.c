@@ -15,15 +15,15 @@
 #include <zephyr/sys/util.h>
 
 #include <kernel_arch_func.h>
-#include <latency_monitor.h>
+#include <critical_section_monitor.h>
 
-#define Z_LATENCY_MONITOR_FN     __no_instrumentation__ __noasan
-#define Z_LATENCY_MONITOR_HOOK   __noinline Z_LATENCY_MONITOR_FN
-#define Z_LATENCY_MONITOR_INLINE static ALWAYS_INLINE Z_LATENCY_MONITOR_FN
+#define Z_CRITICAL_SECTION_MONITOR_FN     __no_instrumentation__ __noasan
+#define Z_CRITICAL_SECTION_MONITOR_HOOK   __noinline Z_CRITICAL_SECTION_MONITOR_FN
+#define Z_CRITICAL_SECTION_MONITOR_INLINE static ALWAYS_INLINE Z_CRITICAL_SECTION_MONITOR_FN
 
 #define SNAPSHOT_MAX_ATTEMPTS 32U
 
-struct z_latency_monitor_interval {
+struct z_critical_section_monitor_interval {
 	uintptr_t caller;
 	const struct k_spinlock *spinlock;
 	const struct k_thread *thread;
@@ -35,17 +35,18 @@ struct z_latency_monitor_interval {
  * especially important when another CPU snapshots the sequence counter.
  */
 #if defined(CONFIG_SMP) && defined(CONFIG_DCACHE)
-#define Z_LATENCY_MONITOR_CPU_ALIGN __aligned(CONFIG_DCACHE_LINE_SIZE)
+#define Z_CRITICAL_SECTION_MONITOR_CPU_ALIGN __aligned(CONFIG_DCACHE_LINE_SIZE)
 #else
-#define Z_LATENCY_MONITOR_CPU_ALIGN
+#define Z_CRITICAL_SECTION_MONITOR_CPU_ALIGN
 #endif
 
-struct z_latency_monitor_cpu {
-	struct z_latency_monitor_interval irq;
+struct z_critical_section_monitor_cpu {
+	struct z_critical_section_monitor_interval irq;
 #ifdef CONFIG_SMP
-	struct z_latency_monitor_interval pending;
+	struct z_critical_section_monitor_interval pending;
 #endif
-	struct z_latency_monitor_interval held[CONFIG_KERNEL_LATENCY_MONITOR_MAX_SPINLOCK_DEPTH];
+	struct z_critical_section_monitor_interval
+		held[CONFIG_CRITICAL_SECTION_MONITOR_MAX_SPINLOCKS];
 	unsigned int held_count;
 	bool irq_active;
 #ifdef CONFIG_SMP
@@ -55,32 +56,32 @@ struct z_latency_monitor_cpu {
 #ifdef CONFIG_SMP
 	atomic_t sequence;
 #endif
-	struct z_latency_monitor_stats stats;
-} Z_LATENCY_MONITOR_CPU_ALIGN;
+	struct z_critical_section_monitor_stats stats;
+} Z_CRITICAL_SECTION_MONITOR_CPU_ALIGN;
 
-static struct z_latency_monitor_cpu latency_monitor_cpus[CONFIG_MP_MAX_NUM_CPUS];
+static struct z_critical_section_monitor_cpu critical_section_monitor_cpus[CONFIG_MP_MAX_NUM_CPUS];
 
-static Z_LATENCY_MONITOR_FN int latency_monitor_init(void)
+static Z_CRITICAL_SECTION_MONITOR_FN int critical_section_monitor_init(void)
 {
 	unsigned int key = arch_irq_lock();
 
 	/* Published before secondary CPUs start, including deferred CPU starts. */
-	for (size_t cpu = 0; cpu < ARRAY_SIZE(latency_monitor_cpus); ++cpu) {
-		latency_monitor_cpus[cpu].ready = true;
+	for (size_t cpu = 0; cpu < ARRAY_SIZE(critical_section_monitor_cpus); ++cpu) {
+		critical_section_monitor_cpus[cpu].ready = true;
 	}
 
 	arch_irq_unlock(key);
 	return 0;
 }
 
-SYS_INIT(latency_monitor_init, POST_KERNEL, 0);
+SYS_INIT(critical_section_monitor_init, POST_KERNEL, 0);
 
-Z_LATENCY_MONITOR_INLINE struct z_latency_monitor_cpu *current_cpu_state(void)
+Z_CRITICAL_SECTION_MONITOR_INLINE struct z_critical_section_monitor_cpu *current_cpu_state(void)
 {
 #ifdef CONFIG_SMP
-	return &latency_monitor_cpus[arch_curr_cpu()->id];
+	return &critical_section_monitor_cpus[arch_curr_cpu()->id];
 #else
-	return &latency_monitor_cpus[0];
+	return &critical_section_monitor_cpus[0];
 #endif
 }
 
@@ -88,12 +89,12 @@ Z_LATENCY_MONITOR_INLINE struct z_latency_monitor_cpu *current_cpu_state(void)
  * Capture the originating thread here. The scheduler changes _current before
  * releasing its spinlock and performing the architecture context switch.
  */
-Z_LATENCY_MONITOR_INLINE struct z_latency_monitor_interval
+Z_CRITICAL_SECTION_MONITOR_INLINE struct z_critical_section_monitor_interval
 interval_start(const struct k_spinlock *spinlock, uintptr_t caller)
 {
 	uint32_t now = k_cycle_get_32();
 
-	return (struct z_latency_monitor_interval){
+	return (struct z_critical_section_monitor_interval){
 		.caller = caller,
 		.spinlock = spinlock,
 		.thread = _current,
@@ -118,8 +119,9 @@ BUILD_ASSERT(__atomic_always_lock_free(sizeof(bool), 0));
 #define STATS_STORE(ptr, value) (*(ptr) = (value))
 #endif
 
-static Z_LATENCY_MONITOR_FN void record_store(struct z_latency_monitor_record *dest,
-					      const struct z_latency_monitor_record *src)
+static Z_CRITICAL_SECTION_MONITOR_FN void
+record_store(struct z_critical_section_monitor_record *dest,
+	     const struct z_critical_section_monitor_record *src)
 {
 	STATS_STORE(&dest->caller, src->caller);
 	STATS_STORE(&dest->spinlock, src->spinlock);
@@ -128,7 +130,8 @@ static Z_LATENCY_MONITOR_FN void record_store(struct z_latency_monitor_record *d
 	STATS_STORE(&dest->in_isr, src->in_isr);
 }
 
-static Z_LATENCY_MONITOR_FN void stats_write_begin(struct z_latency_monitor_cpu *state)
+static Z_CRITICAL_SECTION_MONITOR_FN void
+stats_write_begin(struct z_critical_section_monitor_cpu *state)
 {
 #ifdef CONFIG_SMP
 	(void)atomic_inc(&state->sequence);
@@ -139,7 +142,8 @@ static Z_LATENCY_MONITOR_FN void stats_write_begin(struct z_latency_monitor_cpu 
 #endif
 }
 
-static Z_LATENCY_MONITOR_FN void stats_write_end(struct z_latency_monitor_cpu *state)
+static Z_CRITICAL_SECTION_MONITOR_FN void
+stats_write_end(struct z_critical_section_monitor_cpu *state)
 {
 #ifdef CONFIG_SMP
 	(void)atomic_inc(&state->sequence);
@@ -148,12 +152,13 @@ static Z_LATENCY_MONITOR_FN void stats_write_end(struct z_latency_monitor_cpu *s
 #endif
 }
 
-static Z_LATENCY_MONITOR_HOOK void
-record_max_slow(struct z_latency_monitor_cpu *state, enum z_latency_monitor_event event,
-		uint32_t cycles, const struct z_latency_monitor_interval *interval)
+static Z_CRITICAL_SECTION_MONITOR_HOOK void
+record_max_slow(struct z_critical_section_monitor_cpu *state,
+		enum z_critical_section_monitor_event event, uint32_t cycles,
+		const struct z_critical_section_monitor_interval *interval)
 {
-	struct z_latency_monitor_record *record = &state->stats.max[event];
-	const struct z_latency_monitor_record next = {
+	struct z_critical_section_monitor_record *record = &state->stats.max[event];
+	const struct z_critical_section_monitor_record next = {
 		.caller = interval->caller,
 		.spinlock = interval->spinlock,
 		.thread = interval->thread,
@@ -166,11 +171,12 @@ record_max_slow(struct z_latency_monitor_cpu *state, enum z_latency_monitor_even
 	stats_write_end(state);
 }
 
-static ALWAYS_INLINE Z_LATENCY_MONITOR_FN void
-record_max(struct z_latency_monitor_cpu *state, enum z_latency_monitor_event event, uint32_t cycles,
-	   const struct z_latency_monitor_interval *interval)
+static ALWAYS_INLINE Z_CRITICAL_SECTION_MONITOR_FN void
+record_max(struct z_critical_section_monitor_cpu *state,
+	   enum z_critical_section_monitor_event event, uint32_t cycles,
+	   const struct z_critical_section_monitor_interval *interval)
 {
-	struct z_latency_monitor_record *record = &state->stats.max[event];
+	struct z_critical_section_monitor_record *record = &state->stats.max[event];
 
 	if (likely(cycles <= STATS_LOAD(&record->cycles))) {
 		return;
@@ -179,7 +185,8 @@ record_max(struct z_latency_monitor_cpu *state, enum z_latency_monitor_event eve
 	record_max_slow(state, event, cycles, interval);
 }
 
-static Z_LATENCY_MONITOR_FN void record_spinlock_overflow(struct z_latency_monitor_cpu *state)
+static Z_CRITICAL_SECTION_MONITOR_FN void
+record_spinlock_overflow(struct z_critical_section_monitor_cpu *state)
 {
 	uint32_t *overflows = &state->stats.spinlock_tracking_overflows;
 
@@ -189,9 +196,9 @@ static Z_LATENCY_MONITOR_FN void record_spinlock_overflow(struct z_latency_monit
 	stats_write_end(state);
 }
 
-static ALWAYS_INLINE Z_LATENCY_MONITOR_FN void
-spin_hold_start(struct z_latency_monitor_cpu *state,
-		const struct z_latency_monitor_interval *interval)
+static ALWAYS_INLINE Z_CRITICAL_SECTION_MONITOR_FN void
+spin_hold_start(struct z_critical_section_monitor_cpu *state,
+		const struct z_critical_section_monitor_interval *interval)
 {
 	unsigned int count = state->held_count;
 
@@ -204,16 +211,17 @@ spin_hold_start(struct z_latency_monitor_cpu *state,
 	state->held_count = count + 1U;
 }
 
-static ALWAYS_INLINE Z_LATENCY_MONITOR_FN void
-irq_start(struct z_latency_monitor_cpu *state, const struct z_latency_monitor_interval *interval)
+static ALWAYS_INLINE Z_CRITICAL_SECTION_MONITOR_FN void
+irq_start(struct z_critical_section_monitor_cpu *state,
+	  const struct z_critical_section_monitor_interval *interval)
 {
 	/* An entry with IRQs previously enabled always starts a fresh interval. */
 	state->irq = *interval;
 	state->irq_active = true;
 }
 
-static ALWAYS_INLINE Z_LATENCY_MONITOR_FN void irq_end(struct z_latency_monitor_cpu *state,
-						       uint32_t now)
+static ALWAYS_INLINE Z_CRITICAL_SECTION_MONITOR_FN void
+irq_end(struct z_critical_section_monitor_cpu *state, uint32_t now)
 {
 	if (!state->irq_active) {
 		return;
@@ -221,15 +229,16 @@ static ALWAYS_INLINE Z_LATENCY_MONITOR_FN void irq_end(struct z_latency_monitor_
 
 	state->irq_active = false;
 
-	record_max(state, Z_LATENCY_MONITOR_EVENT_IRQ_LOCKED, now - state->irq.start_cycles,
-		   &state->irq);
+	record_max(state, Z_CRITICAL_SECTION_MONITOR_EVENT_IRQ_LOCKED,
+		   now - state->irq.start_cycles, &state->irq);
 }
 
-Z_LATENCY_MONITOR_HOOK void
-z_latency_monitor_irq_start(unsigned int key, const struct k_spinlock *spinlock, uintptr_t caller)
+Z_CRITICAL_SECTION_MONITOR_HOOK void
+z_critical_section_monitor_irq_start(unsigned int key, const struct k_spinlock *spinlock,
+				     uintptr_t caller)
 {
-	struct z_latency_monitor_cpu *state;
-	struct z_latency_monitor_interval interval;
+	struct z_critical_section_monitor_cpu *state;
+	struct z_critical_section_monitor_interval interval;
 
 	if (!arch_irq_unlocked(key)) {
 		return;
@@ -244,9 +253,9 @@ z_latency_monitor_irq_start(unsigned int key, const struct k_spinlock *spinlock,
 	irq_start(state, &interval);
 }
 
-Z_LATENCY_MONITOR_HOOK void z_latency_monitor_irq_end(unsigned int key)
+Z_CRITICAL_SECTION_MONITOR_HOOK void z_critical_section_monitor_irq_end(unsigned int key)
 {
-	struct z_latency_monitor_cpu *state;
+	struct z_critical_section_monitor_cpu *state;
 
 	if (!arch_irq_unlocked(key)) {
 		return;
@@ -260,10 +269,10 @@ Z_LATENCY_MONITOR_HOOK void z_latency_monitor_irq_end(unsigned int key)
 	irq_end(state, k_cycle_get_32());
 }
 
-Z_LATENCY_MONITOR_HOOK void z_latency_monitor_idle_enter(void)
+Z_CRITICAL_SECTION_MONITOR_HOOK void z_critical_section_monitor_idle_enter(void)
 {
 	unsigned int key = arch_irq_lock();
-	struct z_latency_monitor_cpu *state = current_cpu_state();
+	struct z_critical_section_monitor_cpu *state = current_cpu_state();
 
 	if (likely(state->ready)) {
 		if (arch_irq_unlocked(key)) {
@@ -276,18 +285,18 @@ Z_LATENCY_MONITOR_HOOK void z_latency_monitor_idle_enter(void)
 	arch_irq_unlock(key);
 }
 
-Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_start(const struct k_spinlock *lock,
-							 unsigned int key)
+Z_CRITICAL_SECTION_MONITOR_HOOK void
+z_critical_section_monitor_spin_start(const struct k_spinlock *lock, unsigned int key)
 {
-	struct z_latency_monitor_cpu *state;
-	struct z_latency_monitor_interval interval;
+	struct z_critical_section_monitor_cpu *state;
+	struct z_critical_section_monitor_interval interval;
 
 	state = current_cpu_state();
 	if (unlikely(!state->ready)) {
 		return;
 	}
 
-	interval = interval_start(lock, Z_KERNEL_LATENCY_MONITOR_CALLER());
+	interval = interval_start(lock, Z_CRITICAL_SECTION_MONITOR_CALLER());
 
 	if (arch_irq_unlocked(key)) {
 		irq_start(state, &interval);
@@ -306,10 +315,11 @@ Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_start(const struct k_spinlock
 }
 
 #ifdef CONFIG_SMP
-Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_acquired(const struct k_spinlock *lock)
+Z_CRITICAL_SECTION_MONITOR_HOOK void
+z_critical_section_monitor_spin_acquired(const struct k_spinlock *lock)
 {
-	struct z_latency_monitor_cpu *state;
-	struct z_latency_monitor_interval *pending;
+	struct z_critical_section_monitor_cpu *state;
+	struct z_critical_section_monitor_interval *pending;
 	uint32_t acquired;
 
 	state = current_cpu_state();
@@ -325,17 +335,17 @@ Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_acquired(const struct k_spinl
 
 	acquired = k_cycle_get_32();
 	state->pending_active = false;
-	record_max(state, Z_LATENCY_MONITOR_EVENT_SPINLOCK_WAIT, acquired - pending->start_cycles,
-		   pending);
+	record_max(state, Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_WAIT,
+		   acquired - pending->start_cycles, pending);
 
 	pending->start_cycles = acquired;
 	spin_hold_start(state, pending);
 }
 
-Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_abort(const struct k_spinlock *lock,
-							 unsigned int key)
+Z_CRITICAL_SECTION_MONITOR_HOOK void
+z_critical_section_monitor_spin_abort(const struct k_spinlock *lock, unsigned int key)
 {
-	struct z_latency_monitor_cpu *state;
+	struct z_critical_section_monitor_cpu *state;
 
 	state = current_cpu_state();
 	if (unlikely(!state->ready)) {
@@ -353,21 +363,22 @@ Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_abort(const struct k_spinlock
 
 #endif /* CONFIG_SMP */
 
-static ALWAYS_INLINE Z_LATENCY_MONITOR_FN void
-spin_released_at(struct z_latency_monitor_cpu *state, const struct k_spinlock *lock, uint32_t now)
+static ALWAYS_INLINE Z_CRITICAL_SECTION_MONITOR_FN void
+spin_released_at(struct z_critical_section_monitor_cpu *state, const struct k_spinlock *lock,
+		 uint32_t now)
 {
 	unsigned int count = state->held_count;
 
 	/* Usually the last entry matches, but z_pend_curr() releases out of order. */
 	for (unsigned int i = count; i > 0U; --i) {
-		struct z_latency_monitor_interval *held = &state->held[i - 1U];
+		struct z_critical_section_monitor_interval *held = &state->held[i - 1U];
 
 		if (held->spinlock != lock) {
 			continue;
 		}
 
-		record_max(state, Z_LATENCY_MONITOR_EVENT_SPINLOCK_HOLD, now - held->start_cycles,
-			   held);
+		record_max(state, Z_CRITICAL_SECTION_MONITOR_EVENT_SPINLOCK_HOLD,
+			   now - held->start_cycles, held);
 		/* Keep acquisition order so normal nested releases stay on the fast path. */
 		for (unsigned int j = i; j < count; ++j) {
 			state->held[j - 1U] = state->held[j];
@@ -378,9 +389,10 @@ spin_released_at(struct z_latency_monitor_cpu *state, const struct k_spinlock *l
 	/* A lock acquired while all tracking slots were in use has no record. */
 }
 
-Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_released(const struct k_spinlock *lock)
+Z_CRITICAL_SECTION_MONITOR_HOOK void
+z_critical_section_monitor_spin_released(const struct k_spinlock *lock)
 {
-	struct z_latency_monitor_cpu *state;
+	struct z_critical_section_monitor_cpu *state;
 
 	state = current_cpu_state();
 	if (unlikely(!state->ready)) {
@@ -390,10 +402,10 @@ Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_released(const struct k_spinl
 	spin_released_at(state, lock, k_cycle_get_32());
 }
 
-Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_unlock(const struct k_spinlock *lock,
-							  unsigned int key)
+Z_CRITICAL_SECTION_MONITOR_HOOK void
+z_critical_section_monitor_spin_unlock(const struct k_spinlock *lock, unsigned int key)
 {
-	struct z_latency_monitor_cpu *state;
+	struct z_critical_section_monitor_cpu *state;
 	uint32_t now;
 
 	state = current_cpu_state();
@@ -409,10 +421,11 @@ Z_LATENCY_MONITOR_HOOK void z_latency_monitor_spin_unlock(const struct k_spinloc
 	}
 }
 
-Z_LATENCY_MONITOR_FN int z_latency_monitor_stats_get(unsigned int cpu,
-						     struct z_latency_monitor_stats *stats)
+Z_CRITICAL_SECTION_MONITOR_FN int
+z_critical_section_monitor_stats_get(unsigned int cpu,
+				     struct z_critical_section_monitor_stats *stats)
 {
-	struct z_latency_monitor_cpu *state;
+	struct z_critical_section_monitor_cpu *state;
 #ifdef CONFIG_SMP
 	atomic_val_t sequence;
 #else
@@ -423,7 +436,7 @@ Z_LATENCY_MONITOR_FN int z_latency_monitor_stats_get(unsigned int cpu,
 		return -EINVAL;
 	}
 
-	state = &latency_monitor_cpus[cpu];
+	state = &critical_section_monitor_cpus[cpu];
 
 #ifdef CONFIG_SMP
 	/* A remote CPU may stop while publishing: never wait indefinitely. */
@@ -434,8 +447,8 @@ Z_LATENCY_MONITOR_FN int z_latency_monitor_stats_get(unsigned int cpu,
 		}
 
 		for (size_t i = 0; i < ARRAY_SIZE(stats->max); ++i) {
-			const struct z_latency_monitor_record *src = &state->stats.max[i];
-			struct z_latency_monitor_record *dest = &stats->max[i];
+			const struct z_critical_section_monitor_record *src = &state->stats.max[i];
+			struct z_critical_section_monitor_record *dest = &stats->max[i];
 
 			dest->caller = STATS_LOAD(&src->caller);
 			dest->spinlock = STATS_LOAD(&src->spinlock);
@@ -461,10 +474,10 @@ Z_LATENCY_MONITOR_FN int z_latency_monitor_stats_get(unsigned int cpu,
 #endif
 }
 
-Z_LATENCY_MONITOR_FN void z_latency_monitor_stats_reset(void)
+Z_CRITICAL_SECTION_MONITOR_FN void z_critical_section_monitor_stats_reset(void)
 {
-	const struct z_latency_monitor_record empty = {0};
-	struct z_latency_monitor_cpu *state;
+	const struct z_critical_section_monitor_record empty = {0};
+	struct z_critical_section_monitor_cpu *state;
 	unsigned int key = arch_irq_lock();
 
 	state = current_cpu_state();
@@ -479,16 +492,16 @@ Z_LATENCY_MONITOR_FN void z_latency_monitor_stats_reset(void)
 }
 
 #ifndef CONFIG_SMP
-Z_LATENCY_MONITOR_HOOK unsigned int z_latency_monitor_irq_lock(void)
+Z_CRITICAL_SECTION_MONITOR_HOOK unsigned int z_critical_section_monitor_irq_lock(void)
 {
-	struct z_latency_monitor_cpu *state;
-	struct z_latency_monitor_interval interval;
+	struct z_critical_section_monitor_cpu *state;
+	struct z_critical_section_monitor_interval interval;
 	unsigned int key = arch_irq_lock();
 
 	if (arch_irq_unlocked(key)) {
 		state = current_cpu_state();
 		if (likely(state->ready)) {
-			interval = interval_start(NULL, Z_KERNEL_LATENCY_MONITOR_CALLER());
+			interval = interval_start(NULL, Z_CRITICAL_SECTION_MONITOR_CALLER());
 			irq_start(state, &interval);
 		}
 	}
@@ -496,10 +509,10 @@ Z_LATENCY_MONITOR_HOOK unsigned int z_latency_monitor_irq_lock(void)
 	return key;
 }
 
-Z_LATENCY_MONITOR_HOOK void z_latency_monitor_irq_unlock(unsigned int key)
+Z_CRITICAL_SECTION_MONITOR_HOOK void z_critical_section_monitor_irq_unlock(unsigned int key)
 {
 	if (arch_irq_unlocked(key)) {
-		struct z_latency_monitor_cpu *state = current_cpu_state();
+		struct z_critical_section_monitor_cpu *state = current_cpu_state();
 
 		if (likely(state->ready)) {
 			irq_end(state, k_cycle_get_32());

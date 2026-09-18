@@ -394,8 +394,8 @@ endmenu
 
 menu "Kernel Debugging and Metrics"
 
-menuconfig KERNEL_LATENCY_MONITOR
-	bool "Kernel latency monitor"
+menuconfig CRITICAL_SECTION_MONITOR
+	bool "Critical section monitor"
 	depends on SYSTEM_CLOCK_LOCK_FREE_COUNT
 	depends on !SMP || ATOMIC_OPERATIONS_BUILTIN
 	select NONZERO_SPINLOCK_SIZE
@@ -421,9 +421,9 @@ menuconfig KERNEL_LATENCY_MONITOR
 	  SMP snapshots require compiler atomic builtins for payload accesses
 	  and memory ordering.
 
-if KERNEL_LATENCY_MONITOR
+if CRITICAL_SECTION_MONITOR
 
-config KERNEL_LATENCY_MONITOR_MAX_SPINLOCK_DEPTH
+config CRITICAL_SECTION_MONITOR_MAX_SPINLOCKS
 	int "Maximum simultaneously tracked spinlocks"
 	range 1 16
 	default 4
@@ -434,7 +434,7 @@ config KERNEL_LATENCY_MONITOR_MAX_SPINLOCK_DEPTH
 	  times are not recorded. Releasing a tracked lock frees a slot;
 	  interrupt-locked and spinlock-wait measurements always continue.
 
-endif # KERNEL_LATENCY_MONITOR
+endif # CRITICAL_SECTION_MONITOR
 
 config INIT_STACKS
 	bool "Initialize stack areas"

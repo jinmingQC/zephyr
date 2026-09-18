@@ -4,8 +4,8 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/kernel/smp.h>
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-#include <zephyr/kernel/internal/latency_monitor.h>
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+#include <zephyr/kernel/internal/critical_section_monitor.h>
 #endif
 #include <zephyr/devicetree.h>
 #include <zephyr/spinlock.h>
@@ -57,20 +57,20 @@ static struct cpu_start_cb {
 
 static struct k_spinlock cpu_start_lock;
 
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
 #define Z_SMP_GLOBAL_LOCK_ATTR __noinline
 #else
 #define Z_SMP_GLOBAL_LOCK_ATTR
 #endif
 Z_SMP_GLOBAL_LOCK_ATTR unsigned int z_smp_global_lock(void)
 {
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-	uintptr_t caller = Z_KERNEL_LATENCY_MONITOR_CALLER();
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+	uintptr_t caller = Z_CRITICAL_SECTION_MONITOR_CALLER();
 #endif
 	unsigned int key = arch_irq_lock();
 
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-	z_latency_monitor_irq_start(key, NULL, caller);
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+	z_critical_section_monitor_irq_start(key, NULL, caller);
 #endif
 	if (!_current->base.global_lock_count) {
 		while (!atomic_cas(&global_lock, 0, 1)) {
@@ -93,8 +93,8 @@ void z_smp_global_unlock(unsigned int key)
 		}
 	}
 
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-	z_latency_monitor_irq_end(key);
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+	z_critical_section_monitor_irq_end(key);
 #endif
 	arch_irq_unlock(key);
 }

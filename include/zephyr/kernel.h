@@ -7090,8 +7090,8 @@ __syscall int k_poll_signal_raise(struct k_poll_signal *sig, int result);
  */
 static inline void k_cpu_idle(void)
 {
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
-	z_latency_monitor_idle_enter();
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
+	z_critical_section_monitor_idle_enter();
 #endif
 	arch_cpu_idle();
 }
@@ -7112,9 +7112,9 @@ static inline void k_cpu_idle(void)
  */
 static inline void k_cpu_atomic_idle(unsigned int key)
 {
-#ifdef CONFIG_KERNEL_LATENCY_MONITOR
+#ifdef CONFIG_CRITICAL_SECTION_MONITOR
 	/* Hand off the outer IRQ interval before the architecture enables IRQs. */
-	z_latency_monitor_irq_end(key);
+	z_critical_section_monitor_irq_end(key);
 #endif
 	arch_cpu_atomic_idle(key);
 }
