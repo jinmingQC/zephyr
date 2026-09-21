@@ -121,7 +121,13 @@ void z_impl_k_sem_give(struct k_sem *sem)
 
 	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_sem, give, sem);
 
-	if (z_sched_wake(&sem->wait_q, 0, NULL)) {
+	/*
+	 * A positive count excludes pending takers: k_sem_take() only pends
+	 * at zero while holding this lock. On SMP, avoid taking the scheduler
+	 * lock just to inspect an empty wait queue. Pollers still need notifying.
+	 */
+	if ((!IS_ENABLED(CONFIG_SMP) || (sem->count == 0U)) &&
+	    z_sched_wake(&sem->wait_q, 0, NULL)) {
 		resched = true;
 	} else {
 		sem->count += (sem->count != sem->limit) ? 1U : 0U;

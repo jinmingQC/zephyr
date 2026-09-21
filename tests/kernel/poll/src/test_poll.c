@@ -819,6 +819,51 @@ ZTEST(poll_api, test_poll_multi)
 	k_thread_abort(tid2);
 }
 
+static K_SEM_DEFINE(positive_count_sem, 0, 1);
+
+static void poll_positive_count_sem(void *p1, void *p2, void *p3)
+{
+	struct k_poll_event event = K_POLL_EVENT_INITIALIZER(
+		K_POLL_TYPE_SEM_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, &positive_count_sem);
+
+	ARG_UNUSED(p1);
+	ARG_UNUSED(p2);
+	ARG_UNUSED(p3);
+
+	zassert_ok(k_poll(&event, 1, K_FOREVER));
+	zassert_equal(event.state, K_POLL_STATE_SEM_AVAILABLE);
+	/* Leave the token available for the next give at the limit. */
+}
+
+ZTEST(poll_api_1cpu, test_poll_sem_give_at_limit)
+{
+	int priority = k_thread_priority_get(k_current_get()) - 1;
+
+	k_sem_reset(&positive_count_sem);
+	k_thread_create(&test_thread, test_stack, K_THREAD_STACK_SIZEOF(test_stack),
+			poll_positive_count_sem, NULL, NULL, NULL, priority, 0, K_NO_WAIT);
+	k_thread_create(&test_loprio_thread, test_loprio_stack,
+			K_THREAD_STACK_SIZEOF(test_loprio_stack), poll_positive_count_sem, NULL,
+			NULL, NULL, priority, 0, K_NO_WAIT);
+
+	/* On one CPU, both higher-priority pollers block before yield returns. */
+	k_yield();
+	zassert_equal(k_thread_join(&test_thread, K_NO_WAIT), -EBUSY);
+	zassert_equal(k_thread_join(&test_loprio_thread, K_NO_WAIT), -EBUSY);
+
+	k_sem_give(&positive_count_sem);
+	zassert_ok(k_thread_join(&test_thread, K_SECONDS(1)));
+	zassert_equal(k_sem_count_get(&positive_count_sem), 1U);
+	zassert_equal(k_thread_join(&test_loprio_thread, K_NO_WAIT), -EBUSY);
+
+	/* A positive, saturated count must not bypass the second notification. */
+	k_sem_give(&positive_count_sem);
+	zassert_ok(k_thread_join(&test_loprio_thread, K_SECONDS(1)));
+	zassert_equal(k_sem_count_get(&positive_count_sem), 1U);
+	zassert_ok(k_sem_take(&positive_count_sem, K_NO_WAIT));
+	zassert_equal(k_sem_take(&positive_count_sem, K_NO_WAIT), -EBUSY);
+}
+
 struct sem_reset_poll_waiter {
 	struct k_poll_event event;
 	struct k_sem done;
