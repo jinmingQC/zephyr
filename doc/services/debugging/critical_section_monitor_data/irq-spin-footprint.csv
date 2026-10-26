@@ -1,0 +1,7 @@
+timer,monitor,image_payload_bytes,static_data_bytes,iram_code_bytes,reserved_sram_bytes
+original,off,48616,16920,31264,48208
+original,on,50580,17100,33056,50176
+original,extra,1964,180,1792,1968
+optimized32,off,48616,16920,31264,48208
+optimized32,on,50612,17100,33088,50208
+optimized32,extra,1996,180,1824,2000

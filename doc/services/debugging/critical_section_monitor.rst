@@ -104,3 +104,12 @@ Monitoring adds overhead, and reported durations include some of it. Use the
 monitor to find long critical sections, not to time short instruction sequences.
 Work outside the sampled interval still adds to the actual IRQ-locked time.
 Compare the same workload on target hardware with monitoring enabled and disabled.
+
+Performance measurements
+************************
+
+.. toctree::
+   :maxdepth: 1
+
+   critical_section_monitor_summary
+   critical_section_monitor_performance
