@@ -29,4 +29,28 @@ config LIBCXX_TLS_KEYS
 	default 8
 	range 2 64
 
+config LIBCXX_FILESYSTEM
+	bool "Native Zephyr filesystem backend"
+	depends on FILE_SYSTEM
+	help
+	  Enable C++17 filesystem paths, directory iteration and native file
+	  operations. LittleFS supports identity-sensitive copy and equivalent.
+	  Timestamps, permissions and links return ENOTSUP.
+
+if LIBCXX_FILESYSTEM
+
+config LIBCXX_FILESYSTEM_PATH_MAX
+	int "Maximum filesystem path storage in bytes"
+	default 512
+	range 64 4096
+
+config LIBCXX_FILESYSTEM_TEMP_DIR
+	string "Filesystem temporary directory"
+	default "/tmp"
+	help
+	  Existing absolute directory returned by temp_directory_path().
+	  The application must mount and create this directory first.
+
+endif # LIBCXX_FILESYSTEM
+
 endif # LIBCXX_SOURCE_LIBCPP

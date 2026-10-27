@@ -1,8 +1,8 @@
 .. SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
 .. SPDX-License-Identifier: Apache-2.0
 
-libc++ threading proof of concept
-################################
+libc++ C++17 proof of concept
+############################
 
 This optional library configuration builds libc++ and libc++abi 19.1.7 with
 Zephyr's selected target compiler and picolibc. Applications use C++17; the
@@ -16,9 +16,11 @@ thread-local storage. It does not use pthreads. The same generated libc++
 configuration is used by applications and both runtime libraries. Compiler
 default C++ include paths and prebuilt C++ runtime libraries are excluded.
 
-The integration suite passed with GCC 14.3.0 and Clang 19.1.7 from Zephyr SDK
-1.0.1 on all three QEMU targets below. Each compiler/target combination ran
-all 22 test cases, for 132 successful case executions:
+The threading, time, and filesystem suites passed with GCC 14.3.0 and
+Clang 19.1.7 from Zephyr SDK 1.0.1 on all three QEMU targets below. Each
+compiler/target combination ran 22 threading, 16 time, and 43 filesystem
+cases: 18 suite configurations and 486 successful case executions in total.
+These were executed tests, not build-only checks:
 
 * ``mps2/an385`` (ARM Cortex-M3)
 * ``qemu_riscv32/qemu_virt_riscv32`` (RISC-V, one core)
@@ -50,6 +52,20 @@ An application can select this implementation with:
 Native thread-local storage is required and selected by the library. POSIX
 clock support supplies ``clock_gettime()`` for the upstream chrono
 implementation. It does not select the POSIX pthread implementation.
+
+Filesystem support is optional. In addition to the configuration above, enable:
+
+.. code-block:: cfg
+
+   CONFIG_FILE_SYSTEM=y
+   CONFIG_LIBCXX_FILESYSTEM=y
+   CONFIG_LIBCXX_FILESYSTEM_TEMP_DIR="/lfs/tmp"
+
+Select and configure a native Zephyr filesystem and its storage device
+separately. The filesystem tests use LittleFS on a RAM disk; their
+``prj.conf`` and ``app.overlay`` provide a complete QEMU example. Applications
+must mount their storage before calling filesystem APIs. The configured
+temporary directory must be absolute, mounted, and already created.
 
 The default resource limits are:
 
@@ -108,7 +124,12 @@ Build and run
 *************
 
 Use an initialized west workspace with its required modules and Python
-dependencies. From this Zephyr checkout, set the SDK path and explicitly
+dependencies. Match the LittleFS checkout to this checkout's ``west.yml``;
+older modules can reference the removed internal ``__ASSERT_ON`` macro.
+An isolated matching module can be supplied without changing a shared
+workspace with ``-DEXTRA_ZEPHYR_MODULES=/path/to/matching-littlefs``
+(or Twister ``-x EXTRA_ZEPHYR_MODULES=/path/to/matching-littlefs``).
+From this Zephyr checkout, set the SDK path and explicitly
 select this checkout, including when using a Git worktree:
 
 .. code-block:: console
@@ -156,10 +177,27 @@ and ``-x LIBCXXABI_SOURCE_DIR=/path/to/libcxxabi-19.1.7.src`` to each command.
 ``qemu_riscv32`` is an additional architecture to validate using the same
 commands with a different board and output directory.
 
+To run all suites on all three targets, use a distinct output directory for
+each compiler:
+
+.. code-block:: console
+
+   for compiler in gnu llvm; do
+     ZEPHYR_TOOLCHAIN_VARIANT=zephyr/$compiler west twister \
+       -p mps2/an385 \
+       -p qemu_riscv32/qemu_virt_riscv32 \
+       -p qemu_riscv32/qemu_virt_riscv32/smp \
+       -T tests/lib/cpp/libcxx_threads \
+       -T tests/lib/cpp/libcxx_time \
+       -T tests/lib/cpp/libcxx_filesystem \
+       -O twister-libcxx-all-$compiler -i \
+       -x TOOLCHAIN_VARIANT_COMPILER=$compiler
+   done
+
 API coverage and limits
 ***********************
 
-The test suite exercises thread creation, move, identity, join, detach, pool
+The threading suite exercises thread creation, move, identity, join, detach, pool
 reuse, sleep, mutex contention, recursive and timed mutexes, shared mutexes,
 lock wrappers, condition-variable notifications and deadlines, ``call_once``,
 local-static initialization, shared-pointer reference counting, futures,
@@ -167,15 +205,134 @@ promises, and ``async``. It also checks nontrivial ``thread_local`` destruction
 and the ordering of ``notify_all_at_thread_exit()``. This suite is a targeted
 integration test, not the complete upstream libc++ conformance suite.
 
+Time
+====
+
+``std::chrono::system_clock`` uses Zephyr's ``CLOCK_REALTIME`` and
+``std::chrono::steady_clock`` uses ``CLOCK_MONOTONIC`` through the existing
+upstream libc++ implementation. Duration arithmetic, time-point conversions,
+``system_clock::to_time_t()`` and ``from_time_t()``, and the adapter's sleep and
+timed synchronization APIs are available. This extension adds validation of
+those paths; it does not replace the kernel's clock implementation.
+
+The 16 tests in ``tests/lib/cpp/libcxx_time`` cover duration rounding,
+time-point arithmetic, native clock correspondence, monotonic elapsed time,
+zero and expired sleep deadlines, future steady and system clock deadlines,
+condition-variable deadlines, and ``time_t`` conversions. They also step
+realtime forward and backward while checking steady time, and exercise
+``std::time()``, ``std::difftime()``, UTC conversion with ``std::gmtime()`` and
+``std::strftime()``, and a ``std::localtime()``/``std::mktime()`` round trip.
+Each test restores realtime, including elapsed monotonic time.
+
+Applications must initialize realtime from an RTC, network service, or other
+source when they need calendar time. Clock resolution and timeout granularity
+follow the Zephyr configuration. The tests do not establish persistent RTC
+support, a time-zone database, or CPU-time accounting through ``std::clock()``.
+A realtime step does not change ``steady_clock``. Existing absolute
+condition-variable waits still have the realtime-adjustment limitation below.
+
+Filesystem
+==========
+
+With ``CONFIG_LIBCXX_FILESYSTEM=y``, the C++17 ``std::filesystem`` API uses a
+native Zephyr ``fs_*`` backend. Upstream libc++ supplies paths and directory
+iteration; the adapter supplies native file operations and per-iterator
+directory state. It does not depend on POSIX pthreads or fabricated POSIX
+inode and timestamp values.
+
+Supported operations include:
+
+* Path decomposition, composition, and lexical operations.
+* ``absolute()``, ``canonical()``, ``weakly_canonical()``, and the related
+  relative-path helpers.
+* ``current_path()`` and the configured ``temp_directory_path()``.
+* File type, existence, size, emptiness, and filesystem space queries.
+* Directory creation, including ``create_directories()``; file resizing;
+  renaming within one mount; and ``remove()``/``remove_all()``.
+* ``directory_iterator``, ``recursive_directory_iterator``, and
+  ``directory_entry`` type and size queries.
+* File-content copying with ``copy_file()`` and file or directory copying
+  with ``copy()``, including recursive directory copies.
+* ``equivalent()`` and the identity checks required for safe copying, with
+  the filesystem restriction below.
+
+Identity comparisons across distinct resolved paths are implemented only
+for LittleFS. They use the actual mounted filesystem type, filesystem
+instance, and volume-relative path; they do not assume two different
+spelled paths identify different files. Copying therefore requires both
+source and destination to be on LittleFS. Other native filesystems can
+provide basic operations, but identity-dependent operations can return
+``ENOTSUP``. They need separate validation before an application relies on
+them. The adapter does not provide hard links or symbolic links.
+
+``copy_file()`` supports default fail-if-existing, ``skip_existing``, and
+``overwrite_existing`` behavior. Copies transfer contents and use the
+destination filesystem's default attributes. ``copy()`` without options
+copies a directory and its immediate regular files; ``recursive`` also
+copies its subdirectories. ``directories_only`` can be combined with
+``recursive``. Copying a file onto itself or a directory into itself or its
+descendants is rejected before output is truncated or the destination root
+is created. Recursive copy and removal use explicit work lists instead of
+unbounded C++ call-stack recursion.
+
+The native filesystem API does not expose the metadata needed for
+``last_write_time()``, ``permissions()``, or ``hard_link_count()``. These
+operations report ``ENOTSUP`` for an existing path. Link creation, link
+copying and ``read_symlink()``, and ``copy_options::update_existing`` also
+report unsupported-operation errors. ``status().permissions()`` is
+``perms::unknown``. ``create_directory(destination, attributes_from)``
+validates that the source is a directory and creates the destination with
+native defaults; it does not copy permissions. This is a practical subset
+of C++17 filesystem semantics, not full filesystem conformance.
+
+The adapter maintains its own global current directory, initially ``/``.
+Changing it affects relative paths passed to this libc++ backend; it does
+not change the working directory of native Zephyr or POSIX file APIs.
+Prefer absolute paths when mixing APIs or sharing work across threads.
+Mount-point parents must exist in the native namespace. Resolving a nested
+mount does not synthesize missing intermediate directories.
+``CONFIG_LIBCXX_FILESYSTEM_PATH_MAX`` defaults to 512 bytes and bounds path
+storage used by native operations, including the terminating null byte.
+Individual components must fit in the native ``fs_dirent::name`` storage;
+oversized components report ``ENAMETOOLONG`` before a native operation.
+
+``remove_all()`` refuses ``/`` and mounted roots before descending into
+them. A removal can still be partial if a later child operation fails.
+Copying is also nontransactional and can leave a partial destination on an
+I/O error. C++ copy and recursive removal calls are serialized with each
+other. Applications must coordinate other namespace mutations, including
+native operations, concurrent renames, and mount or unmount operations;
+identity checks do not hold a filesystem-wide lock.
+
+Use overloads accepting ``std::error_code`` for recoverable filesystem
+errors. With exceptions disabled, a failed throwing overload terminates
+the application. Work lists, path strings, and iterators allocate memory;
+allocation exhaustion can also terminate it. Size heaps for the directory
+trees being processed.
+
+This backend does not enable ``std::fstream`` or other C++ stream I/O.
+Applications can use native Zephyr file handles to read and write contents
+while using ``std::filesystem`` for path and directory operations.
+
+Run ``tests/lib/cpp/libcxx_time`` and ``tests/lib/cpp/libcxx_filesystem``
+with the same compiler and board commands as the threading suite, using
+separate output directories. Twister accepts repeated ``-T`` options to
+select all three suites. The filesystem suite provisions its own RAM-backed
+LittleFS volume; applications must supply their own storage and mount setup.
+
+General limits
+==============
+
 The implementation has these limits:
 
 * Only supervisor-mode builds are supported. ``CONFIG_USERSPACE=y`` is rejected.
   This adapter does not manage user-mode kernel-object permissions.
 * Exceptions and RTTI are disabled. Operations that would throw on failure
   terminate instead. No exception unwinder is built.
-* Filesystem, localization, C++ stream I/O, wide-character facilities,
-  ``random_device``, time-zone databases, and C++ modules are outside this
-  profile. This is not a complete hosted C++17 library.
+* Localization, C++ stream I/O, wide-character facilities, ``random_device``,
+  time-zone databases, and C++ modules are outside this profile. Filesystem
+  support has the optional subset described above. This is not a complete
+  hosted C++17 library.
 * Zephyr native threads can use ordinary synchronization operations,
   ``this_thread::get_id()``, and create ``std::thread`` instances. Automatic
   runtime exit cleanup is provided only for threads created by this adapter.

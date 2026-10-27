@@ -6,7 +6,7 @@
 include(FetchContent)
 
 if(CONFIG_USERSPACE)
-  message(FATAL_ERROR "The libc++ thread PoC currently requires supervisor-only builds")
+  message(FATAL_ERROR "The libc++ PoC currently requires supervisor-only builds")
 endif()
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "14")
     OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "17"))
@@ -44,7 +44,7 @@ file(STRINGS "${LIBCXX_SOURCE_DIR}/include/__config" libcxx_version
   REGEX "^# *define _LIBCPP_VERSION "
 )
 if(NOT libcxx_version MATCHES "190107$")
-  message(FATAL_ERROR "This libc++ thread PoC requires libc++ 19.1.7 sources")
+  message(FATAL_ERROR "This libc++ PoC requires libc++ 19.1.7 sources")
 endif()
 if(CONFIG_LIBCXX_THREAD_PRIORITY GREATER_EQUAL CONFIG_NUM_PREEMPT_PRIORITIES)
   message(FATAL_ERROR "LIBCXX_THREAD_PRIORITY must be less than NUM_PREEMPT_PRIORITIES")
@@ -55,7 +55,14 @@ set(_LIBCPP_ABI_NAMESPACE "__1")
 set(_LIBCPP_HAS_THREAD_API_EXTERNAL ON)
 set(_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS ON)
 set(_LIBCPP_HAS_NO_VENDOR_AVAILABILITY_ANNOTATIONS ON)
-set(_LIBCPP_HAS_NO_FILESYSTEM ON)
+if(CONFIG_LIBCXX_FILESYSTEM)
+  if(NOT CONFIG_LIBCXX_FILESYSTEM_TEMP_DIR MATCHES "^/")
+    message(FATAL_ERROR "LIBCXX_FILESYSTEM_TEMP_DIR must be an absolute path")
+  endif()
+  set(_LIBCPP_HAS_NO_FILESYSTEM OFF)
+else()
+  set(_LIBCPP_HAS_NO_FILESYSTEM ON)
+endif()
 set(_LIBCPP_HAS_NO_RANDOM_DEVICE ON)
 set(_LIBCPP_HAS_NO_LOCALIZATION ON)
 set(_LIBCPP_HAS_NO_UNICODE ON)
@@ -145,6 +152,41 @@ set(libcxx_sources
   vector.cpp
   verbose_abort.cpp
 )
+if(CONFIG_LIBCXX_FILESYSTEM)
+  list(APPEND libcxx_sources
+    filesystem/filesystem_clock.cpp
+    filesystem/filesystem_error.cpp
+    filesystem/path.cpp
+  )
+  zephyr_library_include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${LIBCXX_SOURCE_DIR}/src/filesystem"
+  )
+  zephyr_library_sources(
+    filesystem.cpp
+    filesystem_copy.cpp
+    filesystem_directory.cpp
+  )
+
+  # Retain LLVM's iterator traversal and ABI while replacing its POSIX-only
+  # helper header. The pinned source and its license remain in the build tree.
+  file(READ "${LIBCXX_SOURCE_DIR}/src/filesystem/directory_iterator.cpp" iterator_source)
+  string(REPLACE
+    "#include \"file_descriptor.h\""
+    "#include \"zephyr_directory_support.hpp\""
+    native_iterator_source "${iterator_source}"
+  )
+  if(native_iterator_source STREQUAL iterator_source)
+    message(FATAL_ERROR "The pinned libc++ directory iterator include has changed")
+  endif()
+  set(iterator_path "${CMAKE_CURRENT_BINARY_DIR}/directory_iterator.cpp")
+  file(CONFIGURE OUTPUT "${iterator_path}" CONTENT "${native_iterator_source}" @ONLY)
+  zephyr_library_sources("${iterator_path}")
+  set_source_files_properties("${iterator_path}" PROPERTIES COMPILE_DEFINITIONS
+    "opendir=z_libcxx_opendir;readdir=z_libcxx_readdir;closedir=z_libcxx_closedir"
+  )
+endif()
+
 foreach(source IN LISTS libcxx_sources)
   zephyr_library_sources("${LIBCXX_SOURCE_DIR}/src/${source}")
 endforeach()

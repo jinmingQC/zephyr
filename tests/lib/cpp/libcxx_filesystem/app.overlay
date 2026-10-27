@@ -1,0 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	libcxx-ram-disk {
+		compatible = "zephyr,ram-disk";
+		disk-name = "LIBCXX";
+		sector-size = <512>;
+		sector-count = <256>;
+	};
+};

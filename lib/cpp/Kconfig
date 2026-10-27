@@ -143,7 +143,7 @@ config LIBCXX_LIBCPP
 	  https://libcxx.llvm.org
 
 config LIBCXX_SOURCE_LIBCPP
-	bool "LLVM libc++ from source (threading proof of concept)"
+	bool "LLVM libc++ from source (proof of concept)"
 	depends on PICOLIBC
 	depends on MULTITHREADING && !NATIVE_BUILD
 	depends on ARCH_HAS_THREAD_LOCAL_STORAGE && TOOLCHAIN_SUPPORTS_THREAD_LOCAL_STORAGE
@@ -153,7 +153,8 @@ config LIBCXX_SOURCE_LIBCPP
 	help
 	  Build pinned libc++ and libc++abi sources with the selected compiler.
 	  The experimental threading backend uses Zephyr kernel primitives.
-	  Exceptions, RTTI, filesystem and localization are not supported.
+	  Optional filesystem support uses native Zephyr file operations.
+	  Exceptions, RTTI and localization are not supported.
 	  See lib/cpp/libcxx/README.rst for setup and limitations.
 
 config ARCMWDT_LIBCPP
