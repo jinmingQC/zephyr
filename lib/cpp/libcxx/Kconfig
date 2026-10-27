@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+if LIBCXX_SOURCE_LIBCPP
+
+config LIBCXX_THREAD_MAX
+	int "Maximum number of libc++ threads"
+	default 8
+	range 1 64
+	help
+	  Number of statically allocated thread objects and stacks. Joined
+	  threads release their slot immediately; exited detached threads
+	  are reclaimed by the next thread creation.
+
+config LIBCXX_THREAD_STACK_SIZE
+	int "Stack size of each libc++ thread"
+	default 4096
+	range 1024 65536
+
+config LIBCXX_THREAD_PRIORITY
+	int "Default priority of libc++ threads"
+	default 5
+	range 0 14
+	help
+	  Preemptible Zephyr priority. Must be less than NUM_PREEMPT_PRIORITIES.
+
+config LIBCXX_TLS_KEYS
+	int "Number of libc++ thread-specific storage keys"
+	default 8
+	range 2 64
+
+endif # LIBCXX_SOURCE_LIBCPP

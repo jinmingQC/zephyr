@@ -12,6 +12,7 @@ if(CONFIG_CPP
    # be removed, and instead the external module c++ should use:
    # set_property(TARGET linker PROPERTY c++_library  "<external_c++_lib>")
    AND NOT CONFIG_EXTERNAL_MODULE_LIBCPP
+   AND NOT CONFIG_LIBCXX_SOURCE_LIBCPP
 )
   set_property(TARGET linker PROPERTY link_order_library "c++")
 endif()

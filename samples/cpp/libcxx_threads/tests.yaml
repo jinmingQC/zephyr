@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+sample:
+  name: Source-built libc++ threading
+  description: C++17 threads and synchronization on Zephyr kernel primitives
+tests:
+  sample.cpp.libcxx_threads:
+    tags:
+      - cpp
+      - libcxx
+    platform_allow:
+      - mps2/an385
+      - qemu_riscv32
+    integration_platforms:
+      - mps2/an385
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "libc[+][+] threads: 4000 increments"

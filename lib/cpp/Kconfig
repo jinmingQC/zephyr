@@ -142,6 +142,20 @@ config LIBCXX_LIBCPP
 	  toolchain. Information about library can be found at
 	  https://libcxx.llvm.org
 
+config LIBCXX_SOURCE_LIBCPP
+	bool "LLVM libc++ from source (threading proof of concept)"
+	depends on PICOLIBC
+	depends on MULTITHREADING && !NATIVE_BUILD
+	depends on ARCH_HAS_THREAD_LOCAL_STORAGE && TOOLCHAIN_SUPPORTS_THREAD_LOCAL_STORAGE
+	depends on STD_CPP_VERSION >= 201703
+	select THREAD_LOCAL_STORAGE
+	depends on POSIX_SYSTEM_INTERFACES && POSIX_TIMERS && POSIX_MONOTONIC_CLOCK
+	help
+	  Build pinned libc++ and libc++abi sources with the selected compiler.
+	  The experimental threading backend uses Zephyr kernel primitives.
+	  Exceptions, RTTI, filesystem and localization are not supported.
+	  See lib/cpp/libcxx/README.rst for setup and limitations.
+
 config ARCMWDT_LIBCPP
 	bool "ARC MWDT C++ Library"
 	depends on ARCMWDT_LIBC
@@ -161,16 +175,20 @@ config EXTERNAL_MODULE_LIBCPP
 
 endchoice # LIBCPP_IMPLEMENTATION
 
+rsource "libcxx/Kconfig"
+
 if !MINIMAL_LIBCPP
 
 config CPP_EXCEPTIONS
 	bool "C++ exceptions support"
+	depends on !LIBCXX_SOURCE_LIBCPP
 	depends on !NEWLIB_LIBC_NANO
 	help
 	  This option enables support of C++ exceptions.
 
 config CPP_RTTI
 	bool "C++ RTTI support"
+	depends on !LIBCXX_SOURCE_LIBCPP
 	help
 	  This option enables support of C++ RTTI.
 

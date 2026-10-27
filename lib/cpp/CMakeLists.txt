@@ -11,3 +11,5 @@ endif()
 add_subdirectory(abi)
 
 add_subdirectory_ifdef(CONFIG_MINIMAL_LIBCPP minimal)
+
+add_subdirectory_ifdef(CONFIG_LIBCXX_SOURCE_LIBCPP libcxx)
