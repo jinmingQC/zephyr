@@ -153,8 +153,11 @@ config LIBCXX_SOURCE_LIBCPP
 	help
 	  Build pinned libc++ and libc++abi sources with the selected compiler.
 	  The experimental threading backend uses Zephyr kernel primitives.
+	  Requires compiler-native lock-free 1-, 2-, and 4-byte atomic operations.
+	  Baseline targets without these operations, such as Cortex-M0, are
+	  unsupported.
 	  Optional filesystem support uses native Zephyr file operations.
-	  Exceptions, RTTI and localization are not supported.
+	  Exceptions and RTTI are optional; see the library configuration.
 	  See lib/cpp/libcxx/README.rst for setup and limitations.
 
 config ARCMWDT_LIBCPP
@@ -182,14 +185,13 @@ if !MINIMAL_LIBCPP
 
 config CPP_EXCEPTIONS
 	bool "C++ exceptions support"
-	depends on !LIBCXX_SOURCE_LIBCPP
+	depends on !LIBCXX_SOURCE_LIBCPP || ARM || RISCV
 	depends on !NEWLIB_LIBC_NANO
 	help
 	  This option enables support of C++ exceptions.
 
 config CPP_RTTI
 	bool "C++ RTTI support"
-	depends on !LIBCXX_SOURCE_LIBCPP
 	help
 	  This option enables support of C++ RTTI.
 

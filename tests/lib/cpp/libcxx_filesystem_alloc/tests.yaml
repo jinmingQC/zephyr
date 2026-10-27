@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  cpp.libcxx.filesystem_alloc:
+    tags:
+      - cpp
+      - libcxx
+      - filesystem
+    modules:
+      - littlefs
+    toolchain_allow:
+      - zephyr/gnu
+      - zephyr/llvm
+    integration_platforms:
+      - mps2/an385
+    min_ram: 256
+    # Exhaustive allocation-failure sweeps are slow with RISC-V QEMU unwinding.
+    timeout: 600

@@ -8,6 +8,8 @@
 
 #include <cstring>
 #include <limits>
+#include <mutex>
+#include <new>
 #include <string>
 
 #pragma GCC diagnostic push
@@ -22,7 +24,7 @@ namespace
 
 namespace fs = std::filesystem;
 
-K_MUTEX_DEFINE(cwd_lock);
+std::mutex cwd_lock;
 char current_directory[CONFIG_LIBCXX_FILESYSTEM_PATH_MAX] = "/";
 
 std::error_code native_error(int value)
@@ -30,18 +32,39 @@ std::error_code native_error(int value)
 	return {value, std::generic_category()};
 }
 
-/* Resolving these names before a mutation would change its target. */
+/*
+ * Native path resolution allocates even for public noexcept error-code APIs.
+ * Convert only allocation failure; other unexpected exceptions retain their
+ * normal behavior, and throwing filesystem overloads report ENOMEM.
+ */
+template <typename Operation> int allocation_error(Operation operation)
+{
+#if defined(CONFIG_CPP_EXCEPTIONS)
+	try {
+		return operation();
+	} catch (const std::bad_alloc &) {
+		return ENOMEM;
+	}
+#else
+	return operation();
+#endif
+}
+
+/* Inspect the native string: path iteration can allocate a component copy. */
 bool final_dot_component(const fs::path &input)
 {
-	auto part = input.end();
+	const auto &name = input.native();
+	const size_t end = name.find_last_not_of('/');
 
-	while (part != input.begin()) {
-		--part;
-		if (!part->empty()) {
-			return *part == "." || *part == "..";
-		}
+	if (end == std::string::npos) {
+		return false;
 	}
-	return false;
+	const size_t separator = name.find_last_of('/', end);
+	const size_t begin = separator == std::string::npos ? 0 : separator + 1;
+	const size_t length = end - begin + 1;
+
+	return (length == 1 && name[begin] == '.') ||
+	       (length == 2 && name[begin] == '.' && name[begin + 1] == '.');
 }
 
 int absolute_path(const fs::path &input, fs::path &output)
@@ -58,16 +81,9 @@ int absolute_path(const fs::path &input, fs::path &output)
 	if (input.is_absolute()) {
 		output = input;
 	} else {
-		int ret = k_mutex_lock(&cwd_lock, K_FOREVER);
+		std::lock_guard<std::mutex> lock(cwd_lock);
 
-		if (ret != 0) {
-			return -ret;
-		}
 		output = fs::path(current_directory) / input;
-		ret = k_mutex_unlock(&cwd_lock);
-		if (ret != 0) {
-			return -ret;
-		}
 	}
 	return output.native().size() >= sizeof(current_directory) ? ENAMETOOLONG : 0;
 }
@@ -160,7 +176,8 @@ int stat_path(const fs::path &input, fs::path &absolute, struct fs_dirent &entry
 }
 
 /* Find the actual mount; never synthesize inode numbers from path hashes. */
-int find_mount(const fs::path &absolute, const struct fs_mount_t **mount, std::string &relative)
+int find_mount_unchecked(const fs::path &absolute, const struct fs_mount_t **mount,
+			 std::string &relative)
 {
 	int index = 0;
 	const char *name;
@@ -179,6 +196,8 @@ int find_mount(const fs::path &absolute, const struct fs_mount_t **mount, std::s
 		return ENOTSUP;
 	}
 
+	/* Allocate the relative name before acquiring a native directory handle. */
+	relative = text.substr(selected.size());
 	struct fs_dir_t directory;
 
 	fs_dir_t_init(&directory);
@@ -188,8 +207,12 @@ int find_mount(const fs::path &absolute, const struct fs_mount_t **mount, std::s
 		return -ret;
 	}
 	*mount = directory.mp;
-	relative = text.substr(selected.size());
 	return -fs_closedir(&directory);
+}
+
+int find_mount(const fs::path &absolute, const struct fs_mount_t **mount, std::string &relative)
+{
+	return allocation_error([&] { return find_mount_unchecked(absolute, mount, relative); });
 }
 
 int unsupported_metadata(const fs::path &input)
@@ -207,19 +230,22 @@ namespace zephyr_libcxx
 
 int resolve(const std::filesystem::path &input, std::filesystem::path &absolute, bool allow_missing)
 {
-	return resolve_path(input, absolute, allow_missing, false);
+	return allocation_error(
+		[&] { return resolve_path(input, absolute, allow_missing, false); });
 }
 
 bool mount_root(const std::filesystem::path &absolute)
 {
-	if (absolute == "/") {
+	const auto &name_string = absolute.native();
+
+	if (name_string == "/") {
 		return true;
 	}
 	int index = 0;
 	const char *name;
 
 	while (fs_readmount(&index, &name) == 0) {
-		if (absolute == name) {
+		if (name_string == name) {
 			return true;
 		}
 	}
@@ -300,20 +326,15 @@ path __weakly_canonical(const path &input, error_code *ec)
 path __current_path(error_code *ec)
 {
 	ErrorHandler<path> error("current_path", ec);
-	int ret = k_mutex_lock(&cwd_lock, K_FOREVER);
+	path result;
 
-	if (ret != 0) {
-		return error.report(native_error(-ret));
-	}
-	path result(current_directory);
+	{
+		std::lock_guard<std::mutex> lock(cwd_lock);
 
-	ret = k_mutex_unlock(&cwd_lock);
-	if (ret != 0) {
-		return error.report(native_error(-ret));
+		result = current_directory;
 	}
 	struct fs_dirent entry;
-
-	ret = fs_stat(result.c_str(), &entry);
+	int ret = fs_stat(result.c_str(), &entry);
 	if (ret != 0) {
 		return error.report(native_error(-ret));
 	}
@@ -336,15 +357,9 @@ void __current_path(const path &input, error_code *ec)
 	if (entry.type != FS_DIR_ENTRY_DIR) {
 		return error.report(errc::not_a_directory);
 	}
-	ret = k_mutex_lock(&cwd_lock, K_FOREVER);
-	if (ret != 0) {
-		return error.report(native_error(-ret));
-	}
+	std::lock_guard<std::mutex> lock(cwd_lock);
+
 	memcpy(current_directory, absolute.c_str(), absolute.native().size() + 1);
-	ret = k_mutex_unlock(&cwd_lock);
-	if (ret != 0) {
-		error.report(native_error(-ret));
-	}
 }
 
 file_status __status(const path &input, error_code *ec)
@@ -481,7 +496,9 @@ bool __create_directory(const path &input, const path &attributes, error_code *e
 		return error.report(errc::not_a_directory);
 	}
 	/* The native filesystem has no directory permission attributes to copy. */
-	return __create_directory(input, ec);
+	const bool created = __create_directory(input, &local);
+
+	return local ? error.report(local) : created;
 }
 
 bool __create_directories(const path &input, error_code *ec)

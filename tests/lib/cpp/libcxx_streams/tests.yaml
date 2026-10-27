@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+common:
+  tags:
+    - cpp
+    - libcxx
+    - filesystem
+  modules:
+    - littlefs
+  toolchain_allow:
+    - zephyr/gnu
+    - zephyr/llvm
+  integration_platforms:
+    - mps2/an385
+  min_ram: 256
+  timeout: 120
+tests:
+  cpp.libcxx.streams: {}
+  cpp.libcxx.streams.exceptions:
+    extra_args:
+      - EXTRA_CONF_FILE=exceptions.conf

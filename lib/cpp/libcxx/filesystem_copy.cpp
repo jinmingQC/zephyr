@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
+#include <memory>
 #include <mutex>
 #include <utility>
 #include <vector>
@@ -198,6 +199,11 @@ int read_children(const fs::path &directory, std::vector<fs::path> &children)
 	if (ret != 0) {
 		return -ret;
 	}
+	/* Path/vector allocation can throw while the directory is open. */
+	auto close_directory = [](struct fs_dir_t *handle) { (void)fs_closedir(handle); };
+	std::unique_ptr<struct fs_dir_t, decltype(close_directory)> cleanup(&stream,
+									    close_directory);
+
 	for (;;) {
 		struct fs_dirent entry;
 
@@ -214,7 +220,7 @@ int read_children(const fs::path &directory, std::vector<fs::path> &children)
 		}
 		children.emplace_back(directory / entry.name);
 	}
-	const int close_ret = fs_closedir(&stream);
+	const int close_ret = fs_closedir(cleanup.release());
 
 	return ret != 0 ? -ret : -close_ret;
 }
