@@ -1,0 +1,51 @@
+*** Booting Zephyr OS build v4.4.0-19495-gec98918869ca ***
+RunID started: 6d0ebe1d8ca0d013c57465901799f721
+Running TESTSUITE libcxx_thread_stress
+===================================================================
+START - test_aborted_detached_slots_are_reusable
+ PASS - test_aborted_detached_slots_are_reusable in 0.011 seconds
+===================================================================
+START - test_concurrent_creators_and_joiners
+ PASS - test_concurrent_creators_and_joiners in 0.107 seconds
+===================================================================
+START - test_concurrent_first_use_and_object_lifetime_reuse
+ PASS - test_concurrent_first_use_and_object_lifetime_reuse in 0.081 seconds
+===================================================================
+START - test_language_tls_lifo_before_tss_and_reuse
+ PASS - test_language_tls_lifo_before_tss_and_reuse in 0.026 seconds
+===================================================================
+START - test_native_root_explicit_cleanup
+ PASS - test_native_root_explicit_cleanup in 0.002 seconds
+===================================================================
+START - test_pool_capacity_and_join_ownership
+ PASS - test_pool_capacity_and_join_ownership in 0.004 seconds
+===================================================================
+START - test_sleep_for_subtick_wakeup_does_not_return_early
+ PASS - test_sleep_for_subtick_wakeup_does_not_return_early in 0.145 seconds
+===================================================================
+START - test_timeout_reacquires_contended_mutex
+ PASS - test_timeout_reacquires_contended_mutex in 0.061 seconds
+===================================================================
+START - test_tss_repopulation_has_four_pass_limit
+ PASS - test_tss_repopulation_has_four_pass_limit in 0.012 seconds
+===================================================================
+TESTSUITE libcxx_thread_stress succeeded
+
+------ TESTSUITE SUMMARY START ------
+
+SUITE PASS - 100.00% [libcxx_thread_stress]: pass = 9, fail = 0, skip = 0, total = 9 duration = 0.449 seconds
+ - PASS - [libcxx_thread_stress.test_aborted_detached_slots_are_reusable] duration = 0.011 seconds
+ - PASS - [libcxx_thread_stress.test_concurrent_creators_and_joiners] duration = 0.107 seconds
+ - PASS - [libcxx_thread_stress.test_concurrent_first_use_and_object_lifetime_reuse] duration = 0.081 seconds
+ - PASS - [libcxx_thread_stress.test_language_tls_lifo_before_tss_and_reuse] duration = 0.026 seconds
+ - PASS - [libcxx_thread_stress.test_native_root_explicit_cleanup] duration = 0.002 seconds
+ - PASS - [libcxx_thread_stress.test_pool_capacity_and_join_ownership] duration = 0.004 seconds
+ - PASS - [libcxx_thread_stress.test_sleep_for_subtick_wakeup_does_not_return_early] duration = 0.145 seconds
+ - PASS - [libcxx_thread_stress.test_timeout_reacquires_contended_mutex] duration = 0.061 seconds
+ - PASS - [libcxx_thread_stress.test_tss_repopulation_has_four_pass_limit] duration = 0.012 seconds
+
+------ TESTSUITE SUMMARY END ------
+
+===================================================================
+RunID: 6d0ebe1d8ca0d013c57465901799f721
+PROJECT EXECUTION SUCCESSFUL

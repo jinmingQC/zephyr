@@ -1,0 +1,69 @@
+{
+  "results": [
+    {
+      "suite": "threads",
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "command": [
+        "/home/linux/zephyrproject/.venv/bin/python3",
+        "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel/scripts/twister",
+        "-T",
+        "/home/linux/zephyr-cpp-runtime/tests/threads",
+        "-s",
+        "cpp.runtime.threads",
+        "-p",
+        "mps2/an385",
+        "-j",
+        "2",
+        "-O",
+        "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-arm",
+        "--clobber-output",
+        "--runtime-artifact-cleanup",
+        "pass",
+        "--inline-logs",
+        "-x",
+        "EXTRA_ZEPHYR_MODULES=/home/linux/zephyr-cpp-runtime",
+        "-x",
+        "LIBCXX_SOURCE_DIR=/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "-x",
+        "LIBCXXABI_SOURCE_DIR=/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      ],
+      "returncode": 0,
+      "inputs": {
+        "CMakeLists.txt": "49183bb7a1db549a205a1f4d3bc8f7915df9b2b4db3a84123cfbd91f9476152f",
+        "Kconfig": "7477a60bfc1fcc1f292875e4c2b338a39eda2909a9a13230e265ae171d4d3ebd",
+        "adapters/native_threading.cpp": "ad37b910540dab577a3bcb98585d14ce1393febf32dba62d5200516f96c016a7",
+        "backend/Kconfig.native": "f32141741727a22808af3f9329b225983657991337f578882819f1fc71ac8667",
+        "cmake/userspace_lld.cmake": "555ff98e172ba46772ee860173cb9d69659214ab9ba10aafc29418ded2be3fc9",
+        "include/__external_threading": "4fe7fe16d2980efc77eae1376cf0b841d02d71a2bb2afa3c703fdadcaddf7c21",
+        "include/cpp_runtime/arch_compat.h": "78247248f4b406cfb32e1fa8fdac8f864da39f940581127a45814f6bc7c32dec",
+        "include/cpp_runtime/native_syscalls.h": "a80a84fc0d8fe9f7d8b580ba57a5054c57286fe766248f54321c3c0c51567fde",
+        "include/cpp_runtime/partition.h": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+        "include/cpp_runtime/thread.h": "d177014e06554d758e4919127a1d2886f188e32bc3c50eebf6313e0a768ce870",
+        "include/cpp_runtime/userspace.h": "4a13bfafabe1344b4bf68a00c34929b31ce756cdda6549b817ccbb53d6b25229",
+        "scripts/fix_lld_app_partitions.py": "d5e6213d5e35d25f407397ed74fa569793cbce410619c38ec9c29f0c736c1137",
+        "tests/threads/CMakeLists.txt": "fe019dbd47e30c307d6a1c387b4a80abca36308be1084eaa1dc5afe4b61ea6e6",
+        "tests/threads/prj.conf": "4c3acd79f7178e39c98760f18006ed8f24c98d2f1e307fb9f50800c1b11855f0",
+        "tests/threads/smp2.conf": "b4faa33273bbd79f75c83d06a111febd17d3989b31bcbc817debdd62eff56216",
+        "tests/threads/src/main.cpp": "aac38072a672517f2881e10ea5d3d26e86ebf6d642e3f3f36d6e5425b62168fd",
+        "tests/threads/tests.yaml": "6a92202277a2a86145aee72e076a37fcbd234015fb0853c7ca397ae9d63897c2",
+        "zephyr/module.yml": "03aac95f3c6a86409091b22cae1c9d933d6c0968747bdc33ea0cc6fa193c6521"
+      },
+      "recorded_utc": "2026-10-28T14:31:39.694898+00:00",
+      "status": "passed",
+      "passed": 22,
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-arm/twister.json",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-arm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+      "selected_config": {
+        "CONFIG_CPP_RUNTIME_NATIVE": "y",
+        "CONFIG_USERSPACE": "n",
+        "CONFIG_TIMEOUT_64BIT": "y",
+        "CONFIG_SMP": "n",
+        "CONFIG_MP_MAX_NUM_CPUS": "1",
+        "CONFIG_CPP_EXCEPTIONS": "n",
+        "CONFIG_CPP_RTTI": "n",
+        "CONFIG_POSIX_THREADS": "n"
+      }
+    }
+  ]
+}

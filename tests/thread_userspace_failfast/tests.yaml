@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: Apache-2.0
+
+common:
+  tags:
+    - cpp
+    - libcxx
+    - threads
+    - userspace
+  harness: console
+  ignore_faults: true
+  filter: CONFIG_ARCH_HAS_USERSPACE
+  platform_allow:
+    - mps2/an385
+    - qemu_riscv32
+  toolchain_allow:
+    - zephyr/gnu
+    - zephyr/llvm
+  integration_platforms:
+    - mps2/an385
+  min_ram: 128
+  timeout: 60
+
+tests:
+  cpp.runtime.userspace_failfast.mutex_once:
+    extra_args: CPP_RUNTIME_FAILURE_CASE=1
+    harness_config:
+      type: multi_line
+      ordered: true
+      regex:
+        - '^libc\+\+ synchronization failure: -12$'
+        - "^FAILFAST PASS case=1 user=1 abort=1 reason=3$"
+  cpp.runtime.userspace_failfast.cond_notify:
+    extra_args: CPP_RUNTIME_FAILURE_CASE=2
+    harness_config:
+      type: multi_line
+      ordered: true
+      regex:
+        - '^libc\+\+ synchronization failure: -12$'
+        - "^FAILFAST PASS case=2 user=1 abort=1 reason=3$"
+  cpp.runtime.userspace_failfast.tls_oom:
+    extra_args: CPP_RUNTIME_FAILURE_CASE=3
+    harness_config:
+      type: multi_line
+      ordered: true
+      regex:
+        - '^libc\+\+ TLS destructor registration failure: -12$'
+        - "^FAILFAST PASS case=3 user=1 abort=1 reason=3$"

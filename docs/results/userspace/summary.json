@@ -1,0 +1,2603 @@
+{
+  "recorded_utc": "2026-10-28T14:55:02.319492+00:00",
+  "configurations": 25,
+  "case_executions": 331,
+  "compiler_banners": {
+    "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+    "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+    "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++": "clang version 19.1.7"
+  },
+  "results": [
+    {
+      "label": "threads-gcc-arm",
+      "passed": 22,
+      "report_sha256": "e9603aec4008a8acdee41d91500c049dd5bba4c110e569cc8e2e0fe8aa8825d9",
+      "runs": [
+        {
+          "name": "cpp.runtime.threads",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.sleep_for",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.async",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.future_promise",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.detach_reuse",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_reuse",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.notify_all_at_thread_exit",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_local_destruction",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.static_local_initialization",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.call_once",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_any",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_broadcast",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_timeouts",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_predicate",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.timed_mutex",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.lock_wrappers",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_ptr_contention",
+              "execution_time": "0.09",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.mutex_contention",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.native_thread_id_move_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-gcc-arm/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+          "config_sha256": "a168a7a00815a6e9a3b63b3c44b652a2e0a239ad457de7cb73efccc3f8aae029",
+          "console_sha256_raw": "c6bd75be4913d75e74c9716bfc091657360808b15ceccc282204250d07196e54",
+          "console_sha256_archived": "97f58b21c3e91875963ec5b0155f47d31e35bbedef55a85ac5303d6cf6bd505c",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++",
+          "compiler_banner": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/threads-gcc-arm/threads/zephyr.config",
+          "console_archive": "runs/threads-gcc-arm/threads/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "threads-gcc-riscv32-up",
+      "passed": 22,
+      "report_sha256": "91d93e7f88ca5a92e8111da750921ce17d8443579a831378e8d57cbcf76505cb",
+      "runs": [
+        {
+          "name": "cpp.runtime.threads",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.sleep_for",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.async",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.future_promise",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.detach_reuse",
+              "execution_time": "0.05",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_reuse",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.notify_all_at_thread_exit",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_local_destruction",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.static_local_initialization",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.call_once",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_any",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_broadcast",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_timeouts",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_predicate",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.timed_mutex",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.lock_wrappers",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_ptr_contention",
+              "execution_time": "0.07",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.mutex_contention",
+              "execution_time": "0.10",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.native_thread_id_move_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-gcc-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+          "config_sha256": "7e3121ba306f83823f6faff9fde004f936f1daa652f89d7beaee5d0aee9df739",
+          "console_sha256_raw": "e6b771473607e83c7c2d664ad58cac5f961a96d0c2d73e3741e620f8abb4f1ae",
+          "console_sha256_archived": "e16d935981713ffce8d7c93dd9df781445e90a7a8cfc117cfc3cece481b1a708",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+          "compiler_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/threads-gcc-riscv32-up/threads/zephyr.config",
+          "console_archive": "runs/threads-gcc-riscv32-up/threads/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_SMP": "n",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "threads-gcc-riscv32-smp2",
+      "passed": 22,
+      "report_sha256": "2b2989a90e9dcb886f1378b848b3a39e6e0a4f3d8aa704fdd98adad76255bb3b",
+      "runs": [
+        {
+          "name": "cpp.runtime.threads",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.sleep_for",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.async",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.future_promise",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.detach_reuse",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_reuse",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.notify_all_at_thread_exit",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_local_destruction",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.static_local_initialization",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.call_once",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_any",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_broadcast",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_timeouts",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_predicate",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.lock_wrappers",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_ptr_contention",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.mutex_contention",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.native_thread_id_move_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-gcc-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+          "config_sha256": "b02e5e30df3afd0c17b44af271dd3afe69b067e32451be8d2320891a15bbba2f",
+          "console_sha256_raw": "e62ac4c9882f4f4be78ca5ef5733c3a327d4e3322019807fc27260720a7616c7",
+          "console_sha256_archived": "ad9a6bd0c2870aafceebb2f8831d142c1acada30f67b0f441dadf3b093c3a961",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+          "compiler_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/threads-gcc-riscv32-smp2/threads/zephyr.config",
+          "console_archive": "runs/threads-gcc-riscv32-smp2/threads/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "2",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_SMP": "y",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "threads-llvm-arm",
+      "passed": 22,
+      "report_sha256": "5dd627dee46ed2bde2fde45a23f6b085521398383993c7a9e963bfdfa9f1c26c",
+      "runs": [
+        {
+          "name": "cpp.runtime.threads",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.native_thread_id_move_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.mutex_contention",
+              "execution_time": "0.15",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_ptr_contention",
+              "execution_time": "0.10",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.lock_wrappers",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_predicate",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_timeouts",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_broadcast",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_any",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.call_once",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.static_local_initialization",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_local_destruction",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.notify_all_at_thread_exit",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_reuse",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.detach_reuse",
+              "execution_time": "0.05",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.future_promise",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.async",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.sleep_for",
+              "execution_time": "0.03",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-arm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+          "config_sha256": "7e5ef898f6f7bce434bdf146a9e3c0619ee1744518bed0161e324c321c37032b",
+          "console_sha256_raw": "aade245622743948e91e60f8d5d482bccf9183055e8afeb8db139ec3ae686b31",
+          "console_sha256_archived": "e2f8eedfe5c6f45021e6226c405816c03c5292d17a5232e43f1170659828f4bb",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/threads-llvm-arm/threads/zephyr.config",
+          "console_archive": "runs/threads-llvm-arm/threads/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "threads-llvm-riscv32-up",
+      "passed": 22,
+      "report_sha256": "3150cff6fc6defaed508ff0122c182db4f98dc25a6350424dfb1f9b685f327ed",
+      "runs": [
+        {
+          "name": "cpp.runtime.threads",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.native_thread_id_move_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.mutex_contention",
+              "execution_time": "0.15",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_ptr_contention",
+              "execution_time": "0.11",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.lock_wrappers",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_timed_mutex",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_predicate",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_timeouts",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_broadcast",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_any",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.call_once",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.static_local_initialization",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_local_destruction",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.notify_all_at_thread_exit",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_reuse",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.detach_reuse",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.future_promise",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.async",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.sleep_for",
+              "execution_time": "0.03",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+          "config_sha256": "69525b2b7c74b7d5fb2b5e8c35c1b5d2b191846bee4c5b85c800187dd7095f47",
+          "console_sha256_raw": "3a03a07e1c1c837ad7ef54f893768233f3bcb8db13bd8e1e8eeb8401b6b280df",
+          "console_sha256_archived": "f25e1cde7448f4b01dfacdc7bf65dd05292a5e9b53d0874effd8eafebcdd64b8",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/threads-llvm-riscv32-up/threads/zephyr.config",
+          "console_archive": "runs/threads-llvm-riscv32-up/threads/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_SMP": "n",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "threads-llvm-riscv32-smp2",
+      "passed": 22,
+      "report_sha256": "a41ef576e984217a26306a335dd50600d1018fa0283082e6e347071c2dda99e4",
+      "runs": [
+        {
+          "name": "cpp.runtime.threads",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.native_thread_id_move_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.mutex_contention",
+              "execution_time": "0.15",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_ptr_contention",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.lock_wrappers",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.timed_mutex",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.recursive_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_predicate",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_timeouts",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_broadcast",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.condition_variable_any",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_mutex",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.shared_timed_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.call_once",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.static_local_initialization",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_local_destruction",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.notify_all_at_thread_exit",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.thread_reuse",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.detach_reuse",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.future_promise",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.async",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.threads.libcxx_threads.sleep_for",
+              "execution_time": "0.03",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+          "config_sha256": "c9f239581a13be8a51fbd0cd2ca9e8877ea811a56f8d9abc66b2006070deba9b",
+          "console_sha256_raw": "e70e6832bc97b42be1eb8c77835bd46d89ce82bef446a25151c8c16bcb8d12d0",
+          "console_sha256_archived": "188ea1416b8502f9b12beda29cd6398c3970660c21cd62641703e8a9171d4fcb",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/threads-llvm-riscv32-smp2/threads/zephyr.config",
+          "console_archive": "runs/threads-llvm-riscv32-smp2/threads/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "2",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_SMP": "y",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_stress-gcc-arm",
+      "passed": 9,
+      "report_sha256": "a7a404dd19c6c6b885a81e9edb376b56a6e89d732c66398c2aa66ddb823555a2",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_stress",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.sleep_for_subtick_wakeup_does_not_return_early",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.timeout_reacquires_contended_mutex",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_first_use_and_object_lifetime_reuse",
+              "execution_time": "0.11",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.tss_repopulation_has_four_pass_limit",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.native_root_explicit_cleanup",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.language_tls_lifo_before_tss_and_reuse",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_creators_and_joiners",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.aborted_detached_slots_are_reusable",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.pool_capacity_and_join_ownership",
+              "execution_time": "0.01",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-gcc-arm/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+          "config_sha256": "a168a7a00815a6e9a3b63b3c44b652a2e0a239ad457de7cb73efccc3f8aae029",
+          "console_sha256_raw": "5a29eedc8fcfd68a3b416618de83a043d18c5481ec0cf751fef8fbbe6752d628",
+          "console_sha256_archived": "53af653661a680251536724487015cfd569a61046f06ade9c47242be022fa2b0",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++",
+          "compiler_banner": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_stress-gcc-arm/thread_stress/zephyr.config",
+          "console_archive": "runs/thread_stress-gcc-arm/thread_stress/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_stress-gcc-riscv32-up",
+      "passed": 9,
+      "report_sha256": "6f6facb6a32424ade6ba4414e992998f7975ca3213be798ee000132ae30884b0",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_stress",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.sleep_for_subtick_wakeup_does_not_return_early",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.timeout_reacquires_contended_mutex",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_first_use_and_object_lifetime_reuse",
+              "execution_time": "0.08",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.tss_repopulation_has_four_pass_limit",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.native_root_explicit_cleanup",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.language_tls_lifo_before_tss_and_reuse",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_creators_and_joiners",
+              "execution_time": "0.11",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.aborted_detached_slots_are_reusable",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.pool_capacity_and_join_ownership",
+              "execution_time": "0.00",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-gcc-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+          "config_sha256": "7e3121ba306f83823f6faff9fde004f936f1daa652f89d7beaee5d0aee9df739",
+          "console_sha256_raw": "ed9448237d6aaa512125de406ada2eb247535c4dccf1a057e1d6df8cfdaa18e7",
+          "console_sha256_archived": "c6b1bb9908e248d2d19bc1bee7d29c17fb8770104fe1cfdf42fe90d00bdcd98c",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+          "compiler_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_stress-gcc-riscv32-up/thread_stress/zephyr.config",
+          "console_archive": "runs/thread_stress-gcc-riscv32-up/thread_stress/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_SMP": "n",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_stress-gcc-riscv32-smp2",
+      "passed": 9,
+      "report_sha256": "73a445b61a480e2d3d3245aebc0391d81a969fb76e05098df4c4a43769284110",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_stress",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.sleep_for_subtick_wakeup_does_not_return_early",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.timeout_reacquires_contended_mutex",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_first_use_and_object_lifetime_reuse",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.tss_repopulation_has_four_pass_limit",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.native_root_explicit_cleanup",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.language_tls_lifo_before_tss_and_reuse",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_creators_and_joiners",
+              "execution_time": "0.15",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.aborted_detached_slots_are_reusable",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.pool_capacity_and_join_ownership",
+              "execution_time": "0.00",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-gcc-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+          "config_sha256": "b02e5e30df3afd0c17b44af271dd3afe69b067e32451be8d2320891a15bbba2f",
+          "console_sha256_raw": "69e02078d20cb5f88abc9fe8fd139a0b6278484b4d8a20a728dc51e201c87f1e",
+          "console_sha256_archived": "21d2e3bcd378114c092c40dc4cf65825010a2fa2f02135f4c3def7f5ec074d73",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+          "compiler_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_stress-gcc-riscv32-smp2/thread_stress/zephyr.config",
+          "console_archive": "runs/thread_stress-gcc-riscv32-smp2/thread_stress/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "2",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_SMP": "y",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_stress-llvm-arm",
+      "passed": 9,
+      "report_sha256": "228ce61b520ff945de6eb592e210f0dfc89e8c2e9f0761e13e467443aab65e95",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_stress",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.pool_capacity_and_join_ownership",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.aborted_detached_slots_are_reusable",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_creators_and_joiners",
+              "execution_time": "0.16",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.language_tls_lifo_before_tss_and_reuse",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.native_root_explicit_cleanup",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.tss_repopulation_has_four_pass_limit",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_first_use_and_object_lifetime_reuse",
+              "execution_time": "0.10",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.timeout_reacquires_contended_mutex",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.sleep_for_subtick_wakeup_does_not_return_early",
+              "execution_time": "0.15",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-llvm-arm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+          "config_sha256": "7e5ef898f6f7bce434bdf146a9e3c0619ee1744518bed0161e324c321c37032b",
+          "console_sha256_raw": "9d23f734df2c741d30fb05156248875a6b1e70c4ee7dc710f488f78dfeca6b97",
+          "console_sha256_archived": "e2040818d0c0f0d214f2ad24b7f507f447a6e56cf8760d73506b7f815d6ebabf",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_stress-llvm-arm/thread_stress/zephyr.config",
+          "console_archive": "runs/thread_stress-llvm-arm/thread_stress/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_stress-llvm-riscv32-up",
+      "passed": 9,
+      "report_sha256": "241f26bcf11e2df61a90729761e88d7f2b3d3af4d092bf3e068fc5f4a7a14de4",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_stress",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.pool_capacity_and_join_ownership",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.aborted_detached_slots_are_reusable",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_creators_and_joiners",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.language_tls_lifo_before_tss_and_reuse",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.native_root_explicit_cleanup",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.tss_repopulation_has_four_pass_limit",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_first_use_and_object_lifetime_reuse",
+              "execution_time": "0.09",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.timeout_reacquires_contended_mutex",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.sleep_for_subtick_wakeup_does_not_return_early",
+              "execution_time": "0.14",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-llvm-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+          "config_sha256": "69525b2b7c74b7d5fb2b5e8c35c1b5d2b191846bee4c5b85c800187dd7095f47",
+          "console_sha256_raw": "287be7ac3a21d7a108f2b0c378928df0a3cdb002acd124d291a9883b55589830",
+          "console_sha256_archived": "4837765bb896b6dc011b901eaca57748802b50cc06cf57d06030e1286fbe0ddf",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_stress-llvm-riscv32-up/thread_stress/zephyr.config",
+          "console_archive": "runs/thread_stress-llvm-riscv32-up/thread_stress/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_SMP": "n",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_stress-llvm-riscv32-smp2",
+      "passed": 9,
+      "report_sha256": "7efd8cf690db46625e5b55e8bcec094fbaa2ce539d4e614b72b59b251fa098a2",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_stress",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.pool_capacity_and_join_ownership",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.aborted_detached_slots_are_reusable",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_creators_and_joiners",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.language_tls_lifo_before_tss_and_reuse",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.native_root_explicit_cleanup",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.tss_repopulation_has_four_pass_limit",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.concurrent_first_use_and_object_lifetime_reuse",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.timeout_reacquires_contended_mutex",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_stress.libcxx_thread_stress.sleep_for_subtick_wakeup_does_not_return_early",
+              "execution_time": "0.15",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-llvm-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+          "config_sha256": "c9f239581a13be8a51fbd0cd2ca9e8877ea811a56f8d9abc66b2006070deba9b",
+          "console_sha256_raw": "41eb8b8a9af2f1035535dae2c71ece83e1427832a452bd6c05d732de365a5928",
+          "console_sha256_archived": "f1f4056a072eca1a9d43d2eef2abe64749ca5f374a27a95bd86d000c790ba9af",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_stress-llvm-riscv32-smp2/thread_stress/zephyr.config",
+          "console_archive": "runs/thread_stress-llvm-riscv32-smp2/thread_stress/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "2",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_SMP": "y",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_USERSPACE": "n",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_userspace-gcc-arm",
+      "passed": 23,
+      "report_sha256": "a92196cfc701aa62a59d35dc79d43f71fe1f566a9b4f29dc4a8859a280298bd7",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_userspace",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.invalid_and_self_join",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.unregistered_domain_is_denied",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.waiting_condvar_cannot_be_destroyed",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.busy_mutex_cannot_be_destroyed",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.bad_sync_arguments",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sync_pool_exhaustion_and_recovery",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.forged_and_stale_sync_handles",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.thread_pool_exhaustion_and_recovery",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.join_and_detach_reuse",
+              "execution_time": "0.28",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.notify_at_exit_follows_tls_destructors",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.tls_destructors_before_join",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_fractional_tick_early_wakeup",
+              "execution_time": "0.05",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_survives_early_wakeup",
+              "execution_time": "0.13",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.future_and_async",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.call_once",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.synchronization_storage_reuse",
+              "execution_time": "0.28",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.shared_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.condition_variable_timeout_and_notification",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.recursive_and_timed_mutex",
+              "execution_time": "0.08",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.mutex_created_by_sibling",
+              "execution_time": "0.24",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.static_local_initialization",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_child_cannot_raise_priority",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_mode_and_domain_inheritance",
+              "execution_time": "0.02",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-gcc-arm/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config",
+          "config_sha256": "775e8d3ba9411be8e8663f8dc1263e8e5a821955d9a015a64f4cf8931160f8af",
+          "console_sha256_raw": "f42f151afd2b21898ce36867b18e98d3ebafc55bbd44ff80f5b17cd11ac7a629",
+          "console_sha256_archived": "2d23dc9874bad40d6da42dbd33610c075d5a35633a18b637cca3b17b5b85a49f",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++",
+          "compiler_banner": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_userspace-gcc-arm/thread_userspace/zephyr.config",
+          "console_archive": "runs/thread_userspace-gcc-arm/thread_userspace/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "n",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "65536",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "64",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "32",
+            "CONFIG_MPU_STACK_GUARD": "n",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_userspace-gcc-riscv32-up",
+      "passed": 23,
+      "report_sha256": "ba3b7880ba6673e9b3843e03eaaefea711d58d178c208589ba0e25fc62a79a76",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_userspace",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.invalid_and_self_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.unregistered_domain_is_denied",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.waiting_condvar_cannot_be_destroyed",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.busy_mutex_cannot_be_destroyed",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.bad_sync_arguments",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sync_pool_exhaustion_and_recovery",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.forged_and_stale_sync_handles",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.thread_pool_exhaustion_and_recovery",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.join_and_detach_reuse",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.notify_at_exit_follows_tls_destructors",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.tls_destructors_before_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_fractional_tick_early_wakeup",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_survives_early_wakeup",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.future_and_async",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.call_once",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.synchronization_storage_reuse",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.shared_mutex",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.condition_variable_timeout_and_notification",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.recursive_and_timed_mutex",
+              "execution_time": "0.07",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.mutex_created_by_sibling",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.static_local_initialization",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_child_cannot_raise_priority",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_mode_and_domain_inheritance",
+              "execution_time": "0.01",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-gcc-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config",
+          "config_sha256": "da0024ce1082e9b2cd7feb1331d716a6eeb7540872ce3bd6ded272ce53799464",
+          "console_sha256_raw": "55f683e17114b36552404cc3c328ef4b875c8806ce115c590069d28ae3731d52",
+          "console_sha256_archived": "3ca3aeb8c7a7bb8ba4eb0cefcc30e3d9e795d01f1b0f5d02bb289c1c4fd8030e",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+          "compiler_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_userspace-gcc-riscv32-up/thread_userspace/zephyr.config",
+          "console_archive": "runs/thread_userspace-gcc-riscv32-up/thread_userspace/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "65536",
+            "CONFIG_SMP": "n",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "64",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "32",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_userspace-gcc-riscv32-smp2",
+      "passed": 23,
+      "report_sha256": "1281c7289c1ecde29270adbc3787d27e0a97229ea9ae2fa253c877be8e95ac58",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_userspace",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.invalid_and_self_join",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.unregistered_domain_is_denied",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.waiting_condvar_cannot_be_destroyed",
+              "execution_time": "0.08",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.busy_mutex_cannot_be_destroyed",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.bad_sync_arguments",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sync_pool_exhaustion_and_recovery",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.forged_and_stale_sync_handles",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.thread_pool_exhaustion_and_recovery",
+              "execution_time": "0.11",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.join_and_detach_reuse",
+              "execution_time": "0.42",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.notify_at_exit_follows_tls_destructors",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.tls_destructors_before_join",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_fractional_tick_early_wakeup",
+              "execution_time": "0.32",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_survives_early_wakeup",
+              "execution_time": "0.25",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.future_and_async",
+              "execution_time": "0.07",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.call_once",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.synchronization_storage_reuse",
+              "execution_time": "0.50",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.shared_mutex",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.condition_variable_timeout_and_notification",
+              "execution_time": "0.10",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.recursive_and_timed_mutex",
+              "execution_time": "0.17",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.mutex_created_by_sibling",
+              "execution_time": "0.50",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.static_local_initialization",
+              "execution_time": "0.13",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_child_cannot_raise_priority",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_mode_and_domain_inheritance",
+              "execution_time": "0.01",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-gcc-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config",
+          "config_sha256": "ec82623f4bac2cadfb24a7b1caf6d14a3b0d3919c5db44b3441b1b1003512937",
+          "console_sha256_raw": "efac87d2e42fa38eaf58ea7e9aa7ba2a109eb559fb2b91a840d977668261ebb7",
+          "console_sha256_archived": "48865c80d9b6b8ae560e826516f2c3e42ce7f8aaf5a07a7487b612aa17f0e3d5",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+          "compiler_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_userspace-gcc-riscv32-smp2/thread_userspace/zephyr.config",
+          "console_archive": "runs/thread_userspace-gcc-riscv32-smp2/thread_userspace/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "2",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "65536",
+            "CONFIG_SMP": "y",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "64",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "32",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "3",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_userspace-llvm-arm",
+      "passed": 23,
+      "report_sha256": "ba6536b32eac1a6eac86a89e9f4363624267ee99c8b6a0f50fee1787f7c4d61a",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_userspace",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_mode_and_domain_inheritance",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_child_cannot_raise_priority",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.static_local_initialization",
+              "execution_time": "0.07",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.mutex_created_by_sibling",
+              "execution_time": "0.28",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.recursive_and_timed_mutex",
+              "execution_time": "0.09",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.condition_variable_timeout_and_notification",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.shared_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.synchronization_storage_reuse",
+              "execution_time": "0.34",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.call_once",
+              "execution_time": "0.07",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.future_and_async",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_survives_early_wakeup",
+              "execution_time": "0.13",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_fractional_tick_early_wakeup",
+              "execution_time": "0.05",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.tls_destructors_before_join",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.notify_at_exit_follows_tls_destructors",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.join_and_detach_reuse",
+              "execution_time": "0.32",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.thread_pool_exhaustion_and_recovery",
+              "execution_time": "0.08",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.forged_and_stale_sync_handles",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sync_pool_exhaustion_and_recovery",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.bad_sync_arguments",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.busy_mutex_cannot_be_destroyed",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.waiting_condvar_cannot_be_destroyed",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.unregistered_domain_is_denied",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.invalid_and_self_join",
+              "execution_time": "0.01",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-arm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config",
+          "config_sha256": "dfc5628becf9e39d487cad20a152fbf81230b8c23631212300e07215168360cb",
+          "console_sha256_raw": "a2b146dbc5368e6ff8dbecd1476cfa7db97160a8a0a5dea80e1f68bf41412983",
+          "console_sha256_archived": "84df201fcce99fa5b4311ccb5edc8c6d2bbf295d7fda5867dfe6d238e8bfd3fd",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_userspace-llvm-arm/thread_userspace/zephyr.config",
+          "console_archive": "runs/thread_userspace-llvm-arm/thread_userspace/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "n",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "65536",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "64",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "32",
+            "CONFIG_MPU_STACK_GUARD": "n",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_userspace-llvm-riscv32-up",
+      "passed": 23,
+      "report_sha256": "48ae2969b483d665a9d107fd19e3022df10d8c7717edee16d6a454c076a768d5",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_userspace",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_mode_and_domain_inheritance",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_child_cannot_raise_priority",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.static_local_initialization",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.mutex_created_by_sibling",
+              "execution_time": "0.19",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.recursive_and_timed_mutex",
+              "execution_time": "0.07",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.condition_variable_timeout_and_notification",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.shared_mutex",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.synchronization_storage_reuse",
+              "execution_time": "0.16",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.call_once",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.future_and_async",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_survives_early_wakeup",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_fractional_tick_early_wakeup",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.tls_destructors_before_join",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.notify_at_exit_follows_tls_destructors",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.join_and_detach_reuse",
+              "execution_time": "0.16",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.thread_pool_exhaustion_and_recovery",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.forged_and_stale_sync_handles",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sync_pool_exhaustion_and_recovery",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.bad_sync_arguments",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.busy_mutex_cannot_be_destroyed",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.waiting_condvar_cannot_be_destroyed",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.unregistered_domain_is_denied",
+              "execution_time": "0.00",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.invalid_and_self_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config",
+          "config_sha256": "4684e7618d3b9cf915fa294f34641e6a306b97e77ee4c6077190c8e5e1aedf22",
+          "console_sha256_raw": "70ec42caccdf09518ccaa0ca7c56bc6ab084c55be42c82e5d697d786464b8220",
+          "console_sha256_archived": "a0fc0fbf73f353b3b4d10b30628634a53daf3876bb9cc62d061cff3d443cd565",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_userspace-llvm-riscv32-up/thread_userspace/zephyr.config",
+          "console_archive": "runs/thread_userspace-llvm-riscv32-up/thread_userspace/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "65536",
+            "CONFIG_SMP": "n",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "64",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "32",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "thread_userspace-llvm-riscv32-smp2",
+      "passed": 23,
+      "report_sha256": "4bb5048dbcee3b47d46b0399676662d91c377386462794a7428791b7334c3f03",
+      "runs": [
+        {
+          "name": "cpp.runtime.thread_userspace",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_mode_and_domain_inheritance",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.user_child_cannot_raise_priority",
+              "execution_time": "0.04",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.static_local_initialization",
+              "execution_time": "0.13",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.mutex_created_by_sibling",
+              "execution_time": "0.61",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.recursive_and_timed_mutex",
+              "execution_time": "0.14",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.condition_variable_timeout_and_notification",
+              "execution_time": "0.09",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.shared_mutex",
+              "execution_time": "0.08",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.synchronization_storage_reuse",
+              "execution_time": "0.55",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.call_once",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.future_and_async",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_survives_early_wakeup",
+              "execution_time": "0.25",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sleep_fractional_tick_early_wakeup",
+              "execution_time": "0.10",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.tls_destructors_before_join",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.notify_at_exit_follows_tls_destructors",
+              "execution_time": "0.02",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.join_and_detach_reuse",
+              "execution_time": "0.57",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.thread_pool_exhaustion_and_recovery",
+              "execution_time": "0.12",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.forged_and_stale_sync_handles",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.sync_pool_exhaustion_and_recovery",
+              "execution_time": "0.06",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.bad_sync_arguments",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.busy_mutex_cannot_be_destroyed",
+              "execution_time": "0.03",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.waiting_condvar_cannot_be_destroyed",
+              "execution_time": "0.08",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.unregistered_domain_is_denied",
+              "execution_time": "0.01",
+              "status": "passed"
+            },
+            {
+              "identifier": "cpp.runtime.thread_userspace.libcxx_userspace.invalid_and_self_join",
+              "execution_time": "0.00",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config",
+          "config_sha256": "6564d342138d124147b9b548730a416bc4910731c350ea1d984c34ccd3cfe5ed",
+          "console_sha256_raw": "203c474d4e8d1c6e28bfb320ec0ce45755474567b2a16da998b044b6ffdeded6",
+          "console_sha256_archived": "3c624a912db785f4a616f73f424ff6347a5f098f244e3bc36fce91b134a8d697",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/thread_userspace-llvm-riscv32-smp2/thread_userspace/zephyr.config",
+          "console_archive": "runs/thread_userspace-llvm-riscv32-smp2/thread_userspace/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "2",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "65536",
+            "CONFIG_SMP": "y",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "64",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "32",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "3",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "failfast-arm-gcc",
+      "passed": 3,
+      "report_sha256": "e655e0ee2466a73037ebeeda4cc50ab1f403de4cd2aa4a4ab9b928126fb1f1cf",
+      "runs": [
+        {
+          "name": "cpp.runtime.userspace_failfast.mutex_once",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.userspace_failfast.mutex_once",
+              "execution_time": "1.04",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/failfast-arm-gcc/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace_failfast/cpp.runtime.userspace_failfast.mutex_once/zephyr/.config",
+          "config_sha256": "4111679e5e1ec268b4cb64d01edaf29592414f027c592541500f11f44da0877f",
+          "console_sha256_raw": "8c9bb39af8ec5a0fb0c6cc0c4d3f8d3d8792d5c35098ecc594e747f295a71101",
+          "console_sha256_archived": "b4d68c868122d430dd4b3ccd22ae10dcf11beb0d0f69c988a99c2ec38d29fae6",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++",
+          "compiler_banner": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/failfast-arm-gcc/mutex_once/zephyr.config",
+          "console_archive": "runs/failfast-arm-gcc/mutex_once/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "8192",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "8",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "4",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        },
+        {
+          "name": "cpp.runtime.userspace_failfast.cond_notify",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.userspace_failfast.cond_notify",
+              "execution_time": "1.04",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/failfast-arm-gcc/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace_failfast/cpp.runtime.userspace_failfast.cond_notify/zephyr/.config",
+          "config_sha256": "4111679e5e1ec268b4cb64d01edaf29592414f027c592541500f11f44da0877f",
+          "console_sha256_raw": "bc865a60db16cadb65bd7b2e31b1a21a0a318d3b5f3a18ed012e37e6d92afebc",
+          "console_sha256_archived": "a0385b088a3007739c5a8bc6745c797479a9c1e399708a77f4d069b26653ecd2",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++",
+          "compiler_banner": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/failfast-arm-gcc/cond_notify/zephyr.config",
+          "console_archive": "runs/failfast-arm-gcc/cond_notify/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "8192",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "8",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "4",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        },
+        {
+          "name": "cpp.runtime.userspace_failfast.tls_oom",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.userspace_failfast.tls_oom",
+              "execution_time": "1.08",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/failfast-arm-gcc/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace_failfast/cpp.runtime.userspace_failfast.tls_oom/zephyr/.config",
+          "config_sha256": "4111679e5e1ec268b4cb64d01edaf29592414f027c592541500f11f44da0877f",
+          "console_sha256_raw": "3812b02defdd485fd4c42ac5d9ca48e93de5cd41318b0ed45d897c3dd10915cb",
+          "console_sha256_archived": "818ff128b4bbc4eaaa84d9c635bddb2a4aac42acd7baf1c34a255f4d6dd5a378",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++",
+          "compiler_banner": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/failfast-arm-gcc/tls_oom/zephyr.config",
+          "console_archive": "runs/failfast-arm-gcc/tls_oom/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "8192",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "8",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "4",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "failfast-arm-llvm",
+      "passed": 3,
+      "report_sha256": "31ae6c2f143b48a44a1e479a499d26c6851da89ab2ea7385e9c01a0f02ffa3a6",
+      "runs": [
+        {
+          "name": "cpp.runtime.userspace_failfast.mutex_once",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.userspace_failfast.mutex_once",
+              "execution_time": "1.05",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/failfast-arm-llvm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace_failfast/cpp.runtime.userspace_failfast.mutex_once/zephyr/.config",
+          "config_sha256": "921e6010925f9cb5a1e15243edc391aef7a0b5ab1038cf20d404a38a8db93542",
+          "console_sha256_raw": "6ddb401cae93abee64e5eac604b467ae956c43eff6d87f304dd10f8fa6a76312",
+          "console_sha256_archived": "2dc23f974811ee25df537abb3bb947fb9e1e3f0a609b9bcf3650e62e7e8a7972",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/failfast-arm-llvm/mutex_once/zephyr.config",
+          "console_archive": "runs/failfast-arm-llvm/mutex_once/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "8192",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "8",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "4",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        },
+        {
+          "name": "cpp.runtime.userspace_failfast.cond_notify",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.userspace_failfast.cond_notify",
+              "execution_time": "1.05",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/failfast-arm-llvm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace_failfast/cpp.runtime.userspace_failfast.cond_notify/zephyr/.config",
+          "config_sha256": "921e6010925f9cb5a1e15243edc391aef7a0b5ab1038cf20d404a38a8db93542",
+          "console_sha256_raw": "3da7a610a2ec8acfb648a9500242bb9199f46e4d7b9396a2a9cca749528f064d",
+          "console_sha256_archived": "e8dfb49045da030ddff843ec5910bb38dd5c460f6446e217eae34662174fd720",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/failfast-arm-llvm/cond_notify/zephyr.config",
+          "console_archive": "runs/failfast-arm-llvm/cond_notify/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "8192",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "8",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "4",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        },
+        {
+          "name": "cpp.runtime.userspace_failfast.tls_oom",
+          "cases": [
+            {
+              "identifier": "cpp.runtime.userspace_failfast.tls_oom",
+              "execution_time": "1.10",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/failfast-arm-llvm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace_failfast/cpp.runtime.userspace_failfast.tls_oom/zephyr/.config",
+          "config_sha256": "921e6010925f9cb5a1e15243edc391aef7a0b5ab1038cf20d404a38a8db93542",
+          "console_sha256_raw": "9a1b35b3a30277653647df78bbf8a2b1e713dcda7c5d2d966ed89ea4961d8e50",
+          "console_sha256_archived": "274cfcce45ba0efdbbc624c87840c3c9194994214772228da2562b3e6c218e7d",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+          "compiler_banner": "clang version 19.1.7",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/failfast-arm-llvm/tls_oom/zephyr.config",
+          "console_archive": "runs/failfast-arm-llvm/tls_oom/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "8192",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "8",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "4",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "sample-clean-arm-gcc",
+      "passed": 1,
+      "report_sha256": "19a64420478359b139532ffa094df8437bd77be9eee421b802d570579c617d6f",
+      "runs": [
+        {
+          "name": "sample.cpp.runtime.userspace",
+          "cases": [
+            {
+              "identifier": "sample.cpp.runtime.userspace",
+              "execution_time": "1.03",
+              "status": "passed"
+            }
+          ],
+          "config": "/home/linux/cpp-runtime-userspace-build/sample-clean-arm-gcc-final/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/samples/thread_userspace/sample.cpp.runtime.userspace/zephyr/.config",
+          "config_sha256": "f0045729485393f72c45f5c3375555158e9ce66b9d150a739f9e689f3c7e81ab",
+          "console_sha256_raw": "b0029088762d9a5ab0d1ed77e6f6189aa71410142237fba0c2515c14ef5a9c18",
+          "console_sha256_archived": "87d51a4ce9eba36702e88ecd09212096900a51216354dc95d4dbce72cd4326db",
+          "compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++",
+          "compiler_banner": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+          "sdk": "/home/linux/zephyr-sdk-1.0.1",
+          "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+          "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+          "kernel_modified_paths": [],
+          "config_archive": "runs/sample-clean-arm-gcc/userspace/zephyr.config",
+          "console_archive": "runs/sample-clean-arm-gcc/userspace/console.log",
+          "selected_config": {
+            "CONFIG_MP_MAX_NUM_CPUS": "1",
+            "CONFIG_HW_STACK_PROTECTION": "y",
+            "CONFIG_COMMON_LIBC_MALLOC_ARENA_SIZE": "32768",
+            "CONFIG_CPP_RUNTIME_THREAD_MAX": "8",
+            "CONFIG_CPP_RUNTIME_THREAD_STACK_SIZE": "4096",
+            "CONFIG_CPP_RUNTIME_TLS_KEYS": "8",
+            "CONFIG_CPP_RUNTIME_MUTEX_MAX": "64",
+            "CONFIG_CPP_RUNTIME_CONDVAR_MAX": "32",
+            "CONFIG_MPU_STACK_GUARD": "y",
+            "CONFIG_USERSPACE": "y",
+            "CONFIG_MAX_THREAD_BYTES": "2",
+            "CONFIG_CPP_EXCEPTIONS": "n",
+            "CONFIG_CPP_RTTI": "n",
+            "CONFIG_POSIX_THREADS": "n"
+          }
+        }
+      ]
+    }
+  ]
+}

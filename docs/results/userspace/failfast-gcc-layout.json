@@ -1,0 +1,229 @@
+{
+  "generated_utc": "2026-10-28T14:35:52.257164+00:00",
+  "kernel_path": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+  "kernel_revision": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+  "source_sha256": {
+    "adapters/userspace_threading.cpp": "33466a4f719d6bf5c8450979492229f1f65790f93e56349cf33451900d9e174e",
+    "adapters/userspace_kernel.c": "cd4784fd61771fbad7decdd316465761ae3b306b0b0465743c31830f898f187a",
+    "include/cpp_runtime/partition.h": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+    "cmake/userspace_lld.cmake": "555ff98e172ba46772ee860173cb9d69659214ab9ba10aafc29418ded2be3fc9",
+    "scripts/fix_lld_app_partitions.py": "d5e6213d5e35d25f407397ed74fa569793cbce410619c38ec9c29f0c736c1137",
+    "tests/thread_userspace_failfast/src/main.cpp": "cc91d1ff88c1c08869e264578d6696e7e82a21a55fd7acde3c9c20b9e8451c3a",
+    "tests/thread_userspace_failfast/tests.yaml": "e543c096087f671f3f3193dc94407666131102686191c6fa57830753b7073485"
+  },
+  "toolchain_family": "gcc",
+  "tests": [
+    {
+      "name": "cpp.runtime.userspace_failfast.mutex_once",
+      "status": "passed",
+      "elf": "/home/linux/cpp-runtime-userspace-build/failfast-arm-gcc/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace_failfast/cpp.runtime.userspace_failfast.mutex_once/zephyr/zephyr.elf",
+      "elf_sha256": "e3e915edca89967831ed48387ccbb7f32c7ba26e73d3500f2201af71649d1bb8",
+      "diagnostic": "libc++ synchronization failure: -12",
+      "pass_marker": "FAILFAST PASS case=1 user=1 abort=1 reason=3",
+      "verified_configuration": [
+        "CONFIG_USERSPACE=y",
+        "CONFIG_HW_STACK_PROTECTION=y",
+        "CONFIG_MPU_STACK_GUARD=y",
+        "CONFIG_TIMEOUT_64BIT=y"
+      ],
+      "runtime_partition": {
+        "start": 536879104,
+        "end": 536879232,
+        "size": 128
+      },
+      "runtime_symbols": [
+        {
+          "symbol": "cpp_runtime_data_anchor",
+          "address": 536879112,
+          "size": 1,
+          "type": "D",
+          "inside_runtime_partition": true
+        },
+        {
+          "symbol": "cpp_runtime_bss_anchor",
+          "address": 536879176,
+          "size": 1,
+          "type": "D",
+          "inside_runtime_partition": true
+        },
+        {
+          "symbol": "std::__1::mut",
+          "address": 536879128,
+          "size": 8,
+          "type": "d",
+          "inside_runtime_partition": true
+        },
+        {
+          "symbol": "std::__1::cv",
+          "address": 536879120,
+          "size": 8,
+          "type": "d",
+          "inside_runtime_partition": true
+        }
+      ],
+      "protected_kernel_symbols": [
+        {
+          "symbol": "mutexes",
+          "address": 536883580,
+          "size": 160,
+          "type": "b",
+          "outside_runtime_partition": true
+        },
+        {
+          "symbol": "condvars",
+          "address": 536883548,
+          "size": 32,
+          "type": "b",
+          "outside_runtime_partition": true
+        },
+        {
+          "symbol": "threads",
+          "address": 536881000,
+          "size": 1344,
+          "type": "b",
+          "outside_runtime_partition": true
+        },
+        {
+          "symbol": "thread_slots",
+          "address": 536883484,
+          "size": 64,
+          "type": "b",
+          "outside_runtime_partition": true
+        }
+      ],
+      "handler_log_sha256": "8c9bb39af8ec5a0fb0c6cc0c4d3f8d3d8792d5c35098ecc594e747f295a71101"
+    },
+    {
+      "name": "cpp.runtime.userspace_failfast.cond_notify",
+      "status": "passed",
+      "elf": "/home/linux/cpp-runtime-userspace-build/failfast-arm-gcc/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace_failfast/cpp.runtime.userspace_failfast.cond_notify/zephyr/zephyr.elf",
+      "elf_sha256": "5fb23d448b695811d20ca3d3a0c6b7da4570643a8f4bea505245bde67e888fae",
+      "diagnostic": "libc++ synchronization failure: -12",
+      "pass_marker": "FAILFAST PASS case=2 user=1 abort=1 reason=3",
+      "verified_configuration": [
+        "CONFIG_USERSPACE=y",
+        "CONFIG_HW_STACK_PROTECTION=y",
+        "CONFIG_MPU_STACK_GUARD=y",
+        "CONFIG_TIMEOUT_64BIT=y"
+      ],
+      "runtime_partition": {
+        "start": 536879168,
+        "end": 536879232,
+        "size": 64
+      },
+      "runtime_symbols": [
+        {
+          "symbol": "cpp_runtime_data_anchor",
+          "address": 536879176,
+          "size": 1,
+          "type": "D",
+          "inside_runtime_partition": true
+        },
+        {
+          "symbol": "cpp_runtime_bss_anchor",
+          "address": 536879220,
+          "size": 1,
+          "type": "D",
+          "inside_runtime_partition": true
+        }
+      ],
+      "protected_kernel_symbols": [
+        {
+          "symbol": "mutexes",
+          "address": 536883516,
+          "size": 160,
+          "type": "b",
+          "outside_runtime_partition": true
+        },
+        {
+          "symbol": "condvars",
+          "address": 536883484,
+          "size": 32,
+          "type": "b",
+          "outside_runtime_partition": true
+        },
+        {
+          "symbol": "threads",
+          "address": 536880936,
+          "size": 1344,
+          "type": "b",
+          "outside_runtime_partition": true
+        },
+        {
+          "symbol": "thread_slots",
+          "address": 536883420,
+          "size": 64,
+          "type": "b",
+          "outside_runtime_partition": true
+        }
+      ],
+      "handler_log_sha256": "bc865a60db16cadb65bd7b2e31b1a21a0a318d3b5f3a18ed012e37e6d92afebc"
+    },
+    {
+      "name": "cpp.runtime.userspace_failfast.tls_oom",
+      "status": "passed",
+      "elf": "/home/linux/cpp-runtime-userspace-build/failfast-arm-gcc/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace_failfast/cpp.runtime.userspace_failfast.tls_oom/zephyr/zephyr.elf",
+      "elf_sha256": "a6664eba70cb82aa1ea3a78ce6a707fbad4970e9c6ee3a7c21a07be2bdc44c4e",
+      "diagnostic": "libc++ TLS destructor registration failure: -12",
+      "pass_marker": "FAILFAST PASS case=3 user=1 abort=1 reason=3",
+      "verified_configuration": [
+        "CONFIG_USERSPACE=y",
+        "CONFIG_HW_STACK_PROTECTION=y",
+        "CONFIG_MPU_STACK_GUARD=y",
+        "CONFIG_TIMEOUT_64BIT=y"
+      ],
+      "runtime_partition": {
+        "start": 536879168,
+        "end": 536879232,
+        "size": 64
+      },
+      "runtime_symbols": [
+        {
+          "symbol": "cpp_runtime_data_anchor",
+          "address": 536879176,
+          "size": 1,
+          "type": "D",
+          "inside_runtime_partition": true
+        },
+        {
+          "symbol": "cpp_runtime_bss_anchor",
+          "address": 536879220,
+          "size": 1,
+          "type": "D",
+          "inside_runtime_partition": true
+        }
+      ],
+      "protected_kernel_symbols": [
+        {
+          "symbol": "mutexes",
+          "address": 536883516,
+          "size": 160,
+          "type": "b",
+          "outside_runtime_partition": true
+        },
+        {
+          "symbol": "condvars",
+          "address": 536883484,
+          "size": 32,
+          "type": "b",
+          "outside_runtime_partition": true
+        },
+        {
+          "symbol": "threads",
+          "address": 536880936,
+          "size": 1344,
+          "type": "b",
+          "outside_runtime_partition": true
+        },
+        {
+          "symbol": "thread_slots",
+          "address": 536883420,
+          "size": 64,
+          "type": "b",
+          "outside_runtime_partition": true
+        }
+      ],
+      "handler_log_sha256": "3812b02defdd485fd4c42ac5d9ca48e93de5cd41318b0ed45d897c3dd10915cb"
+    }
+  ]
+}

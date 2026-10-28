@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  cpp.runtime.thread_userspace:
+    tags:
+      - cpp
+      - libcxx
+      - threads
+      - userspace
+    filter: CONFIG_ARCH_HAS_USERSPACE
+    toolchain_allow:
+      - zephyr/gnu
+      - zephyr/llvm
+    integration_platforms:
+      - mps2/an385
+      - qemu_riscv32
+    min_ram: 256
+    timeout: 180

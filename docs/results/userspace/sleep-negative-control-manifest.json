@@ -1,0 +1,11 @@
+{
+  "intent": "Negative control, excluded from passing test counts. Private copied module removes the one-tick sleep alignment margin only.",
+  "shared_module_unchanged": true,
+  "source_module": "/home/linux/zephyr-cpp-runtime",
+  "private_module": "/home/linux/cpp-runtime-userspace-build/sleep-negative-control-module",
+  "original_native_sha256": "ad37b910540dab577a3bcb98585d14ce1393febf32dba62d5200516f96c016a7",
+  "mutated_native_sha256": "3951caab68c13cd54c9ab3bf305ac8d3a8f7b175d6f88d0aadbae7153ed47bdb",
+  "mutation_before": "const uint64_t ticks = k_ns_to_ticks_ceil64(duration.count()) + 1U;",
+  "mutation_after": "const uint64_t ticks = k_ns_to_ticks_ceil64(duration.count());",
+  "expected_failure": "cpp.runtime.thread_stress.libcxx_thread_stress.sleep_for_subtick_wakeup_does_not_return_early"
+}

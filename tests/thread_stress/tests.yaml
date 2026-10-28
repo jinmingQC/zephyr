@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  cpp.runtime.thread_stress:
+    tags:
+      - cpp
+      - libcxx
+      - threads
+    filter: not CONFIG_USERSPACE
+    toolchain_allow:
+      - zephyr/gnu
+      - zephyr/llvm
+    integration_platforms:
+      - mps2/an385
+    min_ram: 128
+    timeout: 180

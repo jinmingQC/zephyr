@@ -5,3 +5,20 @@ config CPP_RUNTIME_NATIVE
 	default y
 	help
 	  Use a small libc++ external thread adapter directly over Zephyr APIs.
+
+if CPP_RUNTIME_NATIVE && USERSPACE
+
+config CPP_RUNTIME_MUTEX_MAX
+	int "Maximum live native mutex handles"
+	default 64
+	range 8 255
+	help
+	  Includes libc++ internal locks, shared_mutex and timed_mutex internals.
+	  Kernel objects remain private; application mutexes contain only handles.
+
+config CPP_RUNTIME_CONDVAR_MAX
+	int "Maximum live native condition variable handles"
+	default 32
+	range 4 255
+
+endif

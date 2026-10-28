@@ -1,0 +1,84 @@
+{
+  "recorded_utc": "2026-10-28T14:31:48.963444+00:00",
+  "build": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-arm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace",
+  "partition_start": "0x20010100",
+  "partition_end": "0x20010180",
+  "symbols": {
+    "z_data_smem_cpp_runtime_partition_part_start": {
+      "address": 536936704,
+      "line": "20010100 D z_data_smem_cpp_runtime_partition_part_start"
+    },
+    "cpp_runtime_data_anchor": {
+      "address": 536936712,
+      "line": "20010108 00000001 D cpp_runtime_data_anchor"
+    },
+    "cpp_runtime_bss_anchor": {
+      "address": 536936816,
+      "line": "20010170 00000001 D cpp_runtime_bss_anchor"
+    },
+    "z_data_smem_cpp_runtime_partition_part_end": {
+      "address": 536936832,
+      "line": "20010180 D z_data_smem_cpp_runtime_partition_part_end"
+    },
+    "domain_lock": {
+      "address": 536937196,
+      "line": "200102ec 00000014 d domain_lock"
+    },
+    "sync_lock": {
+      "address": 536937216,
+      "line": "20010300 00000014 d sync_lock"
+    },
+    "thread_lock": {
+      "address": 536937236,
+      "line": "20010314 00000014 d thread_lock"
+    },
+    "threads": {
+      "address": 536943936,
+      "line": "20011d40 00000640 b threads"
+    },
+    "mutex_slots": {
+      "address": 536945536,
+      "line": "20012380 00000600 b mutex_slots"
+    },
+    "cond_slots": {
+      "address": 536947072,
+      "line": "20012980 00000300 b cond_slots"
+    },
+    "mutexes": {
+      "address": 536949452,
+      "line": "200132cc 00000500 b mutexes"
+    },
+    "condvars": {
+      "address": 536950732,
+      "line": "200137cc 00000100 b condvars"
+    },
+    "thread_slots": {
+      "address": 536950988,
+      "line": "200138cc 00000040 b thread_slots"
+    }
+  },
+  "checks": {
+    "cpp_runtime_data_anchor": true,
+    "cpp_runtime_bss_anchor": true,
+    "domain_lock": true,
+    "sync_lock": true,
+    "thread_lock": true,
+    "threads": true,
+    "mutex_slots": true,
+    "cond_slots": true,
+    "mutexes": true,
+    "condvars": true,
+    "thread_slots": true
+  },
+  "files": {
+    "zephyr.elf": "4914a754c3b475b4f784fce3ee3b843ea6f67790357543cce3a4289a71fd5dcb",
+    "build.log": "905b52fd83c30507dab072d0601a33c8881abcfea69894d826098129e05bf084",
+    "app_smem_aligned.ld": "121ee50624cc6fabe50fcd9cb53d9f6093d34b2d3089b1a639fc8c7240e56617",
+    "zephyr.map": "79edf58f5429ce62170661dd5777e71f2e2235769e1074cd6396535c49a9b8a9",
+    ".config": "dfc5628becf9e39d487cad20a152fbf81230b8c23631212300e07215168360cb",
+    "app_smem_unaligned.ld": "ea5f6c1f372e4ec66108916b8c4d0e65e7ac04961e30cabadfea94bf5a168347",
+    "CMakeCache.txt": "c5bb5178169f6b78f7e4f83066b03e99d2a38bbc80e2886f97a1c286056bc2a2",
+    "symbols.txt": "eeec2faa9d5154b03af114365cbe33b81632034e8288c87a3580595c4caa818c",
+    "app_smem.ld": "56c91adeb585cf35747f27e18cef663c5f82ad88849261d685af72ea93437fb7"
+  }
+}

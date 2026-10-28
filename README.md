@@ -1,6 +1,6 @@
 # Zephyr C++17 线程与同步外部模块
 
-这是一个验证实现，标准库源码和适配器放在独立仓库，通过 Zephyr 的
+标准库源码和适配器放在独立仓库，通过 Zephyr 的
 EXTERNAL_MODULE_LIBCPP 接口接入。编译应用时同时编译 libc++ / libc++abi，
 不会替换 SDK，也不修改编译器安装目录。
 
@@ -8,6 +8,11 @@ EXTERNAL_MODULE_LIBCPP 接口接入。编译应用时同时编译 libc++ / libc+
 condition_variable、call_once、shared_mutex、future / promise / async，
 以及线程正常退出时的 C++ thread_local 析构。应用使用 C++17。
 异常、RTTI、文件系统、iostream 不在这个配置的范围内。
+
+原生分支现已加入真正的 userspace 路径：一个 C++ 应用域内共享运行库和堆，
+线程保持用户态，内核对象通过校验过的系统调用操作。
+设计、安全边界、实验命令及验收记录见[用户态线程与同步说明](docs/userspace.zh-CN.md)。
+QEMU 回归通过不等于你们的硬件、修改版 LLVM 16 已完成产品验证。
 
 ## 两个分支
 
@@ -38,7 +43,8 @@ flowchart TD
 ```
 
 例如创建 std::thread 时，两条路径最终都调用 Zephyr 内核创建线程。
-mutex 也一样：原生分支把内核互斥锁放在 C++ 对象里；
+mutex 也一样：原生分支在 supervisor 配置下把内核互斥锁放在 C++ 对象里；
+userspace 配置下则保存 64 位句柄，真实对象留在受保护的服务中；
 POSIX 分支的 C++ 对象保存 pthread 句柄，再通过 Zephyr 的 POSIX 对象池找内核锁。
 
 POSIX 动态线程池还要求启用 THREAD_MONITOR，原生分支没有这个强制要求；
@@ -77,17 +83,21 @@ LLVM 16 已验证，目标 ABI、TLS 和编译选项仍需用实际工具链确�
   POSIX 分支附带针对本次 upstream 基线的私有实现修复；
   原生分支在适配器内管理这个顺序。
 - **配置影响 ABI。** 原生 mutex 直接包含 Zephyr 内核对象。
+  用户态配置则使用句柄，布局不同。
   本模块按每个应用的配置从源码构建，不能把任意配置生成的静态库混用。
 - **主线程不是 pthread。** POSIX 胶水为原生调用者提供不同的 C++ thread::id，
   这不表示原生线程已完整接管为 POSIX 线程。pthread TSS 和完整采用逻辑没有实现。
-- **当前运行条件。** supervisor 模式、静态链接、正常返回或正常退出。
-  这里的退出清理保证针对模块创建的标准线程；
-  原生 k_thread 或主线程没有自动注册本模块的退出 hook。
-  用户态、动态卸载、取消或外部强制终止时的完整 C++ 清理不在验证范围内。
+- **当前运行条件。** 静态链接，支持 supervisor 或单一 C++ 应用域的 userspace。
+  标准线程正常返回时自动清理；原生根线程在自动对象析构后调用
+  cpp_runtime_thread_cleanup()。强制 abort、fault、动态卸载、取消不能保证清理。
+  故障后需要设备/固件重启，当前不支持原地重置应用域，特权代码不得消费用户共享的运行库状态和应用堆。
 
 两个分支都启用少量 POSIX 时钟功能，供 libc++ 的 chrono 和超时等待使用。
 原生分支不依赖 POSIX_THREADS；“不依赖 pthread”与“完全不使用任何 POSIX API”
 是两个不同范围。本次不扩展独立时间后端。
+
+历史 native/POSIX 性能比较对应加入 userspace 之前的固定提交，
+不能用于推断当前用户态系统调用路径的性能或对象大小。
 
 ## 自己写一个实验
 
@@ -191,6 +201,13 @@ done
 两个补丁分别处理线程生命周期竞态和 C++ 静态初始化宏的类型。
 后者给无符号句柄的 -1 哨兵加上对应类型转换，数值与 ABI 不变。
 POSIX 模块通过链接包装补充语言 TLS 析构顺序；不修改 libc++ 的 pthread 头文件。
+
+## 当前原生回归与历史比较
+
+当前原生开发使用 scripts/validate_native.py，包含普通功能、用户态和生命周期压力套件。
+详细运行方式见 [userspace.zh-CN.md](docs/userspace.zh-CN.md)。
+以下双后端比较命令用于保留的 supervisor 测试与历史比较；
+完整性能复现需固定原生 a44eaa3、POSIX 58dd22a，不能拿两分支继续演进后的 HEAD 当作同一基线。
 
 ## 功能测试与测量
 

@@ -1,0 +1,16 @@
+[
+  {
+    "path": "adapters/userspace_kernel.c",
+    "before": " * into the user partition, or accidentally exposed kernel pools. */",
+    "after": " * into the user partition, or accidentally exposed kernel pools.\n\t\t */",
+    "original_sha256": "cd4784fd61771fbad7decdd316465761ae3b306b0b0465743c31830f898f187a",
+    "final_sha256": "808fd995de9d80d62a4d23ba18f7088a27fdeccb5edeba731c83f8eb46951846"
+  },
+  {
+    "path": "include/cpp_runtime/partition.h",
+    "before": " * Domain registration verifies the archive mapping actually captured both. */",
+    "after": " * Domain registration verifies the archive mapping actually captured both.\n */",
+    "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+    "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170"
+  }
+]

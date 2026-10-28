@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+sample:
+  name: C++ native userspace threading
+tests:
+  sample.cpp.runtime.userspace:
+    filter: CONFIG_ARCH_HAS_USERSPACE
+    platform_allow:
+      - mps2/an385
+      - qemu_riscv32
+    tags:
+      - cpp
+      - userspace
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "C\\+\\+ user caller=1 worker result=42"

@@ -4,10 +4,12 @@ menuconfig CPP_RUNTIME
 	bool "Source-built libc++ thread runtime"
 	depends on CPP
 	select THREAD_LOCAL_STORAGE
+	select TIMEOUT_64BIT
 	help
 	  Build matching libc++ and libc++abi sources with the application's
-	  compiler and configuration. This experimental profile supports C++17
-	  threading and synchronization in supervisor mode.
+	  compiler and configuration. Supports C++17 threading and synchronization.
+	  With USERSPACE, use one explicitly registered C++ application domain;
+	  privileged firmware must not consume the shared C++ runtime or heap.
 
 if CPP_RUNTIME
 

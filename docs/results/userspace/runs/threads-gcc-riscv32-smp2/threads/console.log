@@ -1,0 +1,103 @@
+*** Booting Zephyr OS build v4.4.0-19495-gec98918869ca ***
+RunID started: aed65f9cfa0edecc7639a873ea44ae53
+Running TESTSUITE libcxx_threads
+===================================================================
+START - test_async
+ PASS - test_async in 0.007 seconds
+===================================================================
+START - test_call_once
+ PASS - test_call_once in 0.035 seconds
+===================================================================
+START - test_condition_variable_any
+ PASS - test_condition_variable_any in 0.002 seconds
+===================================================================
+START - test_condition_variable_broadcast
+ PASS - test_condition_variable_broadcast in 0.004 seconds
+===================================================================
+START - test_condition_variable_predicate
+ PASS - test_condition_variable_predicate in 0.002 seconds
+===================================================================
+START - test_condition_variable_timeouts
+ PASS - test_condition_variable_timeouts in 0.120 seconds
+===================================================================
+START - test_detach_reuse
+ PASS - test_detach_reuse in 0.023 seconds
+===================================================================
+START - test_future_promise
+ PASS - test_future_promise in 0.002 seconds
+===================================================================
+START - test_lock_wrappers
+ PASS - test_lock_wrappers in 0.034 seconds
+===================================================================
+START - test_mutex_contention
+ PASS - test_mutex_contention in 0.140 seconds
+===================================================================
+START - test_native_thread_id_move_join
+ PASS - test_native_thread_id_move_join in 0.002 seconds
+===================================================================
+START - test_notify_all_at_thread_exit
+ PASS - test_notify_all_at_thread_exit in 0.002 seconds
+===================================================================
+START - test_recursive_mutex
+ PASS - test_recursive_mutex in 0.003 seconds
+===================================================================
+START - test_recursive_timed_mutex
+ PASS - test_recursive_timed_mutex in 0.041 seconds
+===================================================================
+START - test_shared_mutex
+ PASS - test_shared_mutex in 0.002 seconds
+===================================================================
+START - test_shared_ptr_contention
+ PASS - test_shared_ptr_contention in 0.039 seconds
+===================================================================
+START - test_shared_timed_mutex
+ PASS - test_shared_timed_mutex in 0.038 seconds
+===================================================================
+START - test_sleep_for
+ PASS - test_sleep_for in 0.029 seconds
+===================================================================
+START - test_static_local_initialization
+ PASS - test_static_local_initialization in 0.031 seconds
+===================================================================
+START - test_thread_local_destruction
+ PASS - test_thread_local_destruction in 0.003 seconds
+===================================================================
+START - test_thread_reuse
+ PASS - test_thread_reuse in 0.010 seconds
+===================================================================
+START - test_timed_mutex
+ PASS - test_timed_mutex in 0.036 seconds
+===================================================================
+TESTSUITE libcxx_threads succeeded
+
+------ TESTSUITE SUMMARY START ------
+
+SUITE PASS - 100.00% [libcxx_threads]: pass = 22, fail = 0, skip = 0, total = 22 duration = 0.605 seconds
+ - PASS - [libcxx_threads.test_async] duration = 0.007 seconds
+ - PASS - [libcxx_threads.test_call_once] duration = 0.035 seconds
+ - PASS - [libcxx_threads.test_condition_variable_any] duration = 0.002 seconds
+ - PASS - [libcxx_threads.test_condition_variable_broadcast] duration = 0.004 seconds
+ - PASS - [libcxx_threads.test_condition_variable_predicate] duration = 0.002 seconds
+ - PASS - [libcxx_threads.test_condition_variable_timeouts] duration = 0.120 seconds
+ - PASS - [libcxx_threads.test_detach_reuse] duration = 0.023 seconds
+ - PASS - [libcxx_threads.test_future_promise] duration = 0.002 seconds
+ - PASS - [libcxx_threads.test_lock_wrappers] duration = 0.034 seconds
+ - PASS - [libcxx_threads.test_mutex_contention] duration = 0.140 seconds
+ - PASS - [libcxx_threads.test_native_thread_id_move_join] duration = 0.002 seconds
+ - PASS - [libcxx_threads.test_notify_all_at_thread_exit] duration = 0.002 seconds
+ - PASS - [libcxx_threads.test_recursive_mutex] duration = 0.003 seconds
+ - PASS - [libcxx_threads.test_recursive_timed_mutex] duration = 0.041 seconds
+ - PASS - [libcxx_threads.test_shared_mutex] duration = 0.002 seconds
+ - PASS - [libcxx_threads.test_shared_ptr_contention] duration = 0.039 seconds
+ - PASS - [libcxx_threads.test_shared_timed_mutex] duration = 0.038 seconds
+ - PASS - [libcxx_threads.test_sleep_for] duration = 0.029 seconds
+ - PASS - [libcxx_threads.test_static_local_initialization] duration = 0.031 seconds
+ - PASS - [libcxx_threads.test_thread_local_destruction] duration = 0.003 seconds
+ - PASS - [libcxx_threads.test_thread_reuse] duration = 0.010 seconds
+ - PASS - [libcxx_threads.test_timed_mutex] duration = 0.036 seconds
+
+------ TESTSUITE SUMMARY END ------
+
+===================================================================
+RunID: aed65f9cfa0edecc7639a873ea44ae53
+PROJECT EXECUTION SUCCESSFUL

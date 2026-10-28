@@ -1,0 +1,12 @@
+*** Booting Zephyr OS build v4.4.0-19495-gec98918869ca ***
+FAILFAST heap exhausted after 508 allocations
+libc++ TLS destructor registration failure: -12
+FAILFAST observed abort case=3 user=1
+abort()
+r0/a1:  0x00000004  r1/a2:  0x00000000  r2/a3:  0x00000000
+r3/a4:  0x00000004 r12/ip:  0x00006a9f r14/lr:  0x00001d79
+ xpsr:  0x21000000
+Faulting instruction address (r15/pc): 0x00001d84
+>>> ZEPHYR FATAL ERROR 3: Kernel oops on CPU 0
+Current thread: 0x20002660 (unknown)
+FAILFAST PASS case=3 user=1 abort=1 reason=3

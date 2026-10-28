@@ -1,0 +1,11 @@
+*** Booting Zephyr OS build v4.4.0-19495-gec98918869ca ***
+libc++ synchronization failure: -12
+FAILFAST observed abort case=1 user=1
+abort()
+r0/a1:  0x00000004  r1/a2:  0x00000004  r2/a3:  0x00000000
+r3/a4:  0x20007ee4 r12/ip:  0x00007341 r14/lr:  0x00001c37
+ xpsr:  0x21000000
+Faulting instruction address (r15/pc): 0x00001c42
+>>> ZEPHYR FATAL ERROR 3: Kernel oops on CPU 0
+Current thread: 0x200026c8 (unknown)
+FAILFAST PASS case=1 user=1 abort=1 reason=3

@@ -4,6 +4,7 @@
  */
 
 #include <__external_threading>
+#include <cpp_runtime/thread.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -21,7 +22,6 @@ struct thread_slot {
 	void *arg;
 	bool used;
 	bool detached;
-	bool finished;
 	bool joining;
 };
 
@@ -122,14 +122,8 @@ void thread_entry(void *context, void *, void *)
 	auto *slot = static_cast<thread_slot *>(context);
 
 	(void)slot->entry(slot->arg);
-	run_thread_destructors();
+	cpp_runtime_thread_cleanup();
 
-	int ret = k_mutex_lock(&thread_pool_lock, K_FOREVER);
-
-	__ASSERT_NO_MSG(ret == 0);
-	slot->finished = true;
-	ret = k_mutex_unlock(&thread_pool_lock);
-	__ASSERT_NO_MSG(ret == 0);
 	/* The slot cannot be reused until k_thread_join confirms termination. */
 }
 
@@ -160,6 +154,11 @@ int wait_condvar(std::__libcpp_condvar_t *cond, std::__libcpp_mutex_t *mutex,
 
 } /* namespace */
 
+extern "C" void cpp_runtime_thread_cleanup(void)
+{
+	run_thread_destructors();
+}
+
 extern "C" int __cxa_thread_atexit_impl(void (*destructor)(void *), void *object, void *dso)
 {
 	ARG_UNUSED(dso);
@@ -167,7 +166,8 @@ extern "C" int __cxa_thread_atexit_impl(void (*destructor)(void *), void *object
 	auto *node = static_cast<thread_destructor *>(malloc(sizeof(thread_destructor)));
 
 	if (node == nullptr) {
-		return -1;
+		/* Generated TLS initialization ignores a registration error return. */
+		abort();
 	}
 	node->destructor = destructor;
 	node->object = object;
@@ -392,8 +392,8 @@ int __libcpp_thread_create(__libcpp_thread_t *thread, void *(*entry)(void *), vo
 	for (size_t index = 0; index < ARRAY_SIZE(thread_slots); ++index) {
 		thread_slot &slot = thread_slots[index];
 
-		if (slot.used && slot.detached && slot.finished &&
-		    k_thread_join(&slot.native, K_NO_WAIT) == 0) {
+		/* An aborted thread never reaches its trampoline's normal return. */
+		if (slot.used && slot.detached && k_thread_join(&slot.native, K_NO_WAIT) == 0) {
 			slot.used = false;
 		}
 		if (slot.used) {
@@ -403,7 +403,6 @@ int __libcpp_thread_create(__libcpp_thread_t *thread, void *(*entry)(void *), vo
 		slot.arg = arg;
 		slot.used = true;
 		slot.detached = false;
-		slot.finished = false;
 		slot.joining = false;
 		*thread = k_thread_create(&slot.native, thread_stacks[index],
 					 K_THREAD_STACK_SIZEOF(thread_stacks[index]), thread_entry,
@@ -475,7 +474,7 @@ int __libcpp_thread_detach(__libcpp_thread_t *thread)
 		return EINVAL;
 	}
 	slot->detached = true;
-	if (slot->finished && k_thread_join(&slot->native, K_NO_WAIT) == 0) {
+	if (k_thread_join(&slot->native, K_NO_WAIT) == 0) {
 		slot->used = false;
 	}
 	return -k_mutex_unlock(&thread_pool_lock);
@@ -491,11 +490,25 @@ void __libcpp_thread_sleep_for(const chrono::nanoseconds &duration)
 	if (duration.count() <= 0) {
 		return;
 	}
-	k_timepoint_t deadline = sys_timepoint_calc(K_NSEC(duration.count()));
-	k_timeout_t remaining;
+	/*
+	 * Uptime is rounded down to a tick edge. Budget one extra tick so an
+	 * external k_wakeup at the apparent deadline cannot end a partial tick
+	 * early. Relative k_sleep does its own alignment, but an early wakeup
+	 * bypasses that timeout; the elapsed-time check needs its own margin.
+	 */
+	const uint64_t start = static_cast<uint64_t>(k_uptime_ticks());
+	const uint64_t ticks = k_ns_to_ticks_ceil64(duration.count()) + 1U;
+	const uint64_t chunk = k_sec_to_ticks_ceil64(86400);
 
-	while (!K_TIMEOUT_EQ(remaining = sys_timepoint_timeout(deadline), K_NO_WAIT)) {
-		(void)k_sleep(remaining);
+	for (;;) {
+		uint64_t elapsed = static_cast<uint64_t>(k_uptime_ticks()) - start;
+
+		if (elapsed >= ticks) {
+			break;
+		}
+		uint64_t remaining = ticks - elapsed;
+
+		(void)k_sleep(K_TICKS(static_cast<k_ticks_t>(remaining < chunk ? remaining : chunk)));
 	}
 }
 

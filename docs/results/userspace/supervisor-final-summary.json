@@ -1,0 +1,256 @@
+{
+  "status": "passed",
+  "configurations": 12,
+  "case_executions": 186,
+  "audited_utc": "2026-10-28T14:45:18.091748+00:00",
+  "kernel_base": "/home/linux/zephyrproject/zephyr-cpp-userspace-kernel",
+  "kernel_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+  "kernel_clean": true,
+  "all_recorded_input_hashes_match_final_sources": false,
+  "results": [
+    {
+      "suite": "threads",
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "passed": 22,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-gcc-arm/twister.json",
+      "report_sha256": "e9603aec4008a8acdee41d91500c049dd5bba4c110e569cc8e2e0fe8aa8825d9",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-gcc-arm/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "threads",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "passed": 22,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-gcc-riscv32-up/twister.json",
+      "report_sha256": "91d93e7f88ca5a92e8111da750921ce17d8443579a831378e8d57cbcf76505cb",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-gcc-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "threads",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "passed": 22,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-gcc-riscv32-smp2/twister.json",
+      "report_sha256": "2b2989a90e9dcb886f1378b848b3a39e6e0a4f3d8aa704fdd98adad76255bb3b",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-gcc-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "threads",
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "passed": 22,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-arm/twister.json",
+      "report_sha256": "5dd627dee46ed2bde2fde45a23f6b085521398383993c7a9e963bfdfa9f1c26c",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-arm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "threads",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "passed": 22,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-riscv32-up/twister.json",
+      "report_sha256": "3150cff6fc6defaed508ff0122c182db4f98dc25a6350424dfb1f9b685f327ed",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "threads",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "passed": 22,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-riscv32-smp2/twister.json",
+      "report_sha256": "a41ef576e984217a26306a335dd50600d1018fa0283082e6e347071c2dda99e4",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/threads-llvm-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/threads/cpp.runtime.threads/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-threads-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "passed": 9,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-gcc-arm/twister.json",
+      "report_sha256": "a7a404dd19c6c6b885a81e9edb376b56a6e89d732c66398c2aa66ddb823555a2",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-gcc-arm/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "passed": 9,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-gcc-riscv32-up/twister.json",
+      "report_sha256": "6f6facb6a32424ade6ba4414e992998f7975ca3213be798ee000132ae30884b0",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-gcc-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "passed": 9,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-gcc-riscv32-smp2/twister.json",
+      "report_sha256": "73a445b61a480e2d3d3245aebc0391d81a969fb76e05098df4c4a43769284110",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-gcc-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "passed": 9,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-llvm-arm/twister.json",
+      "report_sha256": "228ce61b520ff945de6eb592e210f0dfc89e8c2e9f0761e13e467443aab65e95",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-llvm-arm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "passed": 9,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-llvm-riscv32-up/twister.json",
+      "report_sha256": "241f26bcf11e2df61a90729761e88d7f2b3d3af4d092bf3e068fc5f4a7a14de4",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-llvm-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/native-matrix-summary.json"
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "passed": 9,
+      "status": "passed",
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-llvm-riscv32-smp2/twister.json",
+      "report_sha256": "7efd8cf690db46625e5b55e8bcec094fbaa2ce539d4e614b72b59b251fa098a2",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/thread_stress-llvm-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/thread_stress/cpp.runtime.thread_stress/zephyr/.config",
+      "source_manifest": "/home/linux/cpp-runtime-userspace-build/matrix-stress-final/native-matrix-summary.json"
+    }
+  ],
+  "all_compiled_input_hashes_match_final_sources": true,
+  "late_uncompiled_comment_deltas": [
+    {
+      "suite": "threads",
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "threads",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "threads",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "threads",
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "threads",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "threads",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    },
+    {
+      "suite": "thread_stress",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "path": "include/cpp_runtime/partition.h",
+      "original_sha256": "3a91486efce58fa4cedd0cde10a5e330f92ab251775551c984f3d730de2180ca",
+      "final_sha256": "d7ccfd6d5ff54d7f38ba23e373fabd751215cd7f287fa13bad6b1f1222dbe170",
+      "classification": "Uncompiled userspace header; comment-only delta independently reconstructed to the exact original SHA-256."
+    }
+  ],
+  "style_delta_manifest": "/home/linux/cpp-runtime-userspace-build/style-only-deltas.json"
+}

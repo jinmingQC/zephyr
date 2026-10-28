@@ -1,0 +1,15 @@
+{
+  "status": "expected_failure_confirmed",
+  "included_in_positive_totals": false,
+  "failed_case": "cpp.runtime.thread_stress.libcxx_thread_stress.sleep_for_subtick_wakeup_does_not_return_early",
+  "other_cases_passed": 8,
+  "skipped": 0,
+  "cause": "Removing only the one-tick alignment margin causes the cycle-measured sleep_for early-return assertion to fail.",
+  "report": "/home/linux/cpp-runtime-userspace-build/sleep-negative-control-run/thread_stress-gcc-arm/twister.json",
+  "report_sha256": "266a5e2c83549c763d820c6dd921fd04bd0b2ce3b146a093eb540dc248dba597",
+  "console": "/home/linux/cpp-runtime-userspace-build/sleep-negative-control-run/thread_stress-gcc-arm/mps2_an385/zephyr_gnu/cpp-runtime-userspace-build/sleep-negative-control-module/tests/thread_stress/cpp.runtime.thread_stress/handler.log",
+  "console_sha256": "653e18d57d3ffb3f4fc3b5e607a0ea44d6363ed3031af4197817727955e1db3f",
+  "manifest": "/home/linux/cpp-runtime-userspace-build/sleep-negative-control-manifest.json",
+  "unchanged_test_source_sha256": "f5654c0dd0561014f8b3c794c218475836f46046e71b38cc0e7e937af9290a2e",
+  "audited_utc": "2026-10-28T14:45:17.981175+00:00"
+}

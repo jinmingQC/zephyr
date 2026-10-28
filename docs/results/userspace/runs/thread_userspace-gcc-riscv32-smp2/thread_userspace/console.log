@@ -1,0 +1,108 @@
+*** Booting Zephyr OS build v4.4.0-19495-gec98918869ca ***
+RunID started: b9678be0018751f540223718b6bf28d3
+Running TESTSUITE libcxx_userspace
+===================================================================
+START - test_bad_sync_arguments
+E: syscall read_handle failed check: Memory region 0x800518c8 (size 8) write access denied
+ PASS - test_bad_sync_arguments in 0.025 seconds
+===================================================================
+START - test_busy_mutex_cannot_be_destroyed
+ PASS - test_busy_mutex_cannot_be_destroyed in 0.028 seconds
+===================================================================
+START - test_call_once
+ PASS - test_call_once in 0.141 seconds
+===================================================================
+START - test_condition_variable_timeout_and_notification
+ PASS - test_condition_variable_timeout_and_notification in 0.095 seconds
+===================================================================
+START - test_forged_and_stale_sync_handles
+ PASS - test_forged_and_stale_sync_handles in 0.014 seconds
+===================================================================
+START - test_future_and_async
+ PASS - test_future_and_async in 0.074 seconds
+===================================================================
+START - test_invalid_and_self_join
+ PASS - test_invalid_and_self_join in 0.024 seconds
+===================================================================
+START - test_join_and_detach_reuse
+ PASS - test_join_and_detach_reuse in 0.425 seconds
+===================================================================
+START - test_mutex_created_by_sibling
+ PASS - test_mutex_created_by_sibling in 0.503 seconds
+===================================================================
+START - test_notify_at_exit_follows_tls_destructors
+ PASS - test_notify_at_exit_follows_tls_destructors in 0.026 seconds
+===================================================================
+START - test_recursive_and_timed_mutex
+ PASS - test_recursive_and_timed_mutex in 0.170 seconds
+===================================================================
+START - test_shared_mutex
+ PASS - test_shared_mutex in 0.064 seconds
+===================================================================
+START - test_sleep_fractional_tick_early_wakeup
+ PASS - test_sleep_fractional_tick_early_wakeup in 0.319 seconds
+===================================================================
+START - test_sleep_survives_early_wakeup
+ PASS - test_sleep_survives_early_wakeup in 0.248 seconds
+===================================================================
+START - test_static_local_initialization
+ PASS - test_static_local_initialization in 0.131 seconds
+===================================================================
+START - test_sync_pool_exhaustion_and_recovery
+ PASS - test_sync_pool_exhaustion_and_recovery in 0.026 seconds
+===================================================================
+START - test_synchronization_storage_reuse
+ PASS - test_synchronization_storage_reuse in 0.502 seconds
+===================================================================
+START - test_thread_pool_exhaustion_and_recovery
+ PASS - test_thread_pool_exhaustion_and_recovery in 0.114 seconds
+===================================================================
+START - test_tls_destructors_before_join
+ PASS - test_tls_destructors_before_join in 0.010 seconds
+===================================================================
+START - test_unregistered_domain_is_denied
+ PASS - test_unregistered_domain_is_denied in 0.003 seconds
+===================================================================
+START - test_user_child_cannot_raise_priority
+ PASS - test_user_child_cannot_raise_priority in 0.010 seconds
+===================================================================
+START - test_user_mode_and_domain_inheritance
+ PASS - test_user_mode_and_domain_inheritance in 0.007 seconds
+===================================================================
+START - test_waiting_condvar_cannot_be_destroyed
+ PASS - test_waiting_condvar_cannot_be_destroyed in 0.079 seconds
+===================================================================
+TESTSUITE libcxx_userspace succeeded
+
+------ TESTSUITE SUMMARY START ------
+
+SUITE PASS - 100.00% [libcxx_userspace]: pass = 23, fail = 0, skip = 0, total = 23 duration = 3.038 seconds
+ - PASS - [libcxx_userspace.test_bad_sync_arguments] duration = 0.025 seconds
+ - PASS - [libcxx_userspace.test_busy_mutex_cannot_be_destroyed] duration = 0.028 seconds
+ - PASS - [libcxx_userspace.test_call_once] duration = 0.141 seconds
+ - PASS - [libcxx_userspace.test_condition_variable_timeout_and_notification] duration = 0.095 seconds
+ - PASS - [libcxx_userspace.test_forged_and_stale_sync_handles] duration = 0.014 seconds
+ - PASS - [libcxx_userspace.test_future_and_async] duration = 0.074 seconds
+ - PASS - [libcxx_userspace.test_invalid_and_self_join] duration = 0.024 seconds
+ - PASS - [libcxx_userspace.test_join_and_detach_reuse] duration = 0.425 seconds
+ - PASS - [libcxx_userspace.test_mutex_created_by_sibling] duration = 0.503 seconds
+ - PASS - [libcxx_userspace.test_notify_at_exit_follows_tls_destructors] duration = 0.026 seconds
+ - PASS - [libcxx_userspace.test_recursive_and_timed_mutex] duration = 0.170 seconds
+ - PASS - [libcxx_userspace.test_shared_mutex] duration = 0.064 seconds
+ - PASS - [libcxx_userspace.test_sleep_fractional_tick_early_wakeup] duration = 0.319 seconds
+ - PASS - [libcxx_userspace.test_sleep_survives_early_wakeup] duration = 0.248 seconds
+ - PASS - [libcxx_userspace.test_static_local_initialization] duration = 0.131 seconds
+ - PASS - [libcxx_userspace.test_sync_pool_exhaustion_and_recovery] duration = 0.026 seconds
+ - PASS - [libcxx_userspace.test_synchronization_storage_reuse] duration = 0.502 seconds
+ - PASS - [libcxx_userspace.test_thread_pool_exhaustion_and_recovery] duration = 0.114 seconds
+ - PASS - [libcxx_userspace.test_tls_destructors_before_join] duration = 0.010 seconds
+ - PASS - [libcxx_userspace.test_unregistered_domain_is_denied] duration = 0.003 seconds
+ - PASS - [libcxx_userspace.test_user_child_cannot_raise_priority] duration = 0.010 seconds
+ - PASS - [libcxx_userspace.test_user_mode_and_domain_inheritance] duration = 0.007 seconds
+ - PASS - [libcxx_userspace.test_waiting_condvar_cannot_be_destroyed] duration = 0.079 seconds
+
+------ TESTSUITE SUMMARY END ------
+
+===================================================================
+RunID: b9678be0018751f540223718b6bf28d3
+PROJECT EXECUTION SUCCESSFUL

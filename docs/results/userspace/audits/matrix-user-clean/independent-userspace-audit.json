@@ -1,0 +1,90 @@
+{
+  "passed": 138,
+  "skipped": 0,
+  "failed": 0,
+  "configurations": [
+    {
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "passed": 23,
+      "guard": "n",
+      "tick_hz": "100",
+      "compiler_identification": [
+        "GNU 14.3.0"
+      ],
+      "lld_internal_orphan_warnings": 0,
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-gcc-arm/twister.json",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-gcc-arm/mps2_an385/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config"
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "passed": 23,
+      "guard": "y",
+      "tick_hz": "100",
+      "compiler_identification": [
+        "GNU 14.3.0"
+      ],
+      "lld_internal_orphan_warnings": 0,
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-gcc-riscv32-up/twister.json",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-gcc-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config"
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "passed": 23,
+      "guard": "y",
+      "tick_hz": "100",
+      "compiler_identification": [
+        "GNU 14.3.0"
+      ],
+      "lld_internal_orphan_warnings": 0,
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-gcc-riscv32-smp2/twister.json",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-gcc-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_gnu/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config"
+    },
+    {
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "passed": 23,
+      "guard": "n",
+      "tick_hz": "100",
+      "compiler_identification": [
+        "Clang 19.1.7"
+      ],
+      "lld_internal_orphan_warnings": 9,
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-arm/twister.json",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-arm/mps2_an385/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config"
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "passed": 23,
+      "guard": "y",
+      "tick_hz": "100",
+      "compiler_identification": [
+        "Clang 19.1.7"
+      ],
+      "lld_internal_orphan_warnings": 9,
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-riscv32-up/twister.json",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-riscv32-up/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config"
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "passed": 23,
+      "guard": "y",
+      "tick_hz": "100",
+      "compiler_identification": [
+        "Clang 19.1.7"
+      ],
+      "lld_internal_orphan_warnings": 9,
+      "report": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-riscv32-smp2/twister.json",
+      "config": "/home/linux/cpp-runtime-userspace-build/matrix-user-clean/thread_userspace-llvm-riscv32-smp2/qemu_riscv32_qemu_virt_riscv32/zephyr_llvm/zephyr-cpp-runtime/tests/thread_userspace/cpp.runtime.thread_userspace/zephyr/.config"
+    }
+  ],
+  "same_23_cases": true,
+  "source_hashes_unchanged": true,
+  "hashed_files": 24,
+  "kernel_commit": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+  "kernel_clean": true
+}

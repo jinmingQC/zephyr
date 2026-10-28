@@ -1,5 +1,9 @@
 # 原生与 POSIX 外部模块：线程同步 PoC 对比
 
+> 历史比较快照：原生提交 a44eaa3、POSIX 提交 58dd22a，均为 supervisor-only。
+> 当前原生分支已加入 userspace，下面的行数、对象尺寸、镜像和性能数据不代表新路径。
+> 复现历史比较请使用这两个固定提交；当前用户态设计和验证见 [userspace.zh-CN.md](userspace.zh-CN.md)。
+
 在目前不需要复用 POSIX 应用的前提下，建议优先采用**原生外部模块**。
 它在本次六个编译器/平台组合中都具有较小的镜像和静态可写 RAM，
 直接使用 Zephyr 内核接口，也不要求修改 Zephyr 的 pthread 实现。

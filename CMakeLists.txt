@@ -4,6 +4,12 @@
 # Build the runtimes with the application's target flags and C library.
 # Nothing in the compiler installation or its sysroot is modified.
 include(FetchContent)
+get_filename_component(cpp_runtime_linker_name "${CMAKE_LINKER}" NAME)
+if(CONFIG_CPP_RUNTIME AND CONFIG_USERSPACE AND
+    cpp_runtime_linker_name MATCHES "^(ld[.])?lld([.]exe)?$")
+  include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/userspace_lld.cmake")
+endif()
+
 
 if(NOT CONFIG_CPP_RUNTIME)
   return()
@@ -28,8 +34,11 @@ if(NOT CONFIG_POSIX_TIMERS OR NOT CONFIG_POSIX_MONOTONIC_CLOCK)
   message(FATAL_ERROR "The thread-only profile requires POSIX_TIMERS and POSIX_MONOTONIC_CLOCK")
 endif()
 
-if(CONFIG_USERSPACE)
-  message(FATAL_ERROR "The libc++ thread PoC currently requires supervisor-only builds")
+if(CONFIG_USERSPACE AND NOT CONFIG_CPP_RUNTIME_NATIVE)
+  message(FATAL_ERROR "Userspace requires the native runtime backend")
+endif()
+if(NOT CONFIG_TIMEOUT_64BIT)
+  message(FATAL_ERROR "The C++ runtime requires TIMEOUT_64BIT for long timed waits")
 endif()
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "13")
     OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "16"))
@@ -100,6 +109,14 @@ configure_file("${LIBCXX_SOURCE_DIR}/vendor/llvm/default_assertion_handler.in"
 # -nostdinc++ is needed with GCC as well as Clang. Only C++ translation
 # units see libc++'s headers, before the toolchain's C library headers.
 zephyr_compile_options($<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
+if(CONFIG_USERSPACE AND CONFIG_RISCV)
+  # Upstream architecture header lacks C linkage on this baseline.
+  zephyr_compile_options(
+    $<$<COMPILE_LANGUAGE:CXX>:-include>
+    $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/include/cpp_runtime/arch_compat.h>
+  )
+endif()
+
 foreach(include_dir
     "${CMAKE_CURRENT_BINARY_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -113,9 +130,24 @@ endforeach()
 
 zephyr_linker_sources(ROM_SECTIONS libcxx.ld)
 
+# The syscall service is a separate archive. Never map its data into userspace.
+if(CONFIG_USERSPACE)
+  zephyr_include_directories(include)
+  zephyr_syscall_header(${CMAKE_CURRENT_SOURCE_DIR}/include/cpp_runtime/native_syscalls.h)
+  zephyr_library_named(cpp_runtime_kernel)
+  zephyr_library_sources(adapters/userspace_kernel.c)
+endif()
+
 zephyr_library_named(libcxx_source_runtime)
+if(CONFIG_USERSPACE)
+  zephyr_library_app_memory(cpp_runtime_partition)
+endif()
 if(CONFIG_CPP_RUNTIME_NATIVE)
-  zephyr_library_sources(adapters/native_threading.cpp)
+  if(CONFIG_USERSPACE)
+    zephyr_library_sources(adapters/userspace_threading.cpp)
+  else()
+    zephyr_library_sources(adapters/native_threading.cpp)
+  endif()
 else()
   zephyr_library_sources(adapters/posix_runtime.c)
   zephyr_link_libraries(

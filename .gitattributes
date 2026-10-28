@@ -1,3 +1,6 @@
 # Preserve captured console bytes and valid nested patch context.
 docs/results/benchmark/raw-logs/*.log -text -whitespace
 patches/zephyr/*.patch -text -whitespace
+
+# Preserve byte-for-byte generated linker-script evidence, including upstream whitespace.
+docs/results/userspace/llvm-layout/*.ld -text -whitespace

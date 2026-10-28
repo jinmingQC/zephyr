@@ -19,15 +19,23 @@ using __libcpp_timespec_t = ::timespec;
 
 /* Zero initialization permits constexpr std::mutex construction. */
 struct __libcpp_mutex_t {
+#ifdef CONFIG_USERSPACE
+	uint64_t handle;
+#else
 	struct k_mutex native;
 	atomic_t initialized;
+#endif
 };
 
 using __libcpp_recursive_mutex_t = __libcpp_mutex_t;
 
 struct __libcpp_condvar_t {
+#ifdef CONFIG_USERSPACE
+	uint64_t handle;
+#else
 	struct k_condvar native;
 	atomic_t initialized;
+#endif
 };
 
 using __libcpp_exec_once_flag = atomic_t;
