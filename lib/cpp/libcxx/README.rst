@@ -4,6 +4,9 @@
 libc++ C++17 proof of concept
 ############################
 
+For a Chinese introduction, architecture diagrams and hands-on experiments,
+see `the Chinese guide <README.zh-CN.md>`_.
+
 This optional library configuration builds libc++ and libc++abi 19.1.7 with
 Zephyr's selected target compiler and picolibc. Applications use C++17; the
 runtime sources use C++23, as required by LLVM 19. GCC 14 or newer and Clang 17
@@ -128,9 +131,10 @@ heap sizes must be adjusted for the application. Thread-specific keys are
 internal runtime resources, separate from language-level ``thread_local``
 objects.
 
-A joined thread releases its pool slot. An exited detached thread is
-reclaimed when a later thread is created, after the kernel confirms that it
-has terminated. Merely returning from the application callback does not
+A joined thread releases its pool slot. Detaching an already-terminated
+thread can also release its slot immediately. Otherwise an exited detached
+thread is reclaimed when a later thread is created, after the kernel
+confirms that it has terminated. Merely returning from the application callback does not
 permit immediate stack reuse. Exceeding the thread pool or allocation limits
 raises ``std::system_error`` or ``std::bad_alloc`` when exceptions are enabled;
 without exceptions it terminates the application.
