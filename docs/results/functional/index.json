@@ -1,0 +1,428 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-10-28T11:37:55.310162+00:00",
+  "summary": {
+    "cells": 12,
+    "cases_per_cell": 22,
+    "passed_cases": 264,
+    "failed_cases": 0,
+    "skipped_cases": 0
+  },
+  "scope": "C++17 threading/synchronization; exceptions and RTTI disabled",
+  "libcxx_release": "18.1.8",
+  "modules": {
+    "native": "/home/linux/zephyr-cpp-runtime",
+    "posix": "/home/linux/zephyr-cpp-runtime-posix"
+  },
+  "collector": {
+    "path": "scripts/collect_functional.py",
+    "sha256": "675285fa928c6bc39a082b9ad3be6680e39cef472898edc91425286496aa2cd2"
+  },
+  "shared_test_sha256": {
+    "tests/threads/src/main.cpp": "aac38072a672517f2881e10ea5d3d26e86ebf6d642e3f3f36d6e5425b62168fd",
+    "tests/threads/prj.conf": "4c3acd79f7178e39c98760f18006ed8f24c98d2f1e307fb9f50800c1b11855f0",
+    "tests/threads/smp2.conf": "b4faa33273bbd79f75c83d06a111febd17d3989b31bcbc817debdd62eff56216",
+    "tests/threads/CMakeLists.txt": "fe019dbd47e30c307d6a1c387b4a80abca36308be1084eaa1dc5afe4b61ea6e6",
+    "tests/threads/tests.yaml": "6a92202277a2a86145aee72e076a37fcbd234015fb0853c7ca397ae9d63897c2"
+  },
+  "validator_sha256": "376aa8005b3d77b185e8e5ce70d8597e11a0618b97e715b5eb0ed9e1a107ccdf",
+  "final_common_cmake": {
+    "path": "CMakeLists.txt",
+    "sha256": "b9f229951e92118658ce881ffa775635c74819ea4e978bab24ea590d83f5df64",
+    "post_matrix_change": "Final prerequisite fatal checks were added after validation. The checks verify one backend, C++17 or newer, and clock prerequisites; runtime sources and compiler flags did not change. No extra build/QEMU run was made for these checks-only changes."
+  },
+  "kernel": {
+    "source_path": "/home/linux/zephyrproject/zephyr-cpp-module-kernel",
+    "base_commit": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+    "prerequisite_patches": [
+      {
+        "path_on_posix_branch": "patches/zephyr/0001-posix-thread-lifetime.patch",
+        "source_path": "/home/linux/zephyr-cpp-runtime-posix/patches/zephyr/0001-posix-thread-lifetime.patch",
+        "sha256": "1bb0d21a14636e434f9b3d2c8e525ed5ba6b3e5f777ab8385b2b5296a695aa0b",
+        "required_by_backend": "posix",
+        "reverse_apply_check_passed": true
+      },
+      {
+        "path_on_posix_branch": "patches/zephyr/0002-posix-cxx-initializers.patch",
+        "source_path": "/home/linux/zephyr-cpp-runtime-posix/patches/zephyr/0002-posix-cxx-initializers.patch",
+        "sha256": "2181403c2d4330e2479510446be1c01099b5fd4ec23a84bbd99de8846d94bb14",
+        "required_by_backend": "posix",
+        "reverse_apply_check_passed": true
+      }
+    ],
+    "current_modified_file_sha256": {
+      "include/zephyr/posix/pthread.h": "50073e4702af48c27f056fe94f06aba0424d95c1213c3e4b956082fef7804a8f",
+      "subsys/portability/posix/options/posix_internal.h": "7636613ab5c70bcb73eb717b190013cee0ee757ebb2fe90015434b86d027f984",
+      "subsys/portability/posix/options/pthread.c": "103ba726efd268b89b07ea037bbee0ebb60bf5bf637c9f7da2db5946015c0375"
+    },
+    "native_note": "Native builds do not enable CONFIG_POSIX_THREADS. The two patches are POSIX prerequisites; the shared kernel worktree contains them, but they do not change the native backend's compiled pthread code."
+  },
+  "cells": [
+    {
+      "backend": "native",
+      "compiler": "gcc",
+      "platform": "arm",
+      "twister_platform": "mps2/an385",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/native-gcc-arm.twister.json",
+      "report_sha256": "9b8e6c4040b485b70799cf5e706626eed1eb933414214f8319e2c880245e53cb",
+      "configuration": "configs/native-gcc-arm.config.json",
+      "configuration_sha256": "cb38a766813f164968fcf9fcb0c88a14c19e2a3b764e59496a91f3718af9a879",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/native-gnu-up/twister.json",
+      "source_report_sha256": "9326097531e5acf6e212d7d21afa88d578d8e088c7d4e974773528be2f7ffba9",
+      "source_report_suite_count": 2,
+      "report_extraction": "One of two suites selected; original environment and suite fields retained",
+      "twister_retries": 1,
+      "report_run_date": "2026-10-28T11:16:49+00:00",
+      "build": {
+        "variant": "zephyr/gnu",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++",
+        "version_banner": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "native",
+      "compiler": "gcc",
+      "platform": "riscv32-up",
+      "twister_platform": "qemu_riscv32/qemu_virt_riscv32",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/native-gcc-riscv32-up.twister.json",
+      "report_sha256": "092df26714a43e509cc5ab4bf3234d9a22302910be08f1e7b4334e29d602144e",
+      "configuration": "configs/native-gcc-riscv32-up.config.json",
+      "configuration_sha256": "81e0550a7086a4ed407bbaef66d33fcd8d176762cc7283e6afa9c6bc9546d666",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/native-gnu-up/twister.json",
+      "source_report_sha256": "9326097531e5acf6e212d7d21afa88d578d8e088c7d4e974773528be2f7ffba9",
+      "source_report_suite_count": 2,
+      "report_extraction": "One of two suites selected; original environment and suite fields retained",
+      "twister_retries": 1,
+      "report_run_date": "2026-10-28T11:16:49+00:00",
+      "build": {
+        "variant": "zephyr/gnu",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-gcc",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+        "version_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "native",
+      "compiler": "gcc",
+      "platform": "riscv32-smp2",
+      "twister_platform": "qemu_riscv32/qemu_virt_riscv32",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/native-gcc-riscv32-smp2.twister.json",
+      "report_sha256": "cd5557d5dd06ae3783ca59b4461f5444e4263ed03ba5e0fc24e1ebf5d03654ee",
+      "configuration": "configs/native-gcc-riscv32-smp2.config.json",
+      "configuration_sha256": "56db063c1442b8671a8bcfb8b58b0fb7e99eec476fb38541189504f2798797fa",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/native-gcc-smp-functional/native-gcc-riscv32-smp2/twister.json",
+      "source_report_sha256": "cd5557d5dd06ae3783ca59b4461f5444e4263ed03ba5e0fc24e1ebf5d03654ee",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:21:24+00:00",
+      "build": {
+        "variant": "zephyr/gnu",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-gcc",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+        "version_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "native",
+      "compiler": "llvm",
+      "platform": "arm",
+      "twister_platform": "mps2/an385",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/native-llvm-arm.twister.json",
+      "report_sha256": "aa0ef320cb11f9cb08c937c3e391a078d10595f89b249634066ecc0fa227e423",
+      "configuration": "configs/native-llvm-arm.config.json",
+      "configuration_sha256": "0adcbea2597a5d1805bc5a77b63acc8f3df6369a3db56b643cb607a826808399",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/native-llvm-functional/native-llvm-arm/twister.json",
+      "source_report_sha256": "aa0ef320cb11f9cb08c937c3e391a078d10595f89b249634066ecc0fa227e423",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:19:05+00:00",
+      "build": {
+        "variant": "zephyr/llvm",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+        "version_banner": "clang version 19.1.7",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "native",
+      "compiler": "llvm",
+      "platform": "riscv32-up",
+      "twister_platform": "qemu_riscv32/qemu_virt_riscv32",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/native-llvm-riscv32-up.twister.json",
+      "report_sha256": "ee210d2bb3c8ea8475edb3cab7421656941caa767fcd9652799961ee6abb1539",
+      "configuration": "configs/native-llvm-riscv32-up.config.json",
+      "configuration_sha256": "e8c997a054258d4efe7ffeec4602cffb9afd73e06aad6c8cc586b0274eb41bb3",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/native-llvm-functional/native-llvm-riscv32-up/twister.json",
+      "source_report_sha256": "ee210d2bb3c8ea8475edb3cab7421656941caa767fcd9652799961ee6abb1539",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:19:53+00:00",
+      "build": {
+        "variant": "zephyr/llvm",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+        "version_banner": "clang version 19.1.7",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "native",
+      "compiler": "llvm",
+      "platform": "riscv32-smp2",
+      "twister_platform": "qemu_riscv32/qemu_virt_riscv32",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/native-llvm-riscv32-smp2.twister.json",
+      "report_sha256": "2363c8d38bacf8f435eac48b9ddc444943daa6970ed4799fb0d57c39815f3db4",
+      "configuration": "configs/native-llvm-riscv32-smp2.config.json",
+      "configuration_sha256": "08157a1912b4753cf68cd3dc28d064611c606a0ece37b00dab8d101c82ec1892",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/native-llvm-functional/native-llvm-riscv32-smp2/twister.json",
+      "source_report_sha256": "2363c8d38bacf8f435eac48b9ddc444943daa6970ed4799fb0d57c39815f3db4",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:20:31+00:00",
+      "build": {
+        "variant": "zephyr/llvm",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+        "version_banner": "clang version 19.1.7",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "posix",
+      "compiler": "gcc",
+      "platform": "arm",
+      "twister_platform": "mps2/an385",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/posix-gcc-arm.twister.json",
+      "report_sha256": "41d9dcd4023c7d55f1dbc66412ddca99019915e0fec253f6018a3b8b6c181f08",
+      "configuration": "configs/posix-gcc-arm.config.json",
+      "configuration_sha256": "8da15453f0f76f7e5e704c8a912c69662908509c4e91b0f43451ad73192b922a",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/posix-functional/posix-gcc-arm/twister.json",
+      "source_report_sha256": "41d9dcd4023c7d55f1dbc66412ddca99019915e0fec253f6018a3b8b6c181f08",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:26:34+00:00",
+      "build": {
+        "variant": "zephyr/gnu",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++",
+        "version_banner": "arm-zephyr-eabi-g++ (Zephyr SDK 1.0.1) 14.3.0",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "posix",
+      "compiler": "gcc",
+      "platform": "riscv32-up",
+      "twister_platform": "qemu_riscv32/qemu_virt_riscv32",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/posix-gcc-riscv32-up.twister.json",
+      "report_sha256": "3221bdd5c2154dd3b9359c17f58684f5e2905d407289bf6ed11775a6090cafc2",
+      "configuration": "configs/posix-gcc-riscv32-up.config.json",
+      "configuration_sha256": "ff7934051b70d59b9ed4ec9fdc0d7d12eb7e6d088f7dfb153cd46928b691fa02",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/posix-functional/posix-gcc-riscv32-up/twister.json",
+      "source_report_sha256": "3221bdd5c2154dd3b9359c17f58684f5e2905d407289bf6ed11775a6090cafc2",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:27:28+00:00",
+      "build": {
+        "variant": "zephyr/gnu",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-gcc",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+        "version_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "posix",
+      "compiler": "gcc",
+      "platform": "riscv32-smp2",
+      "twister_platform": "qemu_riscv32/qemu_virt_riscv32",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/posix-gcc-riscv32-smp2.twister.json",
+      "report_sha256": "45ceafd334f3fcd7528a91f3565b448001c3ae3169d3f4d3d170ea18140cfe88",
+      "configuration": "configs/posix-gcc-riscv32-smp2.config.json",
+      "configuration_sha256": "a025bd10ad42809ed0c2ba0499359d78500c459682ee0f378ca117fd0981cf09",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/posix-functional/posix-gcc-riscv32-smp2/twister.json",
+      "source_report_sha256": "45ceafd334f3fcd7528a91f3565b448001c3ae3169d3f4d3d170ea18140cfe88",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:28:20+00:00",
+      "build": {
+        "variant": "zephyr/gnu",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-gcc",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/gnu/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-g++",
+        "version_banner": "riscv64-zephyr-elf-g++ (Zephyr SDK 1.0.1) 14.3.0",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "posix",
+      "compiler": "llvm",
+      "platform": "arm",
+      "twister_platform": "mps2/an385",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/posix-llvm-arm.twister.json",
+      "report_sha256": "97280ddb08a503aa5022bc8f756596d9f7bece8d200132a117e9f046c52b1fc4",
+      "configuration": "configs/posix-llvm-arm.config.json",
+      "configuration_sha256": "50214926780ad4c43587dc22393ab34545f309ed825dddec96b4a4ae9646e956",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/posix-functional/posix-llvm-arm/twister.json",
+      "source_report_sha256": "97280ddb08a503aa5022bc8f756596d9f7bece8d200132a117e9f046c52b1fc4",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:29:15+00:00",
+      "build": {
+        "variant": "zephyr/llvm",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+        "version_banner": "clang version 19.1.7",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "posix",
+      "compiler": "llvm",
+      "platform": "riscv32-up",
+      "twister_platform": "qemu_riscv32/qemu_virt_riscv32",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/posix-llvm-riscv32-up.twister.json",
+      "report_sha256": "b6aecd88466517933838cd4506a36ca2b53df359b1dc2de410b781bfe35f2680",
+      "configuration": "configs/posix-llvm-riscv32-up.config.json",
+      "configuration_sha256": "b9bdd043f3a98e86c0efafc2672e5727a371629fc5c9f2baee8e50fe3630d0e6",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/posix-functional/posix-llvm-riscv32-up/twister.json",
+      "source_report_sha256": "b6aecd88466517933838cd4506a36ca2b53df359b1dc2de410b781bfe35f2680",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:30:03+00:00",
+      "build": {
+        "variant": "zephyr/llvm",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+        "version_banner": "clang version 19.1.7",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    },
+    {
+      "backend": "posix",
+      "compiler": "llvm",
+      "platform": "riscv32-smp2",
+      "twister_platform": "qemu_riscv32/qemu_virt_riscv32",
+      "status": "passed",
+      "passed_cases": 22,
+      "report": "reports/posix-llvm-riscv32-smp2.twister.json",
+      "report_sha256": "228c0b8eeb0d1564e7e75a6226f75f1f69fefceb9334eebd4b1cd0e60bb4a1fa",
+      "configuration": "configs/posix-llvm-riscv32-smp2.config.json",
+      "configuration_sha256": "8dddb1fc15c8462def0ee395ea432a6ecbc124a83bf7b08cfe33529f14975db0",
+      "source_report": "/home/linux/cpp-runtime-comparison-build/posix-functional/posix-llvm-riscv32-smp2/twister.json",
+      "source_report_sha256": "228c0b8eeb0d1564e7e75a6226f75f1f69fefceb9334eebd4b1cd0e60bb4a1fa",
+      "source_report_suite_count": 1,
+      "report_extraction": "Byte-identical copy of original single-suite report",
+      "twister_retries": 0,
+      "report_run_date": "2026-10-28T11:30:53+00:00",
+      "build": {
+        "variant": "zephyr/llvm",
+        "c_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang",
+        "cxx_compiler": "/home/linux/zephyr-sdk-1.0.1/llvm/bin/clang++",
+        "version_banner": "clang version 19.1.7",
+        "sdk": {
+          "path": "/home/linux/zephyr-sdk-1.0.1",
+          "version": "1.0.1"
+        },
+        "libcxx_source_dir": "/home/linux/libcxx-poc-deps/libcxx-18.1.8.src",
+        "libcxxabi_source_dir": "/home/linux/libcxx-poc-deps/libcxxabi-18.1.8.src"
+      }
+    }
+  ],
+  "notes": [
+    "The SDK compilers are GCC14.3.0 and Clang19.1.7; internal LLVM16 was not tested.",
+    "Reports and selected configuration extracts are archived; full .config files and binary/build artifacts are not committed.",
+    "Original absolute source paths are retained for local provenance. Archive paths are relative to this index.json.",
+    "The native GCC UP report contains retries from corrected initial configuration; original retries and run metadata have been preserved."
+  ]
+}

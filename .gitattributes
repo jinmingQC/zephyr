@@ -1,0 +1,3 @@
+# Preserve captured console bytes and valid nested patch context.
+docs/results/benchmark/raw-logs/*.log -text -whitespace
+patches/zephyr/*.patch -text -whitespace

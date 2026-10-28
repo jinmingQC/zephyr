@@ -1,0 +1,703 @@
+{
+  "timings": [
+    {
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "metric": "mutex_uncontended",
+      "native_median_of_batch_medians_ns": 14780.324,
+      "posix_median_of_batch_medians_ns": 24295.112,
+      "paired_posix_over_native_ratios": [
+        1.6437469165087315,
+        1.6437469165087315,
+        1.6437469165087315
+      ],
+      "median_paired_ratio": 1.6437469165087315,
+      "minimum_paired_ratio": 1.6437469165087315,
+      "maximum_paired_ratio": 1.6437469165087315
+    },
+    {
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "metric": "mutex_first_use",
+      "native_median_of_batch_medians_ns": 32559.36,
+      "posix_median_of_batch_medians_ns": 52741.0,
+      "paired_posix_over_native_ratios": [
+        1.6198414219444117,
+        1.6198414219444117,
+        1.6198414219444117
+      ],
+      "median_paired_ratio": 1.6198414219444117,
+      "minimum_paired_ratio": 1.6198414219444117,
+      "maximum_paired_ratio": 1.6198414219444117
+    },
+    {
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "metric": "mutex_contended",
+      "native_median_of_batch_medians_ns": 21210.55,
+      "posix_median_of_batch_medians_ns": 70062.57,
+      "paired_posix_over_native_ratios": [
+        3.303194400899552,
+        3.303194400899552,
+        3.303194400899552
+      ],
+      "median_paired_ratio": 3.303194400899552,
+      "minimum_paired_ratio": 3.303194400899552,
+      "maximum_paired_ratio": 3.303194400899552
+    },
+    {
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "metric": "condition_round_trip",
+      "native_median_of_batch_medians_ns": 220855.8,
+      "posix_median_of_batch_medians_ns": 221572.2,
+      "paired_posix_over_native_ratios": [
+        1.0032437454664989,
+        1.0032437454664989,
+        1.0032437454664989
+      ],
+      "median_paired_ratio": 1.0032437454664989,
+      "minimum_paired_ratio": 1.0032437454664989,
+      "maximum_paired_ratio": 1.0032437454664989
+    },
+    {
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "metric": "thread_create_join",
+      "native_median_of_batch_medians_ns": 531928.75,
+      "posix_median_of_batch_medians_ns": 727507.5,
+      "paired_posix_over_native_ratios": [
+        1.367678471975805,
+        1.367678471975805,
+        1.367678471975805
+      ],
+      "median_paired_ratio": 1.367678471975805,
+      "minimum_paired_ratio": 1.367678471975805,
+      "maximum_paired_ratio": 1.367678471975805
+    },
+    {
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "metric": "call_once_ready",
+      "native_median_of_batch_medians_ns": 1024.436,
+      "posix_median_of_batch_medians_ns": 1024.436,
+      "paired_posix_over_native_ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "median_paired_ratio": 1.0,
+      "minimum_paired_ratio": 1.0,
+      "maximum_paired_ratio": 1.0
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "metric": "mutex_uncontended",
+      "native_median_of_batch_medians_ns": 8850.34,
+      "posix_median_of_batch_medians_ns": 13472.02,
+      "paired_posix_over_native_ratios": [
+        1.5222036667517858,
+        1.5222036667517858,
+        1.5222036667517858
+      ],
+      "median_paired_ratio": 1.5222036667517858,
+      "minimum_paired_ratio": 1.5222036667517858,
+      "maximum_paired_ratio": 1.5222036667517858
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "metric": "mutex_first_use",
+      "native_median_of_batch_medians_ns": 17646.5,
+      "posix_median_of_batch_medians_ns": 33628.2,
+      "paired_posix_over_native_ratios": [
+        1.9056583458476186,
+        1.9056583458476186,
+        1.9056583458476186
+      ],
+      "median_paired_ratio": 1.9056583458476186,
+      "minimum_paired_ratio": 1.9056583458476186,
+      "maximum_paired_ratio": 1.9056583458476186
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "metric": "mutex_contended",
+      "native_median_of_batch_medians_ns": 9267.225,
+      "posix_median_of_batch_medians_ns": 13969.925,
+      "paired_posix_over_native_ratios": [
+        1.5074550364321575,
+        1.5074550364321575,
+        1.5074550364321575
+      ],
+      "median_paired_ratio": 1.5074550364321575,
+      "minimum_paired_ratio": 1.5074550364321575,
+      "maximum_paired_ratio": 1.5074550364321575
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "metric": "condition_round_trip",
+      "native_median_of_batch_medians_ns": 177329.0,
+      "posix_median_of_batch_medians_ns": 187578.5,
+      "paired_posix_over_native_ratios": [
+        1.0577993447208296,
+        1.0577993447208296,
+        1.0577993447208296
+      ],
+      "median_paired_ratio": 1.0577993447208296,
+      "minimum_paired_ratio": 1.0577993447208296,
+      "maximum_paired_ratio": 1.0577993447208296
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "metric": "thread_create_join",
+      "native_median_of_batch_medians_ns": 374684.375,
+      "posix_median_of_batch_medians_ns": 522012.5,
+      "paired_posix_over_native_ratios": [
+        1.3932059483398527,
+        1.3932059483398527,
+        1.3932059483398527
+      ],
+      "median_paired_ratio": 1.3932059483398527,
+      "minimum_paired_ratio": 1.3932059483398527,
+      "maximum_paired_ratio": 1.3932059483398527
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "metric": "call_once_ready",
+      "native_median_of_batch_medians_ns": 640.11,
+      "posix_median_of_batch_medians_ns": 640.11,
+      "paired_posix_over_native_ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "median_paired_ratio": 1.0,
+      "minimum_paired_ratio": 1.0,
+      "maximum_paired_ratio": 1.0
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "mutex_uncontended",
+      "native_median_of_batch_medians_ns": 1317.0,
+      "posix_median_of_batch_medians_ns": 1734.32,
+      "paired_posix_over_native_ratios": [
+        1.429871714540118,
+        1.3491084656283607,
+        1.2240318906605923
+      ],
+      "median_paired_ratio": 1.3491084656283607,
+      "minimum_paired_ratio": 1.2240318906605923,
+      "maximum_paired_ratio": 1.429871714540118
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "mutex_first_use",
+      "native_median_of_batch_medians_ns": 2781.3,
+      "posix_median_of_batch_medians_ns": 3751.5,
+      "paired_posix_over_native_ratios": [
+        1.4446626617375231,
+        1.3581085863948468,
+        1.2414338618631575
+      ],
+      "median_paired_ratio": 1.3581085863948468,
+      "minimum_paired_ratio": 1.2414338618631575,
+      "maximum_paired_ratio": 1.4446626617375231
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "mutex_contended",
+      "native_median_of_batch_medians_ns": 58317.35,
+      "posix_median_of_batch_medians_ns": 52194.75,
+      "paired_posix_over_native_ratios": [
+        0.8934022794319649,
+        0.9273200908903843,
+        0.8185278480589396
+      ],
+      "median_paired_ratio": 0.8934022794319649,
+      "minimum_paired_ratio": 0.8185278480589396,
+      "maximum_paired_ratio": 0.9273200908903843
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "condition_round_trip",
+      "native_median_of_batch_medians_ns": 125765.5,
+      "posix_median_of_batch_medians_ns": 110540.5,
+      "paired_posix_over_native_ratios": [
+        0.878941363092422,
+        0.9628861473667482,
+        0.9892254376884648
+      ],
+      "median_paired_ratio": 0.9628861473667482,
+      "minimum_paired_ratio": 0.878941363092422,
+      "maximum_paired_ratio": 0.9892254376884648
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "thread_create_join",
+      "native_median_of_batch_medians_ns": 161303.125,
+      "posix_median_of_batch_medians_ns": 164609.375,
+      "paired_posix_over_native_ratios": [
+        0.9467109992810927,
+        0.9363388031075034,
+        1.5373125458111294
+      ],
+      "median_paired_ratio": 0.9467109992810927,
+      "minimum_paired_ratio": 0.9363388031075034,
+      "maximum_paired_ratio": 1.5373125458111294
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "call_once_ready",
+      "native_median_of_batch_medians_ns": 9.44,
+      "posix_median_of_batch_medians_ns": 9.18,
+      "paired_posix_over_native_ratios": [
+        0.972457627118644,
+        0.9704016913319239,
+        1.0011441647597255
+      ],
+      "median_paired_ratio": 0.972457627118644,
+      "minimum_paired_ratio": 0.9704016913319239,
+      "maximum_paired_ratio": 1.0011441647597255
+    },
+    {
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "metric": "mutex_uncontended",
+      "native_median_of_batch_medians_ns": 15305.644,
+      "posix_median_of_batch_medians_ns": 26743.388,
+      "paired_posix_over_native_ratios": [
+        1.7472893006004844,
+        1.7472893006004844,
+        1.7472893006004844
+      ],
+      "median_paired_ratio": 1.7472893006004844,
+      "minimum_paired_ratio": 1.7472893006004844,
+      "maximum_paired_ratio": 1.7472893006004844
+    },
+    {
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "metric": "mutex_first_use",
+      "native_median_of_batch_medians_ns": 35515.92,
+      "posix_median_of_batch_medians_ns": 59415.28,
+      "paired_posix_over_native_ratios": [
+        1.6729196371655304,
+        1.6729196371655304,
+        1.6729196371655304
+      ],
+      "median_paired_ratio": 1.6729196371655304,
+      "minimum_paired_ratio": 1.6729196371655304,
+      "maximum_paired_ratio": 1.6729196371655304
+    },
+    {
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "metric": "mutex_contended",
+      "native_median_of_batch_medians_ns": 29461.96,
+      "posix_median_of_batch_medians_ns": 48430.96,
+      "paired_posix_over_native_ratios": [
+        1.6438471846408047,
+        1.6438471846408047,
+        1.6438471846408047
+      ],
+      "median_paired_ratio": 1.6438471846408047,
+      "minimum_paired_ratio": 1.6438471846408047,
+      "maximum_paired_ratio": 1.6438471846408047
+    },
+    {
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "metric": "condition_round_trip",
+      "native_median_of_batch_medians_ns": 244745.2,
+      "posix_median_of_batch_medians_ns": 274853.2,
+      "paired_posix_over_native_ratios": [
+        1.123017734362104,
+        1.123017734362104,
+        1.123017734362104
+      ],
+      "median_paired_ratio": 1.123017734362104,
+      "minimum_paired_ratio": 1.123017734362104,
+      "maximum_paired_ratio": 1.123017734362104
+    },
+    {
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "metric": "thread_create_join",
+      "native_median_of_batch_medians_ns": 610883.75,
+      "posix_median_of_batch_medians_ns": 822723.75,
+      "paired_posix_over_native_ratios": [
+        1.3467762892694395,
+        1.3467762892694395,
+        1.3467762892694395
+      ],
+      "median_paired_ratio": 1.3467762892694395,
+      "minimum_paired_ratio": 1.3467762892694395,
+      "maximum_paired_ratio": 1.3467762892694395
+    },
+    {
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "metric": "call_once_ready",
+      "native_median_of_batch_medians_ns": 896.552,
+      "posix_median_of_batch_medians_ns": 896.552,
+      "paired_posix_over_native_ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "median_paired_ratio": 1.0,
+      "minimum_paired_ratio": 1.0,
+      "maximum_paired_ratio": 1.0
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "metric": "mutex_uncontended",
+      "native_median_of_batch_medians_ns": 8981.76,
+      "posix_median_of_batch_medians_ns": 14630.04,
+      "paired_posix_over_native_ratios": [
+        1.6288611586147927,
+        1.6288611586147927,
+        1.6288611586147927
+      ],
+      "median_paired_ratio": 1.6288611586147927,
+      "minimum_paired_ratio": 1.6288611586147927,
+      "maximum_paired_ratio": 1.6288611586147927
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "metric": "mutex_first_use",
+      "native_median_of_batch_medians_ns": 18870.8,
+      "posix_median_of_batch_medians_ns": 33453.1,
+      "paired_posix_over_native_ratios": [
+        1.7727441337940097,
+        1.7727441337940097,
+        1.7727441337940097
+      ],
+      "median_paired_ratio": 1.7727441337940097,
+      "minimum_paired_ratio": 1.7727441337940097,
+      "maximum_paired_ratio": 1.7727441337940097
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "metric": "mutex_contended",
+      "native_median_of_batch_medians_ns": 9448.6,
+      "posix_median_of_batch_medians_ns": 15150.025,
+      "paired_posix_over_native_ratios": [
+        1.6034147916093389,
+        1.6034147916093389,
+        1.6034147916093389
+      ],
+      "median_paired_ratio": 1.6034147916093389,
+      "minimum_paired_ratio": 1.6034147916093389,
+      "maximum_paired_ratio": 1.6034147916093389
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "metric": "condition_round_trip",
+      "native_median_of_batch_medians_ns": 313457.5,
+      "posix_median_of_batch_medians_ns": 238813.0,
+      "paired_posix_over_native_ratios": [
+        0.7618672387803769,
+        0.7618672387803769,
+        0.7618672387803769
+      ],
+      "median_paired_ratio": 0.7618672387803769,
+      "minimum_paired_ratio": 0.7618672387803769,
+      "maximum_paired_ratio": 0.7618672387803769
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "metric": "thread_create_join",
+      "native_median_of_batch_medians_ns": 507675.0,
+      "posix_median_of_batch_medians_ns": 601306.25,
+      "paired_posix_over_native_ratios": [
+        1.1844314768306494,
+        1.1844314768306494,
+        1.1844314768306494
+      ],
+      "median_paired_ratio": 1.1844314768306494,
+      "minimum_paired_ratio": 1.1844314768306494,
+      "maximum_paired_ratio": 1.1844314768306494
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "metric": "call_once_ready",
+      "native_median_of_batch_medians_ns": 384.09,
+      "posix_median_of_batch_medians_ns": 384.09,
+      "paired_posix_over_native_ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "median_paired_ratio": 1.0,
+      "minimum_paired_ratio": 1.0,
+      "maximum_paired_ratio": 1.0
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "mutex_uncontended",
+      "native_median_of_batch_medians_ns": 1275.07,
+      "posix_median_of_batch_medians_ns": 2030.98,
+      "paired_posix_over_native_ratios": [
+        1.6029766213518093,
+        1.6232206859231257,
+        1.4985464472810448
+      ],
+      "median_paired_ratio": 1.6029766213518093,
+      "minimum_paired_ratio": 1.4985464472810448,
+      "maximum_paired_ratio": 1.6232206859231257
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "mutex_first_use",
+      "native_median_of_batch_medians_ns": 2752.0,
+      "posix_median_of_batch_medians_ns": 3715.0,
+      "paired_posix_over_native_ratios": [
+        1.3697367450777966,
+        1.3649345930232557,
+        1.2501972623417612
+      ],
+      "median_paired_ratio": 1.3649345930232557,
+      "minimum_paired_ratio": 1.2501972623417612,
+      "maximum_paired_ratio": 1.3697367450777966
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "mutex_contended",
+      "native_median_of_batch_medians_ns": 58008.3,
+      "posix_median_of_batch_medians_ns": 56154.5,
+      "paired_posix_over_native_ratios": [
+        0.9927609497261599,
+        0.9482943543206973,
+        1.0329159234268723
+      ],
+      "median_paired_ratio": 0.9927609497261599,
+      "minimum_paired_ratio": 0.9482943543206973,
+      "maximum_paired_ratio": 1.0329159234268723
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "condition_round_trip",
+      "native_median_of_batch_medians_ns": 123043.5,
+      "posix_median_of_batch_medians_ns": 115616.5,
+      "paired_posix_over_native_ratios": [
+        0.9396392332792874,
+        0.9518077146358769,
+        0.9310538047812839
+      ],
+      "median_paired_ratio": 0.9396392332792874,
+      "minimum_paired_ratio": 0.9310538047812839,
+      "maximum_paired_ratio": 0.9518077146358769
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "thread_create_join",
+      "native_median_of_batch_medians_ns": 177928.125,
+      "posix_median_of_batch_medians_ns": 168143.75,
+      "paired_posix_over_native_ratios": [
+        0.9920438379261288,
+        0.9343265958185734,
+        0.8871967916894864
+      ],
+      "median_paired_ratio": 0.9343265958185734,
+      "minimum_paired_ratio": 0.8871967916894864,
+      "maximum_paired_ratio": 0.9920438379261288
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "metric": "call_once_ready",
+      "native_median_of_batch_medians_ns": 8.84,
+      "posix_median_of_batch_medians_ns": 8.88,
+      "paired_posix_over_native_ratios": [
+        1.0,
+        1.0,
+        1.004524886877828
+      ],
+      "median_paired_ratio": 1.0,
+      "minimum_paired_ratio": 1.0,
+      "maximum_paired_ratio": 1.004524886877828
+    }
+  ],
+  "footprints": [
+    {
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "application": "minimal",
+      "native_image_bytes": 20724,
+      "posix_image_bytes": 22152,
+      "image_delta_posix_minus_native_bytes": 1428,
+      "native_static_writable_bytes": 54483,
+      "posix_static_writable_bytes": 61043,
+      "static_writable_delta_posix_minus_native_bytes": 6560,
+      "native_text_data_bss_total_bytes": 74971,
+      "posix_text_data_bss_total_bytes": 82935
+    },
+    {
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "application": "thread_sync",
+      "native_image_bytes": 32196,
+      "posix_image_bytes": 38684,
+      "image_delta_posix_minus_native_bytes": 6488,
+      "native_static_writable_bytes": 88744,
+      "posix_static_writable_bytes": 94172,
+      "static_writable_delta_posix_minus_native_bytes": 5428,
+      "native_text_data_bss_total_bytes": 120660,
+      "posix_text_data_bss_total_bytes": 132416
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "application": "minimal",
+      "native_image_bytes": 29480,
+      "posix_image_bytes": 31002,
+      "image_delta_posix_minus_native_bytes": 1522,
+      "native_static_writable_bytes": 55928,
+      "posix_static_writable_bytes": 61224,
+      "static_writable_delta_posix_minus_native_bytes": 5296,
+      "native_text_data_bss_total_bytes": 85296,
+      "posix_text_data_bss_total_bytes": 92090
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "application": "thread_sync",
+      "native_image_bytes": 41546,
+      "posix_image_bytes": 49956,
+      "image_delta_posix_minus_native_bytes": 8410,
+      "native_static_writable_bytes": 90592,
+      "posix_static_writable_bytes": 96068,
+      "static_writable_delta_posix_minus_native_bytes": 5476,
+      "native_text_data_bss_total_bytes": 131978,
+      "posix_text_data_bss_total_bytes": 145704
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "application": "minimal",
+      "native_image_bytes": 38600,
+      "posix_image_bytes": 40914,
+      "image_delta_posix_minus_native_bytes": 2314,
+      "native_static_writable_bytes": 57952,
+      "posix_static_writable_bytes": 62632,
+      "static_writable_delta_posix_minus_native_bytes": 4680,
+      "native_text_data_bss_total_bytes": 96432,
+      "posix_text_data_bss_total_bytes": 103402
+    },
+    {
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "application": "thread_sync",
+      "native_image_bytes": 51336,
+      "posix_image_bytes": 62094,
+      "image_delta_posix_minus_native_bytes": 10758,
+      "native_static_writable_bytes": 92060,
+      "posix_static_writable_bytes": 99332,
+      "static_writable_delta_posix_minus_native_bytes": 7272,
+      "native_text_data_bss_total_bytes": 143236,
+      "posix_text_data_bss_total_bytes": 161106
+    },
+    {
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "application": "minimal",
+      "native_image_bytes": 21944,
+      "posix_image_bytes": 23904,
+      "image_delta_posix_minus_native_bytes": 1960,
+      "native_static_writable_bytes": 54497,
+      "posix_static_writable_bytes": 61047,
+      "static_writable_delta_posix_minus_native_bytes": 6550,
+      "native_text_data_bss_total_bytes": 76185,
+      "posix_text_data_bss_total_bytes": 84671
+    },
+    {
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "application": "thread_sync",
+      "native_image_bytes": 36816,
+      "posix_image_bytes": 42920,
+      "image_delta_posix_minus_native_bytes": 6104,
+      "native_static_writable_bytes": 88755,
+      "posix_static_writable_bytes": 94180,
+      "static_writable_delta_posix_minus_native_bytes": 5425,
+      "native_text_data_bss_total_bytes": 125271,
+      "posix_text_data_bss_total_bytes": 136640
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "application": "minimal",
+      "native_image_bytes": 32854,
+      "posix_image_bytes": 32878,
+      "image_delta_posix_minus_native_bytes": 24,
+      "native_static_writable_bytes": 52524,
+      "posix_static_writable_bytes": 59312,
+      "static_writable_delta_posix_minus_native_bytes": 6788,
+      "native_text_data_bss_total_bytes": 85278,
+      "posix_text_data_bss_total_bytes": 92066
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "application": "thread_sync",
+      "native_image_bytes": 45152,
+      "posix_image_bytes": 53532,
+      "image_delta_posix_minus_native_bytes": 8380,
+      "native_static_writable_bytes": 86912,
+      "posix_static_writable_bytes": 92448,
+      "static_writable_delta_posix_minus_native_bytes": 5536,
+      "native_text_data_bss_total_bytes": 131916,
+      "posix_text_data_bss_total_bytes": 145672
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "application": "minimal",
+      "native_image_bytes": 36956,
+      "posix_image_bytes": 41078,
+      "image_delta_posix_minus_native_bytes": 4122,
+      "native_static_writable_bytes": 55476,
+      "posix_static_writable_bytes": 62448,
+      "static_writable_delta_posix_minus_native_bytes": 6972,
+      "native_text_data_bss_total_bytes": 92324,
+      "posix_text_data_bss_total_bytes": 103394
+    },
+    {
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "application": "thread_sync",
+      "native_image_bytes": 53352,
+      "posix_image_bytes": 61734,
+      "image_delta_posix_minus_native_bytes": 8382,
+      "native_static_writable_bytes": 90000,
+      "posix_static_writable_bytes": 95584,
+      "static_writable_delta_posix_minus_native_bytes": 5584,
+      "native_text_data_bss_total_bytes": 143196,
+      "posix_text_data_bss_total_bytes": 157002
+    }
+  ],
+  "aggregation": "Median of three paired POSIX/native batch-median ratios; range is not a CI."
+}

@@ -126,9 +126,22 @@ project(cpp_experiment LANGUAGES C CXX)
 target_sources(app PRIVATE src/main.cpp)
 ```
 
+## 获取模块
+
+本次两个分支先沿用已授权的 haha 远端保存；每个分支的根目录就是模块，
+不包含 Zephyr 核心。可以分别浅克隆后通过 EXTRA_ZEPHYR_MODULES 接入，
+也可以以后迁到独立远端，构建代码不绑定仓库地址。
+
+```sh
+git clone --depth 1 --single-branch --branch libcxx-native-module-threads \
+  git@github.com:jinmingQC/zephyr.git /path/to/cpp-runtime-native
+git clone --depth 1 --single-branch --branch libcxx-posix-module-threads \
+  git@github.com:jinmingQC/zephyr.git /path/to/cpp-runtime-posix
+```
+
 ## WSL 中构建与运行
 
-以下以本次验证目录为例，迁移时修改前三个路径即可。使用独立模块时，
+以下以本次验证目录为例，迁移时修改核心、SDK、Python 环境和 MODULE 路径。使用独立模块时，
 Zephyr 核心仍然是另外一个完整 checkout。推荐先用内存足够的 QEMU 板。
 
 ```sh
@@ -173,6 +186,7 @@ for patch in "$MODULE"/patches/zephyr/*.patch; do
 done
 ```
 
+本次 WSL 的专用核心工作树已经应用这两个补丁，直接测试即可。
 只应用一次。升级 Zephyr 后重新检查，不能假设补丁仍然需要或能直接应用。
 两个补丁分别处理线程生命周期竞态和 C++ 静态初始化宏的类型。
 后者给无符号句柄的 -1 哨兵加上对应类型转换，数值与 ABI 不变。

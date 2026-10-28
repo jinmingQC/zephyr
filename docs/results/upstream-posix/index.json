@@ -1,0 +1,175 @@
+{
+  "created_utc": "2026-10-28T11:42:59.632577+00:00",
+  "zephyr_base_commit": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+  "sdk": "/home/linux/zephyr-sdk-1.0.1",
+  "toolchain_variant": "zephyr/gnu",
+  "cpp_module_loaded": false,
+  "test_source_modified": false,
+  "compilation_jobs": 2,
+  "environment": {
+    "ZEPHYR_BASE": "/home/linux/zephyrproject/zephyr-cpp-module-kernel",
+    "ZEPHYR_SDK_INSTALL_DIR": "/home/linux/zephyr-sdk-1.0.1",
+    "ZEPHYR_TOOLCHAIN_VARIANT": "zephyr/gnu",
+    "unset": [
+      "EXTRA_ZEPHYR_MODULES",
+      "ZEPHYR_EXTRA_MODULES",
+      "TOOLCHAIN_ROOT",
+      "LLVM_TOOLCHAIN_PATH",
+      "CROSS_COMPILE"
+    ]
+  },
+  "cells": [
+    {
+      "label": "arm",
+      "board": "mps2/an385",
+      "scenario": "posix.threads_base.tls",
+      "status": "passed",
+      "passed": 47,
+      "skipped": 2,
+      "failed": 0,
+      "errors": 0,
+      "selected_cases": 49,
+      "skipped_cases": [
+        {
+          "identifier": "posix.threads_base.tls.pthread_attr.pthread_attr_large_stacksize",
+          "execution_time": "0.00",
+          "status": "skipped",
+          "reason": "ztest skip"
+        },
+        {
+          "identifier": "posix.threads_base.tls.pthread_attr.pthread_attr_static_corner_cases",
+          "execution_time": "0.00",
+          "status": "skipped",
+          "reason": "ztest skip"
+        }
+      ],
+      "execution_time": "14.09",
+      "build_time": "45.30",
+      "twister_report_file": "arm-twister.json",
+      "twister_report_sha256": "95bca1733424d353e0762d67930837cdb29ef145a685f2115796a6ace451338e",
+      "command": [
+        "python",
+        "scripts/twister",
+        "-T",
+        "tests/subsys/portability/posix/threads_base",
+        "-s",
+        "posix.threads_base.tls",
+        "-p",
+        "mps2/an385",
+        "-j2",
+        "-O",
+        "/home/linux/cpp-runtime-comparison-build/upstream-posix-regression/arm",
+        "--clobber-output",
+        "--runtime-artifact-cleanup",
+        "pass",
+        "--inline-logs"
+      ],
+      "cwd": "/home/linux/zephyrproject/zephyr-cpp-module-kernel"
+    },
+    {
+      "label": "rv32-smp2",
+      "board": "qemu_riscv32",
+      "scenario": "posix.threads_base.tls",
+      "status": "passed",
+      "passed": 47,
+      "skipped": 2,
+      "failed": 0,
+      "errors": 0,
+      "selected_cases": 49,
+      "skipped_cases": [
+        {
+          "identifier": "posix.threads_base.tls.pthread_attr.pthread_attr_large_stacksize",
+          "execution_time": "0.00",
+          "status": "skipped",
+          "reason": "ztest skip"
+        },
+        {
+          "identifier": "posix.threads_base.tls.pthread_attr.pthread_attr_static_corner_cases",
+          "execution_time": "0.00",
+          "status": "skipped",
+          "reason": "ztest skip"
+        }
+      ],
+      "execution_time": "7.20",
+      "build_time": "49.81",
+      "twister_report_file": "rv32-smp2-twister.json",
+      "twister_report_sha256": "f1c66573a2663e59d7254ee6cc19c2dc823fab4055fe07dd0bb73b78e828e577",
+      "command": [
+        "python",
+        "scripts/twister",
+        "-T",
+        "tests/subsys/portability/posix/threads_base",
+        "-s",
+        "posix.threads_base.tls",
+        "-p",
+        "qemu_riscv32",
+        "-j2",
+        "-O",
+        "/home/linux/cpp-runtime-comparison-build/upstream-posix-regression/rv32-smp2",
+        "--clobber-output",
+        "--runtime-artifact-cleanup",
+        "pass",
+        "--inline-logs",
+        "-x",
+        "EXTRA_CONF_FILE=/home/linux/cpp-runtime-comparison-build/upstream-posix-regression/smp2.conf"
+      ],
+      "cwd": "/home/linux/zephyrproject/zephyr-cpp-module-kernel"
+    }
+  ],
+  "patch_application_checks": [
+    {
+      "file": "0001-posix-thread-lifetime.patch",
+      "sha256": "1bb0d21a14636e434f9b3d2c8e525ed5ba6b3e5f777ab8385b2b5296a695aa0b",
+      "command": [
+        "git",
+        "apply",
+        "--check",
+        "0001-posix-thread-lifetime.patch"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "method": "Clean copies of the three baseline files; check and apply in series."
+    },
+    {
+      "file": "0002-posix-cxx-initializers.patch",
+      "sha256": "2181403c2d4330e2479510446be1c01099b5fd4ec23a84bbd99de8846d94bb14",
+      "command": [
+        "git",
+        "apply",
+        "--check",
+        "0002-posix-cxx-initializers.patch"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "method": "Clean copies of the three baseline files; check and apply in series."
+    }
+  ],
+  "kernel_diff_check": {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "",
+    "changed_files": [
+      "include/zephyr/posix/pthread.h",
+      "subsys/portability/posix/options/posix_internal.h",
+      "subsys/portability/posix/options/pthread.c"
+    ]
+  },
+  "smp_overlay": "CONFIG_SMP=y\nCONFIG_MP_MAX_NUM_CPUS=2\nCONFIG_QEMU_ICOUNT=n\n",
+  "skip_explanations": {
+    "pthread_attr_static_corner_cases": "Upstream skips this case when CONFIG_DYNAMIC_THREAD=y.",
+    "pthread_attr_large_stacksize": "The original profile cannot allocate the requested 2^23-byte stack; upstream skips on allocation failure."
+  },
+  "coverage_notes": [
+    "test_mutex_timedlock verifies ETIMEDOUT and zero values returned through pthread_join.",
+    "pthread tryjoin/timedjoin tests retry after EBUSY/ETIMEDOUT, covering failed join ownership restoration.",
+    "The suite covers create, join, detach, descriptor reuse, TSS keys/destructors, mutexes and condition variables.",
+    "These results are separate from the shared 22 C++ cases. The two skipped cases are not counted as passed."
+  ]
+}
