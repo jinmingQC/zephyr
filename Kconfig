@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig CPP_RUNTIME
+	bool "Source-built libc++ thread runtime"
+	depends on CPP
+	select THREAD_LOCAL_STORAGE
+	help
+	  Build matching libc++ and libc++abi sources with the application's
+	  compiler and configuration. This experimental profile supports C++17
+	  threading and synchronization in supervisor mode.
+
+if CPP_RUNTIME
+
+config CPP_RUNTIME_THREAD_MAX
+	int "Maximum simultaneous standard threads"
+	default 8
+	range 4 64
+
+config CPP_RUNTIME_THREAD_STACK_SIZE
+	int "Stack size per standard thread"
+	default 4096
+	range 1024 65536
+
+config CPP_RUNTIME_THREAD_PRIORITY
+	int "Default standard thread priority"
+	default 5
+	range 0 14
+	help
+	  The native backend uses this priority. POSIX inherits the creator's
+	  priority; applications must choose matching priorities for comparison.
+
+config CPP_RUNTIME_TLS_KEYS
+	int "Thread-specific storage key capacity"
+	default 8
+	range 2 64
+
+rsource "backend/Kconfig.native"
+
+endif # CPP_RUNTIME

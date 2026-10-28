@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
+
+sample:
+  name: External libc++ threading
+  description: C++17 threads and synchronization using an external libc++ module
+tests:
+  sample.cpp.runtime.threads:
+    tags:
+      - cpp
+      - libcxx
+    toolchain_allow:
+      - zephyr/gnu
+      - zephyr/llvm
+    platform_allow:
+      - mps2/an385
+      - qemu_riscv32
+    integration_platforms:
+      - mps2/an385
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "libc[+][+] threads: 4000 increments"

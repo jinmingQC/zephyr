@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  cpp.runtime.minimal_footprint:
+    tags:
+      - cpp
+      - footprint
+    toolchain_allow:
+      - zephyr/gnu
+      - zephyr/llvm
+    integration_platforms:
+      - mps2/an385
+    build_only: true
+    min_ram: 128

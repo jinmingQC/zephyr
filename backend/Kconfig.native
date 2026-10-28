@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config CPP_RUNTIME_NATIVE
+	bool
+	default y
+	help
+	  Use a small libc++ external thread adapter directly over Zephyr APIs.
