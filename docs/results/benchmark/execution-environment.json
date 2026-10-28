@@ -1,0 +1,98 @@
+{
+  "captured_utc": "2026-10-28T11:47:42.124439+00:00",
+  "host": {
+    "system": "Linux",
+    "node": "DESKTOP-N10CCEQ",
+    "release": "6.18.54.1-microsoft-standard-WSL2",
+    "version": "#1 SMP PREEMPT_DYNAMIC Tue Oct  6 19:13:07 UTC 2026",
+    "machine": "x86_64",
+    "processor": "x86_64"
+  },
+  "logical_cpu_count": 8,
+  "cpu_model": "Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz",
+  "qemu_versions": {
+    "/home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-arm": "QEMU emulator version 10.0.2 (v10.0.2-20-g5828172dcf-dirty)\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers\n",
+    "/home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-riscv32": "QEMU emulator version 10.0.2 (v10.0.2-20-g5828172dcf-dirty)\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers\n"
+  },
+  "qemu_commands": [
+    {
+      "backend": "native",
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/native-gcc-arm-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-arm -cpu cortex-m3 -machine mps2-an385 -vga none -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -icount shift=7,align=off,sleep=off -rtc clock=vm -net none -kernel /home/linux/cpp-runtime-comparison-build/benchmark/native-gcc-arm-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "native",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/native-gcc-rv32-up-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-riscv32 -machine virt -bios none -m 256 -cpu rv32i,i=on,m=on,a=on,f=on,d=on,c=on,zicsr=on,zifencei=on,zkr=on,pmp=on,u=on -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -icount shift=6,align=off,sleep=off -rtc clock=vm -no-reboot -net none -kernel /home/linux/cpp-runtime-comparison-build/benchmark/native-gcc-rv32-up-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "native",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/native-gcc-rv32-smp2-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-riscv32 -machine virt -bios none -m 256 -cpu rv32i,i=on,m=on,a=on,f=on,d=on,c=on,zicsr=on,zifencei=on,zkr=on,pmp=on,u=on -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -no-reboot -net none -smp cpus=2 -kernel /home/linux/cpp-runtime-comparison-build/benchmark/native-gcc-rv32-smp2-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "native",
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/native-llvm-arm-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-arm -cpu cortex-m3 -machine mps2-an385 -vga none -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -icount shift=7,align=off,sleep=off -rtc clock=vm -net none -kernel /home/linux/cpp-runtime-comparison-build/benchmark/native-llvm-arm-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "native",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/native-llvm-rv32-up-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-riscv32 -machine virt -bios none -m 256 -cpu rv32i,i=on,m=on,a=on,f=on,d=on,c=on,zicsr=on,zifencei=on,zkr=on,pmp=on,u=on -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -icount shift=6,align=off,sleep=off -rtc clock=vm -no-reboot -net none -kernel /home/linux/cpp-runtime-comparison-build/benchmark/native-llvm-rv32-up-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "native",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/native-llvm-rv32-smp2-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-riscv32 -machine virt -bios none -m 256 -cpu rv32i,i=on,m=on,a=on,f=on,d=on,c=on,zicsr=on,zifencei=on,zkr=on,pmp=on,u=on -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -no-reboot -net none -smp cpus=2 -kernel /home/linux/cpp-runtime-comparison-build/benchmark/native-llvm-rv32-smp2-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "posix",
+      "compiler": "gcc",
+      "platform": "mps2/an385",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/posix-gcc-arm-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-arm -cpu cortex-m3 -machine mps2-an385 -vga none -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -icount shift=7,align=off,sleep=off -rtc clock=vm -net none -kernel /home/linux/cpp-runtime-comparison-build/benchmark/posix-gcc-arm-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "posix",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/posix-gcc-rv32-up-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-riscv32 -machine virt -bios none -m 256 -cpu rv32i,i=on,m=on,a=on,f=on,d=on,c=on,zicsr=on,zifencei=on,zkr=on,pmp=on,u=on -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -icount shift=6,align=off,sleep=off -rtc clock=vm -no-reboot -net none -kernel /home/linux/cpp-runtime-comparison-build/benchmark/posix-gcc-rv32-up-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "posix",
+      "compiler": "gcc",
+      "platform": "qemu_riscv32_smp2",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/posix-gcc-rv32-smp2-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-riscv32 -machine virt -bios none -m 256 -cpu rv32i,i=on,m=on,a=on,f=on,d=on,c=on,zicsr=on,zifencei=on,zkr=on,pmp=on,u=on -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -no-reboot -net none -smp cpus=2 -kernel /home/linux/cpp-runtime-comparison-build/benchmark/posix-gcc-rv32-smp2-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "posix",
+      "compiler": "llvm",
+      "platform": "mps2/an385",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/posix-llvm-arm-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-arm -cpu cortex-m3 -machine mps2-an385 -vga none -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -icount shift=7,align=off,sleep=off -rtc clock=vm -net none -kernel /home/linux/cpp-runtime-comparison-build/benchmark/posix-llvm-arm-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "posix",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/posix-llvm-rv32-up-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-riscv32 -machine virt -bios none -m 256 -cpu rv32i,i=on,m=on,a=on,f=on,d=on,c=on,zicsr=on,zifencei=on,zkr=on,pmp=on,u=on -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -icount shift=6,align=off,sleep=off -rtc clock=vm -no-reboot -net none -kernel /home/linux/cpp-runtime-comparison-build/benchmark/posix-llvm-rv32-up-thread_sync/zephyr/zephyr.elf"
+    },
+    {
+      "backend": "posix",
+      "compiler": "llvm",
+      "platform": "qemu_riscv32_smp2",
+      "qemu_command": "cd /home/linux/cpp-runtime-comparison-build/benchmark/posix-llvm-rv32-smp2-thread_sync && /home/linux/zephyr-sdk-1.0.1/hosttools/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-riscv32 -machine virt -bios none -m 256 -cpu rv32i,i=on,m=on,a=on,f=on,d=on,c=on,zicsr=on,zifencei=on,zkr=on,pmp=on,u=on -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -nographic -no-reboot -net none -smp cpus=2 -kernel /home/linux/cpp-runtime-comparison-build/benchmark/posix-llvm-rv32-smp2-thread_sync/zephyr/zephyr.elf"
+    }
+  ],
+  "zephyr_git_head": "ec98918869caeb2ddaef6e698f9ff36fb60a97ac",
+  "patched_kernel_file_sha256": {
+    "include/zephyr/posix/pthread.h": "50073e4702af48c27f056fe94f06aba0424d95c1213c3e4b956082fef7804a8f",
+    "subsys/portability/posix/options/posix_internal.h": "7636613ab5c70bcb73eb717b190013cee0ee757ebb2fe90015434b86d027f984",
+    "subsys/portability/posix/options/pthread.c": "103ba726efd268b89b07ea037bbee0ebb60bf5bf637c9f7da2db5946015c0375"
+  },
+  "interpretation": "UP configurations use instruction-counted virtual time (ARM shift=7, RV32 shift=6); SMP has no icount and may reflect host scheduling. Counter ticks are not hardware CPU cycles. Measurements were taken after the benchmark and regression builds finished, one QEMU at a time."
+}

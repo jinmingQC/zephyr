@@ -1,0 +1,46 @@
+{
+  "recorded_utc": "2026-10-28T11:42:25.666193+00:00",
+  "status": "passed",
+  "scope": "Fresh default FetchContent CMake configure/generate only",
+  "build_directory": "/home/linux/cpp-runtime-comparison-build/native-fetch-smoke",
+  "build_directory_was_fresh": true,
+  "configure_log": "/home/linux/cpp-runtime-comparison-build/native-fetch-smoke.configure.log",
+  "configure_log_sha256": "c96c1efa199d0d7a121da0f9ef83ab445eb90cec7d017440be6123b1b5205e96",
+  "source_directory_arguments_supplied": false,
+  "libcxx_source_dir_cache": "",
+  "libcxxabi_source_dir_cache": "",
+  "fetchcontent_fully_disconnected": "OFF",
+  "board": "mps2/an385",
+  "sdk": "/home/linux/zephyr-sdk-1.0.1",
+  "toolchain_variant": "zephyr/gnu",
+  "libcpp_version_macro": 180100,
+  "runtime_or_application_compile_requested": false,
+  "qemu_requested": false,
+  "runtime_objects_or_elf_found": [],
+  "downloads": [
+    {
+      "component": "libcxx",
+      "release": "18.1.8",
+      "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/libcxx-18.1.8.src.tar.xz",
+      "downloaded_archive": "/home/linux/cpp-runtime-comparison-build/native-fetch-smoke/_deps/libcxx_source-subbuild/libcxx_source-populate-prefix/src/libcxx-18.1.8.src.tar.xz",
+      "archive_sha256": "bdecf90be0072bc720fd5c9c8ab061cdb197edd0c8ad3e170dc3e6bfaa49f388",
+      "expected_archive_sha256": "bdecf90be0072bc720fd5c9c8ab061cdb197edd0c8ad3e170dc3e6bfaa49f388",
+      "source_directory": "/home/linux/cpp-runtime-comparison-build/native-fetch-smoke/_deps/libcxx_source-src",
+      "urlinfo_file": "/home/linux/cpp-runtime-comparison-build/native-fetch-smoke/_deps/libcxx_source-subbuild/libcxx_source-populate-prefix/src/libcxx_source-populate-stamp/libcxx_source-populate-urlinfo.txt",
+      "urlinfo_sha256": "29ebafdf67a4f33ad4a14fc187590e5c9337a371fc97cf16fd0a6f13435091ec",
+      "generated_build_uses_downloaded_sources": true
+    },
+    {
+      "component": "libcxxabi",
+      "release": "18.1.8",
+      "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/libcxxabi-18.1.8.src.tar.xz",
+      "downloaded_archive": "/home/linux/cpp-runtime-comparison-build/native-fetch-smoke/_deps/libcxxabi_source-subbuild/libcxxabi_source-populate-prefix/src/libcxxabi-18.1.8.src.tar.xz",
+      "archive_sha256": "256c30d724eeb72713bc08ae1692f53aaf4ebe8a1d662c92bf59e69d6c53dce9",
+      "expected_archive_sha256": "256c30d724eeb72713bc08ae1692f53aaf4ebe8a1d662c92bf59e69d6c53dce9",
+      "source_directory": "/home/linux/cpp-runtime-comparison-build/native-fetch-smoke/_deps/libcxxabi_source-src",
+      "urlinfo_file": "/home/linux/cpp-runtime-comparison-build/native-fetch-smoke/_deps/libcxxabi_source-subbuild/libcxxabi_source-populate-prefix/src/libcxxabi_source-populate-stamp/libcxxabi_source-populate-urlinfo.txt",
+      "urlinfo_sha256": "4fee8f9bae8210c3f6ece1876e8cae95929e744e9b0cd965076c015baa365e64",
+      "generated_build_uses_downloaded_sources": true
+    }
+  ]
+}

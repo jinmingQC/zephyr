@@ -1,0 +1,99 @@
+{
+  "method": "Physical lines including comments and blank lines; a maintenance-surface proxy, not defect count.",
+  "native_owned": [
+    {
+      "path": "adapters/native_threading.cpp",
+      "physical_lines": 538,
+      "sha256": "f3ddd8b9d99426b45f81b1a1e5c4347f5478cc481523550f19581f87c340f514"
+    },
+    {
+      "path": "include/__external_threading",
+      "physical_lines": 81,
+      "sha256": "7010d5621f64aab4cbe95eaacd37bc749e145c0414ece25b9c0e5f42fb301604"
+    }
+  ],
+  "native_owned_total": 619,
+  "posix_owned_glue": [
+    {
+      "path": "adapters/posix_runtime.c",
+      "physical_lines": 127,
+      "sha256": "6c64a85057c4d3583d0c0b09289e5a7a6b474f873615222bd70d3897a25dcb58"
+    }
+  ],
+  "posix_owned_glue_total": 127,
+  "kernel_patch_base": "ec98918869c",
+  "kernel_patch_deltas": [
+    {
+      "purpose": "thread exit/TLS lifecycle",
+      "files": 2,
+      "added": 28,
+      "deleted": 3
+    },
+    {
+      "purpose": "typed C++ pthread static initializers",
+      "files": 1,
+      "added": 3,
+      "deleted": 3
+    }
+  ],
+  "posix_reused_core_sources": [
+    {
+      "path": "subsys/portability/posix/options/pthread.c",
+      "physical_lines": 1622,
+      "sha256": "103ba726efd268b89b07ea037bbee0ebb60bf5bf637c9f7da2db5946015c0375",
+      "upstream_physical_lines": 1600
+    },
+    {
+      "path": "subsys/portability/posix/options/mutex.c",
+      "physical_lines": 488,
+      "sha256": "ef813e36deacf0932a23c08f5d05a2fbffff586df2d43b3c80c5e7795dbc57a6",
+      "upstream_physical_lines": 488
+    },
+    {
+      "path": "subsys/portability/posix/options/cond.c",
+      "physical_lines": 279,
+      "sha256": "50951f79ccbb3eb56dcadf8bf1d8e213fa4a1808514d8a6157a3ed5b8d177f6c",
+      "upstream_physical_lines": 279
+    },
+    {
+      "path": "subsys/portability/posix/options/key.c",
+      "physical_lines": 281,
+      "sha256": "691f49b498e5818390911fdf61f897a3a3833bea5f05c5dc2a90046a36332700",
+      "upstream_physical_lines": 281
+    }
+  ],
+  "posix_reused_core_current_total": 2670,
+  "posix_reused_core_upstream_total": 2648,
+  "posix_reused_headers": [
+    {
+      "path": "subsys/portability/posix/options/posix_internal.h",
+      "physical_lines": 142,
+      "sha256": "7636613ab5c70bcb73eb717b190013cee0ee757ebb2fe90015434b86d027f984",
+      "upstream_physical_lines": 139
+    },
+    {
+      "path": "include/zephyr/posix/pthread.h",
+      "physical_lines": 558,
+      "sha256": "50073e4702af48c27f056fe94f06aba0424d95c1213c3e4b956082fef7804a8f",
+      "upstream_physical_lines": 558
+    }
+  ],
+  "posix_threads_additional_compiled_stubs": [
+    {
+      "path": "grp.c",
+      "physical_lines": 33,
+      "sha256": "8759aeed8f6256d9f09a39af5fba6e6d7f6eea1bd7f575bfe108a80026887b00"
+    },
+    {
+      "path": "pwd.c",
+      "physical_lines": 33,
+      "sha256": "2be2335d7a70738485aef18f6fe62170149b6fde6a8070be24a9a1aada977b9d"
+    }
+  ],
+  "notes": [
+    "The reused current source count includes the kernel patch; do not add it again as independent code.",
+    "Common libc++/libc++abi, clocks, C library, CMake/Kconfig and kernel primitive code are shared costs.",
+    "This is an explicit file inventory, not every transitive POSIX/kernel header or all enabled API code.",
+    "grp.c and pwd.c compile with POSIX_THREADS, but section garbage collection can discard their functions."
+  ]
+}
