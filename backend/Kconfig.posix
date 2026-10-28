@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config CPP_RUNTIME_POSIX
+	bool
+	depends on POSIX_SYSTEM_INTERFACES
+	default y
+	select DYNAMIC_THREAD
+	select POSIX_THREADS
+	select POSIX_TIMERS
+	select THREAD_LOCAL_STORAGE
+	select THREAD_STACK_INFO
+	help
+	  Use libc++'s upstream pthread backend and Zephyr's POSIX subsystem.
+	  The module supplies language TLS exit ordering and native caller
+	  identities; native identities do not adopt threads into POSIX.
+	  Applications must enable POSIX_SYSTEM_INTERFACES explicitly.
+
+if CPP_RUNTIME_POSIX
+
+config POSIX_THREAD_THREADS_MAX
+	default CPP_RUNTIME_THREAD_MAX
+
+config POSIX_THREAD_KEYS_MAX
+	default CPP_RUNTIME_TLS_KEYS
+
+config DYNAMIC_THREAD_STACK_SIZE
+	default CPP_RUNTIME_THREAD_STACK_SIZE
+
+config DYNAMIC_THREAD_POOL_SIZE
+	default CPP_RUNTIME_THREAD_MAX
+
+config MAX_PTHREAD_MUTEX_COUNT
+	default 16
+
+config MAX_PTHREAD_COND_COUNT
+	default 16
+
+endif # CPP_RUNTIME_POSIX

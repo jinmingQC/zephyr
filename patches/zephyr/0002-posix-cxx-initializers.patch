@@ -1,0 +1,39 @@
+Subject: [PATCH] posix: give static pthread initializers their handle types
+
+Base: ec98918869c
+
+Pthread handles are unsigned integers. An untyped -1 sentinel cannot
+initialize them in a C++ initializer list without a narrowing diagnostic.
+Cast each static initializer to its corresponding handle type, preserving
+the sentinel value and the public ABI.
+
+---
+diff --git a/include/zephyr/posix/pthread.h b/include/zephyr/posix/pthread.h
+--- a/include/zephyr/posix/pthread.h
++++ b/include/zephyr/posix/pthread.h
+@@ -62,7 +62,7 @@
+  *
+  * Initialize a condition variable with the default condition variable attributes.
+  */
+-#define PTHREAD_COND_INITIALIZER (-1)
++#define PTHREAD_COND_INITIALIZER ((pthread_cond_t)-1)
+ 
+ /**
+  * @brief POSIX threading compatibility API
+@@ -146,14 +146,14 @@
+  *
+  * Initialize a mutex with the default mutex attributes.
+  */
+-#define PTHREAD_MUTEX_INITIALIZER (-1)
++#define PTHREAD_MUTEX_INITIALIZER ((pthread_mutex_t)-1)
+ 
+ /**
+  * @brief Declare a rwlock as initialized
+  *
+  * Initialize a rwlock with the default rwlock attributes.
+  */
+-#define PTHREAD_RWLOCK_INITIALIZER (-1)
++#define PTHREAD_RWLOCK_INITIALIZER ((pthread_rwlock_t)-1)
+ 
+ /*
+  *  Mutex attributes - type

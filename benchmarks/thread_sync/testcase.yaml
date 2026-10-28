@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: Copyright The Zephyr Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  cpp.runtime.thread_benchmark:
+    tags:
+      - cpp
+      - benchmark
+    toolchain_allow:
+      - zephyr/gnu
+      - zephyr/llvm
+    integration_platforms:
+      - mps2/an385
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "CPP_BENCH_DONE"
+    min_ram: 128
+    timeout: 180
