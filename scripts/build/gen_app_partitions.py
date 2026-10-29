@@ -197,8 +197,9 @@ class LDScriptTemlate:
             KEEP(*(data_smem_{partition}_data*))
     """
 
+    # LLD treats quoted archive selectors as literal names, not wildcard patterns.
     library_data_template = """
-            \"*{lib}:*\"(.data .data.* .sdata .sdata.*)
+            *{lib}:*(.data .data.* .sdata .sdata.*)
     """
 
     bss_template = """
@@ -207,7 +208,7 @@ class LDScriptTemlate:
     """
 
     library_bss_template = """
-            \"*{lib}:*\"(.bss .bss.* .sbss .sbss.* COMMON COMMON.*)
+            *{lib}:*(.bss .bss.* .sbss .sbss.* COMMON COMMON.*)
     """
 
     footer_template = """
