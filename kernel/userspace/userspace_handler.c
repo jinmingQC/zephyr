@@ -100,9 +100,4 @@ static inline void *z_vrfy_k_object_map_size(enum k_objects otype, size_t size)
 	return z_impl_k_object_map_size(otype, size);
 }
 #include <zephyr/syscalls/k_object_map_size_mrsh.c>
-#else
-static inline void *z_vrfy_k_object_map_size(enum k_objects otype, size_t size)
-{
-	return NULL;
-}
 #endif /* CONFIG_MMU */
