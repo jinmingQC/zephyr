@@ -104,12 +104,24 @@ config COMMON_LIBC_STRNLEN
 	help
 	  common implementation of strnlen().
 
+config COMMON_LIBC_THRD_NATIVE
+	bool "Use the native Zephyr backend for C11 threads"
+	depends on MULTITHREADING && !USERSPACE
+	select SYS_THREAD
+	select THREAD_DETACH
+	select THREAD_RESULT
+	select THREAD_SPECIFIC_STORAGE
+	select MUTEX_OPTIONS
+	select MUTEX_NONRECURSIVE
+	help
+	  Enable the C11 threads backend backed by native Zephyr threads and
+	  synchronization objects in supervisor-mode builds. Set the SYS_THREAD
+	  pool sizes and HEAP_MEM_POOL_SIZE to provide threads, stacks, and
+	  thread-specific storage.
+
 config COMMON_LIBC_THRD
 	bool "C11 <threads.h> API support"
-	depends on DYNAMIC_THREAD
-	# Note: the POSIX_API dependency is only necessary until common elements
-	# of C11 threads and POSIX API can be abstracted out to a common library.
-	depends on POSIX_API
+	depends on (DYNAMIC_THREAD && POSIX_API) || COMMON_LIBC_THRD_NATIVE
 	default y
 	help
 	  Common implementation of C11 <threads.h> API.

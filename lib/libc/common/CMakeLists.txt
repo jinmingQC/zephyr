@@ -14,13 +14,20 @@ zephyr_library_sources_ifdef(CONFIG_COMMON_LIBC_MALLOC source/stdlib/malloc.c)
 zephyr_library_sources_ifdef(CONFIG_COMMON_LIBC_CALLOC source/stdlib/calloc.c)
 zephyr_library_sources_ifdef(CONFIG_COMMON_LIBC_REALLOCARRAY source/stdlib/reallocarray.c)
 zephyr_library_sources_ifdef(CONFIG_COMMON_LIBC_STRNLEN source/string/strnlen.c)
-zephyr_library_sources_ifdef(CONFIG_COMMON_LIBC_THRD
+if(CONFIG_COMMON_LIBC_THRD_NATIVE)
+  zephyr_library_sources_ifdef(CONFIG_COMMON_LIBC_THRD
+    source/thrd/native/sync.c
+    source/thrd/native/thread.c
+  )
+else()
+  zephyr_library_sources_ifdef(CONFIG_COMMON_LIBC_THRD
     source/thrd/cnd.c
     source/thrd/mtx.c
     source/thrd/once.c
     source/thrd/thrd.c
     source/thrd/tss.c
-    )
+  )
+endif()
 zephyr_library_sources_ifdef(CONFIG_COMMON_LIBC_REMOVE source/stdio/remove.c)
 
 if(NOT CONFIG_ERRNO_IN_TLS AND NOT CONFIG_LIBC_ERRNO)

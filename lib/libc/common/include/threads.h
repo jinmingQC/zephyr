@@ -36,7 +36,7 @@ int thrd_equal(thrd_t lhs, thrd_t rhs);
 thrd_t thrd_current(void);
 int thrd_sleep(const struct timespec *duration, struct timespec *remaining);
 void thrd_yield(void);
-_Noreturn void thrd_exit(int res);
+FUNC_NORETURN void thrd_exit(int res);
 int thrd_detach(thrd_t thr);
 int thrd_join(thrd_t thr, int *res);
 
@@ -63,7 +63,7 @@ int cnd_signal(cnd_t *cond);
 int cnd_broadcast(cnd_t *cond);
 void cnd_destroy(cnd_t *cond);
 
-#ifndef thread_local
+#if !defined(__cplusplus) && !defined(thread_local)
 #define	thread_local _Thread_local
 #endif
 
