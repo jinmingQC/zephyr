@@ -131,6 +131,22 @@ struct _thread_base {
 #ifdef CONFIG_SCHED_THREAD_USAGE
 	struct k_cycle_stats  usage;   /* Track thread usage statistics */
 #endif /* CONFIG_SCHED_THREAD_USAGE */
+#ifdef CONFIG_THREAD_RESULT
+	/** Thread result or return value */
+	atomic_t result;
+#endif
+
+#ifdef CONFIG_SYS_THREAD
+	/** Node in the graveyard: dead threads whose objects are not yet disposed */
+	sys_dnode_t graveyard_node;
+	/** The graveyard drain ends every reference to the thread (a reap) */
+	bool graveyard_reap;
+#endif
+
+#ifdef CONFIG_THREAD_SPECIFIC_STORAGE
+	/** Thread-specific storage keys */
+	sys_dlist_t key_list;
+#endif
 };
 
 typedef struct _thread_base _thread_base_t;
@@ -165,7 +181,7 @@ struct _thread_stack_info {
 	 */
 	size_t delta;
 
-#if defined(CONFIG_THREAD_STACK_MEM_MAPPED)
+#if defined(CONFIG_THREAD_STACK_MEM_MAPPED) || defined(CONFIG_SYS_THREAD_STACK_ALLOC_ANON)
 	struct {
 		/** Base address of the memory mapped thread stack */
 		k_thread_stack_t *addr;
@@ -345,7 +361,9 @@ struct k_thread {
 
 	/** current syscall frame pointer */
 	void *syscall_frame;
-#endif /* CONFIG_USERSPACE */
+#elif defined(CONFIG_SYS_THREAD)
+	k_thread_stack_t *stack_obj;
+#endif
 
 
 #if defined(CONFIG_USE_SWITCH)

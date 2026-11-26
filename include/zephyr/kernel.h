@@ -418,6 +418,15 @@ void k_thread_foreach_unlocked_filter_by_cpu(unsigned int cpu,
  */
 #define K_SSE_REGS (BIT(15))
 
+/**
+ * @brief Detached thread
+ *
+ * This option indicates that the thread is detached. Detached threads
+ * are not joinable. This option has no effect if @kconfig{CONFIG_THREAD_DETACH}
+ * is not enabled.
+ */
+#define K_DETACHED (BIT(8))
+
 /* end - thread options */
 
 #if !defined(_ASMLANGUAGE)
@@ -518,6 +527,48 @@ __syscall k_tid_t k_thread_create(struct k_thread *new_thread,
 				  k_thread_entry_t entry,
 				  void *p1, void *p2, void *p3,
 				  int prio, uint32_t options, k_timeout_t delay);
+
+#if defined(CONFIG_THREAD_RESULT) || defined(__DOXYGEN__)
+/**
+ * @brief Set the result of the currently running thread.
+ *
+ * Zephyr threads do not natively support a result ("return value") since the
+ * @ref k_thread_entry_t is a void function. Until that function signature is changed, this API
+ * allows a thread to manually set the result of the currently running thread to @p result.
+ *
+ * The result can then be retrieved by other threads using @ref k_thread_rejoin.
+ *
+ * @param[in] result Pointer value to set as the thread's result.
+ *
+ * @see @kconfig{CONFIG_THREAD_RESULT}
+ */
+__syscall void k_thread_result_set(void *result);
+
+static inline void z_impl_k_thread_result_set(void *result)
+{
+	atomic_set(&_current->base.result, (atomic_val_t)result);
+}
+
+/**
+ * @cond INTERNAL_HIDDEN
+ */
+/*
+ * This function should not be used directly. It is only temporarily required until
+ * `k_thread_entry_t` can be updated to return `void *` so that
+ * `k_thread_exit(entry(p1, p2, p3))` can be used for graceful thread termination in
+ * thread_entry.c. Production code should use always `k_thread_rejoin()` to obtain
+ * the result of a thread.
+ */
+__syscall void *k_thread_result_get(void);
+
+static inline void *z_impl_k_thread_result_get(void)
+{
+	return (void *)atomic_get(&_current->base.result);
+}
+/**
+ * INTERNAL_HIDDEN @endcond
+ */
+#endif
 
 /**
  * @brief Drop a thread's privileges permanently to user mode
@@ -746,6 +797,62 @@ void k_thread_system_pool_assign(struct k_thread *thread);
 __syscall int k_thread_join(struct k_thread *thread, k_timeout_t timeout);
 
 /**
+ * @brief Sleep until a thread exits, saving the thread's result
+ *
+ * The caller will be put to sleep until the target thread exits, either due
+ * to being aborted, self-exiting, or taking a fatal error. This API returns
+ * immediately if the thread isn't running.
+ *
+ * This API may only be called from ISRs with a K_NO_WAIT timeout,
+ * where it can be useful as a predicate to detect when a thread has
+ * aborted.
+ *
+ * This API is slightly different than @ref k_thread_join in that it also
+ * saves the target thread's result (return value) in @p result if
+ * @kconfig{CONFIG_THREAD_RESULT} is enabled.
+ *
+ * @note If @kconfig{CONFIG_THREAD_RESULT} is not enabled, the @p result
+ * parameter is ignored, and this function behaves identically to
+ * @ref k_thread_join.
+ *
+ * @param thread Thread to wait to exit
+ * @param result Pointer to location to store the thread's result.
+ * @param timeout upper bound time to wait for the thread to exit.
+ * @retval 0 success, target thread has exited or wasn't running
+ * @retval -EBUSY returned without waiting
+ * @retval -EAGAIN waiting period timed out
+ * @retval -EDEADLK target thread is joining on the caller, or target thread
+ *                  is the caller
+ */
+#ifdef CONFIG_SYS_THREAD
+__syscall int k_thread_rejoin(struct k_thread *thread, void **result, k_timeout_t timeout);
+#endif
+
+#if defined(CONFIG_THREAD_DETACH) || defined(__DOXYGEN__)
+/**
+ * @brief Detach a thread.
+ *
+ * A detached thread cannot be joined.
+ *
+ * @param thread Thread to detach.
+ * @retval 0 success
+ * @retval -EINVAL thread is already detached
+ */
+__syscall int k_thread_detach(struct k_thread *thread);
+
+/**
+ * @brief Check whether a thread is detached.
+ *
+ * @param thread Thread to check.
+ * @retval true thread is detached
+ * @retval false thread is joinable
+ */
+__syscall bool k_thread_is_detached(struct k_thread *thread);
+#endif /* defined(CONFIG_THREAD_DETACH) || defined(__DOXYGEN__) */
+
+
+
+/**
  * @brief Cause the current thread to busy wait.
  *
  * This routine causes the current thread to execute a "do nothing" loop for
@@ -892,6 +999,16 @@ static inline k_tid_t k_current_get(void)
  * @param thread ID of thread to abort.
  */
 __syscall void k_thread_abort(k_tid_t thread);
+
+#if defined(CONFIG_THREAD_RESULT) || defined(CONFIG_THREAD_SPECIFIC_STORAGE) || defined(__DOXYGEN__)
+/**
+ * @brief Terminate the current thread gracefully and set its result.
+ *
+ * Run thread-specific storage destructors in the calling thread before terminating.
+ * @param result The result to record if CONFIG_THREAD_RESULT is enabled.
+ */
+FUNC_NORETURN void k_thread_exit(void *result);
+#endif
 
 k_ticks_t z_timeout_expires(const struct _timeout *timeout);
 k_ticks_t z_timeout_remaining(const struct _timeout *timeout);
@@ -3297,6 +3414,27 @@ struct k_lifo {
 	lap_ret; \
 	})
 
+/** Mask to isolate mutex type from other mutex flags */
+#define K_MUTEX_TYPE_MASK BIT_MASK(3)
+
+/** Extract mutex type from @p opts */
+#define K_MUTEX_TYPE(opts) ((opts) & K_MUTEX_TYPE_MASK)
+
+/** Mutex option for recursive locking */
+#define K_MUTEX_RECURSIVE 0
+
+/** Mutex option for normal (non-recursive) locking */
+#define K_MUTEX_NORMAL 1
+
+/** Mutex option for error checking */
+#define K_MUTEX_ERRORCHECK 2
+
+/**
+ * Mutex option for priority inheritance: always in effect for a k_mutex, selects the
+ * kernel-backed implementation of a sys_mutex.
+ */
+#define K_MUTEX_PRIO_INHERIT BIT(3)
+
 /**
  * @brief Get an element from a LIFO queue.
  *
@@ -3509,6 +3647,11 @@ struct k_mutex {
 	/** Current lock count */
 	uint32_t lock_count;
 
+#if defined(CONFIG_MUTEX_OPTIONS) || defined(__DOXYGEN__)
+	/** Mutex options */
+	uint32_t options;
+#endif
+
 #if Z_MUTEX_PI_ENABLED
 	/** Node for linking this mutex into the owner thread's held_mutexes list */
 	sys_snode_t held_node;
@@ -3531,13 +3674,16 @@ struct k_mutex {
 #define Z_MUTEX_HELD_NODE_INIT
 #endif
 
-#define Z_MUTEX_INITIALIZER(obj) \
+#define Z_MUTEX_INITIALIZER_EXT(obj, opts) \
 	{ \
 	.wait_q = Z_WAIT_Q_INIT(&(obj).wait_q), \
 	.owner = NULL, \
 	.lock_count = 0, \
+	COND_CODE_1(CONFIG_MUTEX_OPTIONS, (.options = (opts),), ()) \
 	Z_MUTEX_HELD_NODE_INIT \
 	}
+
+#define Z_MUTEX_INITIALIZER(obj) Z_MUTEX_INITIALIZER_EXT(obj, K_MUTEX_RECURSIVE)
 /**
  * INTERNAL_HIDDEN @endcond
  */
@@ -3555,6 +3701,28 @@ struct k_mutex {
 	STRUCT_SECTION_ITERABLE(k_mutex, name) = \
 		Z_MUTEX_INITIALIZER(name)
 
+#if defined(CONFIG_MUTEX_OPTIONS) || defined(__DOXYGEN__)
+/**
+ * @brief Statically define and initialize a mutex, with options.
+ *
+ * The mutex can be accessed outside the module where it is defined using:
+ *
+ * @code extern struct k_mutex <name>; @endcode
+ *
+ * @param name Name of the mutex.
+ * @param opts Options for mutex initialization.
+ */
+#define K_MUTEX_DEFINE_EXT(name, opts)                                                             \
+	STRUCT_SECTION_ITERABLE(k_mutex, name) = Z_MUTEX_INITIALIZER_EXT(name, opts);              \
+	BUILD_ASSERT((K_MUTEX_TYPE(opts) != K_MUTEX_NORMAL) ||                                     \
+		     IS_ENABLED(CONFIG_MUTEX_NONRECURSIVE));                                       \
+	BUILD_ASSERT((K_MUTEX_TYPE(opts) != K_MUTEX_ERRORCHECK) ||                                 \
+		     IS_ENABLED(CONFIG_MUTEX_ERRORCHECK));                                         \
+	BUILD_ASSERT((K_MUTEX_TYPE(opts) == K_MUTEX_RECURSIVE) ||                                  \
+		     (K_MUTEX_TYPE(opts) == K_MUTEX_NORMAL) ||                                     \
+		     K_MUTEX_TYPE(opts) == K_MUTEX_ERRORCHECK)
+#endif
+
 /**
  * @brief Initialize a mutex.
  *
@@ -3569,6 +3737,25 @@ struct k_mutex {
  */
 __syscall int k_mutex_init(struct k_mutex *mutex);
 
+#ifdef CONFIG_MUTEX_OPTIONS
+/**
+ * @brief Initialize a mutex with options.
+ *
+ * This routine initializes a mutex object, prior to its first use.
+ *
+ * The main difference between this and @ref k_mutex_init is that this routine
+ * allows the caller to specify options for the mutex, such as
+ * @ref K_MUTEX_RECURSIVE.
+ *
+ * Upon completion, the mutex is available and does not have an owner.
+ *
+ * @param mutex Address of the mutex.
+ * @param options Options for mutex initialization.
+ *
+ * @retval 0 Mutex object created
+ */
+__syscall int k_mutex_init_ext(struct k_mutex *mutex, uint32_t options);
+#endif /* CONFIG_MUTEX_OPTIONS */
 
 /**
  * @brief Lock a mutex.
@@ -7320,6 +7507,140 @@ void k_sys_runtime_stats_enable(void);
  * threads.
  */
 void k_sys_runtime_stats_disable(void);
+
+/**
+ * @addtogroup k_thread_specific_storage_apis
+ * @{
+ */
+
+/**
+ * @brief Destructor type for the thread-specific storage values associated with a given key.
+ *
+ * @param value Value to destroy.
+ */
+typedef void (*k_thread_key_destructor_t)(void *value);
+
+#if defined(CONFIG_THREAD_SPECIFIC_STORAGE) || defined(__DOXYGEN__)
+/**
+ * @brief Wildcard key selector for thread-specific storage queries.
+ *
+ * Used with @ref k_thread_qspecific and @ref k_thread_key_delete to match any stored key.
+ */
+#define K_THREAD_KEY_ANY ((void *)(-1))
+
+/**
+ * @brief Create a thread-specific storage key.
+ *
+ * Create a thread-specific storage key and optionally associate a destructor with it.
+ *
+ * Destructors are only called during graceful thread termination (when the thread runs to
+ * completion or when @ref k_thread_exit is called). A destructor is only called for a
+ * non-NULL value. Each pass over the
+ * values visits those stored when it started, so a destructor may store a value again, and
+ * after @kconfig{CONFIG_THREAD_SPECIFIC_STORAGE_DESTRUCTOR_ITERATIONS} passes any value still
+ * stored is dropped without its destructor.
+ *
+ * @param[out] key Pointer to location where the created key is stored.
+ * @param dtor Optional destructor for values associated with this key.
+ *
+ * @retval 0 on success.
+ * @retval -ENOMEM if no keys are available.
+ */
+__syscall int k_thread_key_create(void **key, k_thread_key_destructor_t dtor);
+
+/**
+ * @brief Delete a thread-specific storage key.
+ *
+ * Values still associated with @p key by any thread are dropped and their destructor is not
+ * called, neither here nor when those threads exit.
+ *
+ * @param key Key to delete.
+ *
+ * @retval 0 on success.
+ * @retval -EINVAL if @p key is invalid.
+ * @retval -ENOENT if @p key is @ref K_THREAD_KEY_ANY and no thread-specific values are stored.
+ */
+__syscall int k_thread_key_delete(void *key);
+
+/**
+ * @brief Set a thread-specific value for the calling thread.
+ *
+ * @param key Key identifying the thread-specific value.
+ * @param value Value to associate with @p key.
+ *
+ * @retval 0 on success.
+ * @retval -EINVAL if @p key is invalid.
+ * @retval -ENOMEM if memory for a new key/value association cannot be allocated.
+ */
+__syscall int k_thread_setspecific(void *key, void *value);
+
+/**
+ * @brief Query a thread-specific value from the calling thread.
+ *
+ * If @p key points to a valid key for which there is an associated thread-specific value, then
+ * the value is written to the memory location pointed to by @p value. The key-value pair remains
+ * associated for the calling thread.
+ *
+ * If @p key points to @ref K_THREAD_KEY_ANY, then any available entry is selected and the
+ * associated key-value pair is removed from thread-specific storage for the calling thread.
+ *
+ * @param[in,out] key On input, Pointer to the key selector. On success, the key associated with @p
+ * value.
+ * @param[out] value Pointer to where the value associated with @p key is stored.
+ * @param[out] dtor Pointer to where the destructor associated with the removed value is stored.
+ *
+ * @retval 0 on success.
+ * @retval -EINVAL if @p key is invalid, or if @p *key has no association in the calling thread.
+ * @retval -ENOENT if @p key is @ref K_THREAD_KEY_ANY and the calling thread has no stored values.
+ */
+__syscall int k_thread_qspecific(void **key, void **value, k_thread_key_destructor_t *dtor);
+
+/**
+ * @brief Remove and return any thread-specific value from the calling thread.
+ *
+ * Convenience wrapper for k_thread_qspecific() with @ref K_THREAD_KEY_ANY.
+ *
+ * @param[in,out] key Pointer to where the key associated with @p value is stored.
+ * @param[out] value Pointer to where the value associated with @p key is stored.
+ * @param[out] dtor Pointer to where the destructor associated with the removed value is stored.
+ *
+ * @retval 0 on success.
+ * @retval -ENOENT if the calling thread has no stored values.
+ */
+static inline int k_thread_popspecific(void **key, void **value, k_thread_key_destructor_t *dtor)
+{
+	*key = K_THREAD_KEY_ANY;
+	return k_thread_qspecific(key, value, dtor);
+}
+
+/**
+ * @brief Count the thread-specific values stored by the calling thread.
+ *
+ * @return The number of key-value associations the calling thread holds.
+ */
+__syscall size_t k_thread_specific_count(void);
+
+/**
+ * @brief Get a thread-specific value for a specific key.
+ *
+ * @param key Key identifying the thread-specific value.
+ * @param[out] value Pointer to where the value associated with @p key is stored.
+ *
+ * @retval 0 on success.
+ * @retval -EINVAL if @p key is invalid, or if @p key has no association in the calling thread.
+ */
+static inline int k_thread_getspecific(void *key, void **value)
+{
+	__maybe_unused k_thread_key_destructor_t dtor;
+
+	return k_thread_qspecific(&key, value, &dtor);
+}
+
+#endif /* CONFIG_THREAD_SPECIFIC_STORAGE */
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

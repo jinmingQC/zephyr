@@ -934,6 +934,14 @@ static ALWAYS_INLINE void halt_thread(struct k_thread *thread, uint8_t new_state
 		k_obj_core_unlink(K_OBJ_CORE(thread));
 #endif /* CONFIG_OBJ_CORE_THREAD */
 
+#ifdef CONFIG_SYS_THREAD
+		bool self = (thread == _current);
+		bool reap = false;
+
+#ifdef CONFIG_THREAD_DETACH
+		reap = (thread->base.user_options & K_DETACHED) != 0U;
+#endif
+#endif
 #ifdef CONFIG_USERSPACE
 		z_mem_domain_exit_thread(thread);
 		k_thread_perms_all_clear(thread);
@@ -941,7 +949,7 @@ static ALWAYS_INLINE void halt_thread(struct k_thread *thread, uint8_t new_state
 		k_object_uninit(thread);
 #endif /* CONFIG_USERSPACE */
 
-#ifdef CONFIG_THREAD_ABORT_NEED_CLEANUP
+#if defined(CONFIG_THREAD_ABORT_NEED_CLEANUP) && !defined(CONFIG_SYS_THREAD)
 		k_thread_abort_cleanup(thread);
 #endif /* CONFIG_THREAD_ABORT_NEED_CLEANUP */
 
@@ -979,6 +987,9 @@ static ALWAYS_INLINE void halt_thread(struct k_thread *thread, uint8_t new_state
 		 * thread_halt_spin()).
 		 */
 		clear_halting(thread);
+#ifdef CONFIG_SYS_THREAD
+		z_thread_retire(thread, self, reap);
+#endif
 	}
 }
 

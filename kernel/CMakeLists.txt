@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+zephyr_sources_ifdef(CONFIG_THREAD_SPECIFIC_STORAGE tss.c)
+
 # kernel is a normal CMake library and not a zephyr_library because it
 # should usually not be --whole-archive'd
 

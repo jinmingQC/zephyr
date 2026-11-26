@@ -148,6 +148,14 @@ extern int z_stack_adjust_initialized;
 
 #ifdef CONFIG_MULTITHREADING
 extern struct k_thread z_main_thread;
+
+#ifdef CONFIG_SYS_THREAD
+bool z_sys_thread_owned(const struct k_thread *thread);
+int z_sys_thread_reclaim(struct k_thread *thread);
+void z_thread_retire(struct k_thread *thread, bool self, bool reap);
+void z_thread_reap(struct k_thread *thread);
+void z_thread_graveyard_flush(void);
+#endif
 #endif /* CONFIG_MULTITHREADING */
 
 

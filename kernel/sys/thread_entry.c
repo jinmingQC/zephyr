@@ -23,6 +23,47 @@ Z_THREAD_LOCAL k_tid_t z_tls_current;
 extern Z_THREAD_LOCAL volatile uintptr_t __stack_chk_guard;
 #endif /* CONFIG_STACK_CANARIES_TLS */
 
+#if defined(CONFIG_THREAD_RESULT) || defined(CONFIG_THREAD_SPECIFIC_STORAGE)
+FUNC_NORETURN void k_thread_exit(void *result)
+{
+#ifdef CONFIG_THREAD_RESULT
+	k_thread_result_set(result);
+#else
+	ARG_UNUSED(result);
+#endif
+
+#ifdef CONFIG_THREAD_SPECIFIC_STORAGE
+	/* A destructor may store another value. Visit only the values present at each pass. */
+	for (unsigned int pass = 0; pass < CONFIG_THREAD_SPECIFIC_STORAGE_DESTRUCTOR_ITERATIONS;
+	     pass++) {
+		size_t count = k_thread_specific_count();
+		void *key, *value;
+		k_thread_key_destructor_t destructor;
+
+		if (count == 0) {
+			break;
+		}
+
+		while (count-- > 0 && k_thread_popspecific(&key, &value, &destructor) == 0) {
+			if (destructor != NULL && value != NULL) {
+				destructor(value);
+			}
+		}
+	}
+
+	/* Drop values stored again after the last pass. */
+	void *key, *value;
+	k_thread_key_destructor_t destructor;
+
+	while (k_thread_popspecific(&key, &value, &destructor) == 0) {
+	}
+#endif
+
+	k_thread_abort(k_current_get());
+	CODE_UNREACHABLE;
+}
+#endif
+
 /*
  * Common thread entry point function (used by all threads)
  *
@@ -59,7 +100,13 @@ FUNC_NORETURN void z_thread_entry(k_thread_entry_t entry,
 #endif	/* CONFIG_STACK_CANARIES_TLS */
 	entry(p1, p2, p3);
 
+#if defined(CONFIG_THREAD_RESULT)
+	k_thread_exit(k_thread_result_get());
+#elif defined(CONFIG_THREAD_SPECIFIC_STORAGE)
+	k_thread_exit(NULL);
+#else
 	k_thread_abort(k_current_get());
+#endif
 
 	/*
 	 * Compiler can't tell that k_thread_abort() won't return and issues a

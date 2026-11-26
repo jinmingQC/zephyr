@@ -716,6 +716,9 @@ static inline void init_thread_userspace(struct k_thread *thread,
 
 	/* Any given thread has access to itself */
 	k_object_access_grant(thread, thread);
+#elif defined(CONFIG_SYS_THREAD)
+	thread->stack_obj = stack;
+	ARG_UNUSED(options);
 #else
 	ARG_UNUSED(thread);
 	ARG_UNUSED(stack);
@@ -954,6 +957,14 @@ char *z_setup_new_thread(struct k_thread *new_thread,
 	new_thread->resource_pool = _current->resource_pool;
 	init_thread_halt_queue(new_thread);
 	init_thread_usage(new_thread);
+
+#ifdef CONFIG_THREAD_RESULT
+	new_thread->base.result = (atomic_t)NULL;
+#endif
+
+#ifdef CONFIG_THREAD_SPECIFIC_STORAGE
+	sys_dlist_init(&new_thread->base.key_list);
+#endif
 
 	SYS_PORT_TRACING_OBJ_FUNC(k_thread, create, new_thread);
 
@@ -1466,7 +1477,190 @@ int k_thread_runtime_stats_cpu_get(int cpu, k_thread_runtime_stats_t *stats)
 	return 0;
 }
 
-#ifdef CONFIG_THREAD_ABORT_NEED_CLEANUP
+#ifdef CONFIG_SYS_THREAD
+/*
+ * The graveyard: a halted thread whose k_thread the kernel owns (a pool entry
+ * entry) is parked here, because halt_thread() runs under the
+ * scheduler lock, possibly on the dying thread's own stack, and nothing is
+ * freed under that lock. Entries are disposed once their thread has switched
+ * out, from the drains: a thread or stack allocation, a reap (join, detach of a
+ * dead thread) and reuse of the k_thread.
+ *
+ * An application-owned k_thread is never parked: once its abort returns, the
+ * kernel does not touch that memory again (it may be reused at once).
+ */
+static sys_dlist_t graveyard = SYS_DLIST_STATIC_INIT(&graveyard);
+static struct k_spinlock thread_cleanup_lock;
+
+#ifdef CONFIG_THREAD_STACK_MEM_MAPPED
+/* the mapped stack of a thread that is not parked and halted on it */
+static void *thread_cleanup_stack_addr;
+static size_t thread_cleanup_stack_sz;
+
+static void stack_unmap(void *addr, size_t sz)
+{
+	if (addr != NULL) {
+		k_mem_unmap_phys_guard(addr, sz, false);
+	}
+}
+
+static void stash_unmap_locked(void)
+{
+	stack_unmap(thread_cleanup_stack_addr, thread_cleanup_stack_sz);
+	thread_cleanup_stack_addr = NULL;
+}
+#endif /* CONFIG_THREAD_STACK_MEM_MAPPED */
+
+/*
+ * Dispose of threads taken off the graveyard, with no lock held: the thread may
+ * still be switching out on another CPU, and the disposal may reach the
+ * scheduler lock (k_free wakes heap waiters), which halt_thread() holds while it
+ * parks.
+ */
+static void graves_dispose(sys_dlist_t *list)
+{
+	struct k_thread *thread, *next;
+	unsigned int key;
+
+	SYS_DLIST_FOR_EACH_CONTAINER_SAFE(list, thread, next, base.graveyard_node) {
+		bool reap = thread->base.graveyard_reap;
+
+		sys_dlist_remove(&thread->base.graveyard_node);
+		key = arch_irq_lock();
+		z_sched_switch_spin(thread);
+		arch_irq_unlock(key);
+#ifdef CONFIG_THREAD_STACK_MEM_MAPPED
+		stack_unmap(thread->stack_info.mapped.addr, thread->stack_info.mapped.sz);
+		thread->stack_info.mapped.addr = NULL;
+		thread->stack_info.mapped.sz = 0;
+#endif /* CONFIG_THREAD_STACK_MEM_MAPPED */
+		if (reap) {
+			(void)z_sys_thread_reclaim(thread);
+		}
+	}
+}
+
+/* Lock held: take a specific thread, or all detached threads. */
+static void graves_take_locked(sys_dlist_t *list, struct k_thread *only)
+{
+	struct k_thread *thread, *next;
+
+	SYS_DLIST_FOR_EACH_CONTAINER_SAFE(&graveyard, thread, next, base.graveyard_node) {
+		if (only != NULL ? thread != only : !thread->base.graveyard_reap) {
+			continue;
+		}
+		if (thread == _current) {
+			continue;
+		}
+		sys_dlist_remove(&thread->base.graveyard_node);
+		sys_dlist_append(list, &thread->base.graveyard_node);
+	}
+}
+
+static bool grave_find_locked(struct k_thread *thread)
+{
+	struct k_thread *t;
+
+	SYS_DLIST_FOR_EACH_CONTAINER(&graveyard, t, base.graveyard_node) {
+		if (t == thread) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static void grave_add_locked(struct k_thread *thread, bool reap)
+{
+	thread->base.graveyard_reap = reap;
+	sys_dlist_append(&graveyard, &thread->base.graveyard_node);
+}
+
+void z_thread_retire(struct k_thread *thread, bool self, bool reap)
+{
+	bool pooled = z_sys_thread_owned(thread);
+
+	ARG_UNUSED(self);
+
+	if (!pooled && !IS_ENABLED(CONFIG_THREAD_STACK_MEM_MAPPED)) {
+		return;
+	}
+
+	K_SPINLOCK(&thread_cleanup_lock) {
+		if (grave_find_locked(thread)) {
+			thread->base.graveyard_reap = thread->base.graveyard_reap || reap;
+			K_SPINLOCK_BREAK;
+		}
+		if (pooled) {
+			grave_add_locked(thread, reap);
+			K_SPINLOCK_BREAK;
+		}
+
+		/* application-owned: nothing of it is freed, nor touched again */
+#ifdef CONFIG_THREAD_STACK_MEM_MAPPED
+		/* Finish the pending one first. The current thread's stack
+		 * cannot be unmapped from its own context: it goes to the next
+		 * retire or drain.
+		 */
+		stash_unmap_locked();
+		if (self) {
+			thread_cleanup_stack_addr = thread->stack_info.mapped.addr;
+			thread_cleanup_stack_sz = thread->stack_info.mapped.sz;
+		} else {
+			stack_unmap(thread->stack_info.mapped.addr, thread->stack_info.mapped.sz);
+		}
+		thread->stack_info.mapped.addr = NULL;
+		thread->stack_info.mapped.sz = 0;
+#endif /* CONFIG_THREAD_STACK_MEM_MAPPED */
+	}
+}
+
+void z_thread_reap(struct k_thread *thread)
+{
+	sys_dlist_t taken = SYS_DLIST_STATIC_INIT(&taken);
+
+	K_SPINLOCK(&thread_cleanup_lock) {
+		if (grave_find_locked(thread)) {
+			thread->base.graveyard_reap = true;
+			graves_take_locked(&taken, thread);
+		}
+	}
+
+	if (sys_dlist_is_empty(&taken)) {
+		(void)z_sys_thread_reclaim(thread);
+	} else {
+		graves_dispose(&taken);
+	}
+}
+
+void z_thread_graveyard_flush(void)
+{
+	sys_dlist_t taken = SYS_DLIST_STATIC_INIT(&taken);
+
+	K_SPINLOCK(&thread_cleanup_lock) {
+#ifdef CONFIG_THREAD_STACK_MEM_MAPPED
+		stash_unmap_locked();
+#endif /* CONFIG_THREAD_STACK_MEM_MAPPED */
+		graves_take_locked(&taken, NULL);
+	}
+	graves_dispose(&taken);
+}
+
+void k_thread_abort_cleanup_check_reuse(struct k_thread *thread)
+{
+	sys_dlist_t taken = SYS_DLIST_STATIC_INIT(&taken);
+
+	K_SPINLOCK(&thread_cleanup_lock) {
+		/* This is to guard reuse of the same thread object and make sure
+		 * any pending cleanups of it needs to be finished before the thread
+		 * object can be reused.
+		 */
+		graves_take_locked(&taken, thread);
+	}
+	graves_dispose(&taken);
+}
+
+#elif defined(CONFIG_THREAD_ABORT_NEED_CLEANUP)
 /** Pointer to thread which needs to be cleaned up. */
 static struct k_thread *thread_to_cleanup;
 
@@ -1802,14 +1996,16 @@ void z_impl_k_thread_abort(k_tid_t thread)
 }
 #endif /* !CONFIG_ARCH_HAS_THREAD_ABORT */
 
-int z_impl_k_thread_join(struct k_thread *thread, k_timeout_t timeout)
+static int thread_join_wait(struct k_thread *thread, k_timeout_t timeout)
 {
 	k_spinlock_key_t key = z_sched_spinlock_lock();
 	int ret;
 
 	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_thread, join, thread, timeout);
 
-	if (z_is_thread_dead(thread)) {
+	if (IS_ENABLED(CONFIG_THREAD_DETACH) && (thread->base.user_options & K_DETACHED) != 0U) {
+		ret = -EINVAL;
+	} else if (z_is_thread_dead(thread)) {
 		z_sched_switch_spin(thread);
 		ret = 0;
 	} else if (K_TIMEOUT_EQ(timeout, K_NO_WAIT)) {
@@ -1834,6 +2030,42 @@ int z_impl_k_thread_join(struct k_thread *thread, k_timeout_t timeout)
 	z_sched_spinlock_unlock(key);
 	return ret;
 }
+
+int z_impl_k_thread_join(struct k_thread *thread, k_timeout_t timeout)
+{
+	int ret = thread_join_wait(thread, timeout);
+
+#ifdef CONFIG_SYS_THREAD
+	if (ret == 0) {
+		z_thread_reap(thread);
+	}
+#endif
+	return ret;
+}
+
+#ifdef CONFIG_SYS_THREAD
+int z_impl_k_thread_rejoin(struct k_thread *thread, void **result, k_timeout_t timeout)
+{
+	if (thread == NULL) {
+		return -EINVAL;
+	}
+
+	int ret = thread_join_wait(thread, timeout);
+
+	if (ret == 0) {
+#ifdef CONFIG_THREAD_RESULT
+		if (result != NULL) {
+			*result = (void *)atomic_get(&thread->base.result);
+		}
+#else
+		ARG_UNUSED(result);
+#endif
+		z_thread_reap(thread);
+	}
+
+	return ret;
+}
+#endif
 
 #ifdef CONFIG_USERSPACE
 /* Special case: don't oops if the thread is uninitialized.  This is because
@@ -1916,3 +2148,46 @@ static inline void z_vrfy_k_yield(void)
 }
 #include <zephyr/syscalls/k_yield_mrsh.c>
 #endif /* CONFIG_USERSPACE */
+
+
+#ifdef CONFIG_THREAD_DETACH
+int z_impl_k_thread_detach(struct k_thread *th)
+{
+	int ret = 0;
+	__maybe_unused bool destroy = false;
+
+	if (th == NULL) {
+		return -EINVAL;
+	}
+
+	K_SPINLOCK(&_sched_spinlock) {
+		if ((th->base.user_options & K_DETACHED) != 0U) {
+			ret = -EINVAL;
+			K_SPINLOCK_BREAK;
+		}
+
+		th->base.user_options |= K_DETACHED;
+
+		/* a thread that is already dead is reaped by its detach */
+		destroy = z_is_thread_dead(th);
+	}
+
+	if (destroy) {
+		z_thread_reap(th);
+	}
+
+	return ret;
+}
+
+
+bool z_impl_k_thread_is_detached(struct k_thread *thread)
+{
+	if (thread == NULL) {
+		return false;
+	}
+
+	return (thread->base.user_options & K_DETACHED) != 0;
+}
+
+
+#endif /* CONFIG_THREAD_DETACH */

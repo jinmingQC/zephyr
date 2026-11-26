@@ -1,0 +1,19 @@
+common:
+  tags:
+    - kernel
+  min_ram: 64
+
+tests:
+  kernel.threads.sys_thread:
+    integration_platforms:
+      - native_sim
+      - qemu_x86
+      - qemu_x86/atom/nommu
+      - qemu_x86_64
+      - qemu_cortex_a53
+      - qemu_cortex_a53/qemu_cortex_a53/smp
+      - qemu_cortex_m3
+      - qemu_riscv32
+      - qemu_riscv32e
+      - qemu_riscv64
+      - qemu_riscv64/qemu_virt_riscv64/smp
